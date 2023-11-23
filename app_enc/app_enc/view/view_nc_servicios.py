@@ -14,6 +14,15 @@ class ViewNCServicios:
         return render(request,'NotaServicios',props={
             'array': lista
         })
+        
+    ### Formulario Servicios edit
+    def notaServiciosEdit(request, id):
+        lista = []
+        lista.append(12)
+        return render(request,'NotaServiciosEdit',props={
+            'array': lista,
+            'id': id
+        })
     
     ### Consolidado Servicios
     def cnotaServicios(request):

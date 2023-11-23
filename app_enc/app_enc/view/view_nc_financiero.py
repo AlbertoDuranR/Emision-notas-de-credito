@@ -18,6 +18,18 @@ class ViewNCFinanciero:
         return render(request,'NotaFinancieros',props={
             'lista_markets': lista_markets
         })
+        
+     ### Formulario Financieros edit
+    def notaFinancieroEdit(request, id):
+        lista = []
+        lista.append(12)
+        #
+        lista_markets= serviceFinanciero.get_all_markets()
+        #
+        return render(request,'NotaFinancierosEdit',props={
+            'lista_markets': lista_markets,
+            'id': id
+        })
     
     ### Consolidado Financieros
     def cnotaFinanciero(request):

@@ -21,6 +21,20 @@ class ViewNCPDV:
             'unidades':unidades,
             '_token':get_token(request)
         })
+     
+     ## Formulario Punto de ventas edit   
+    def notaPDVEdit(request, id):
+        # Lógica para obtener productos y unidades desde el servicio Dynamics
+        products_issues= serviceDynamics.getProductsIssued()
+        unidades= serviceDynamics.getUnitsConversion()
+        #print(products_issues)
+        #
+        return render(request,'NotaPDVEdit',props={
+            'productos': products_issues,
+            'unidades':unidades,
+            'id': id,
+            '_token':get_token(request)
+        })
     
     ### Consolidado Punto de Venta
     def cnotaPDV(request):
