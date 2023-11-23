@@ -21,10 +21,12 @@ class ViewNCFinanciero:
     
     ### Consolidado Financieros
     def cnotaFinanciero(request):
-        lista = []
-        lista.append(12)
+        #lista = []
+        #lista.append(12)
+        lista_solicitudes= ServiceNCFinanciero.lista_solicitudes()
+        #
         return render(request,'CNotaFinancieros',props={
-            'array': lista
+            'lista_solicitudes':lista_solicitudes
         })
     
     ### Bandeja Financieros
