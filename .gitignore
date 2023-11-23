@@ -1,0 +1,6 @@
+venv
+app_enc/node_modules
+app_enc/app_enc/__pycache__
+app_enc/app_enc/models/__pycache__
+app_enc/app_enc/services/__pycache__
+app_enc/app_enc/view/__pycache__

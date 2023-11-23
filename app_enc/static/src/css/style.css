@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities"; */
+
+/* Styles for Datatable */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    border-radius: 9999px;
+    padding: 6px;
+    background-color: dimgray;
+    color: white
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button{
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 6px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    border-radius: 9999px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover{
+    background-color: rgb(228 228 231)
+}
+
+.dataTables_wrapper .dataTables_info{
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+.dataTables_wrapper .dataTables_length{
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+.dataTables_wrapper .dataTables_paginate{
+    position: relative;
+    bottom: 30px;
+}
+.dataTables_wrapper .dataTables_filter{
+    position: relative;
+    bottom: 10px;
+}
