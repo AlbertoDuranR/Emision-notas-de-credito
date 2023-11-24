@@ -70,6 +70,7 @@
             <label class="text-sm">Fecha emisión de la nota de crédito:</label>
             <VueDatePicker
               v-model="datos_documento.fecha_emision_nc.date"
+              
             ></VueDatePicker>
           </div>
           <div class="py-2"></div>
@@ -98,6 +99,7 @@ export default {
   name: "NotaServiciosEdit",
   components: { VueDatePicker, Multiselect },
   props: {
+    lista_solicitudesEdit: Array,
     id: Number
   },
   data() {
@@ -119,6 +121,17 @@ export default {
     this.csrf_token = document.querySelector(
       "[name=csrfmiddlewaretoken]"
     ).value;
+
+    // rellenamos los campos
+    this.datos_documento.fecha_emision = {
+      date: new Date(`${this.lista_solicitudesEdit[0].FECHA_EMISION}T00:00:00`)
+    }
+    this.datos_documento.nro_comprobante = this.lista_solicitudesEdit[0].NRO_COMPROBANTE;
+    this.datos_documento.motivo = this.lista_solicitudesEdit[0].MOTIVO
+    this.datos_documento.importe_nc = this.lista_solicitudesEdit[0].IMPORTE_TOTAL
+    this.datos_documento.fecha_emision_nc = {
+      date: new Date(`${this.lista_solicitudesEdit[0].FECHA_SOLICITUD}T00:00:00`)
+    };
   },
   methods: {
     //

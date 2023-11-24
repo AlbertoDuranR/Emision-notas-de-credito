@@ -39,6 +39,32 @@ class ServiceNCFinanciero:
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
+    
+    def lista_solicitudesEdit():
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM public.listar_solicitud_fin(14)")
+            results = cursor.fetchall()
+        lista_diccionarios = []
+        for tupla in results:
+            #print(tupla)
+            diccionario = {
+               'ID_NC': tupla[0],
+               'ID_ESTABLECIMIENTO': tupla[1],
+               'FECHA_EMISION': tupla[2],
+               'NRO_COMPROBANTE': tupla[3],
+               'IMPORTE_REAL': tupla[4],
+               'DESCUENTO': tupla[5],
+               'TOTAL_DESCUENTO': tupla[6],
+               'BOLETEO': tupla[7],
+               'FECHA_SOLICITUD': tupla[8],
+               'DNI': tupla[9],
+               'APELLIDO_MATERNO': tupla[10],
+               'APELLIDO_PATERNO': tupla[11],
+               'NOMBRES': tupla[12],
+               'ID_MARKET': tupla[13]
+            }
+            lista_diccionarios.append(diccionario)
+        return lista_diccionarios
 
     def save_solicitud(data):
         # Solicitud NC

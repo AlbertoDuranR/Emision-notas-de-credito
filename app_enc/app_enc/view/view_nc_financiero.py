@@ -23,10 +23,12 @@ class ViewNCFinanciero:
     def notaFinancieroEdit(request, id):
         lista = []
         lista.append(12)
+        lista_solicitudesEdit=ServiceNCFinanciero.lista_solicitudesEdit()
         #
         lista_markets= serviceFinanciero.get_all_markets()
         #
         return render(request,'NotaFinancierosEdit',props={
+            'lista_solicitudesEdit': lista_solicitudesEdit,
             'lista_markets': lista_markets,
             'id': id
         })

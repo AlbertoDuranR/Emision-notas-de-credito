@@ -24,6 +24,23 @@ class ServiceNCServicios:
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
+    
+    def lista_solicitudesEdit():
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM public.listar_solicitud_ser(7)")
+            results = cursor.fetchall()
+        lista_diccionarios = []
+        for tupla in results:
+            diccionario = {
+                'ID_NC': tupla[0],
+                'FECHA_EMISION': tupla[1],
+                'NRO_COMPROBANTE': tupla[2],
+                'MOTIVO': tupla[3],
+                'IMPORTE_TOTAL': tupla[4],
+                'FECHA_SOLICITUD': tupla[5],
+            }
+            lista_diccionarios.append(diccionario)
+        return lista_diccionarios
 
     def save_solicitud(data):
         # Solicitud NC

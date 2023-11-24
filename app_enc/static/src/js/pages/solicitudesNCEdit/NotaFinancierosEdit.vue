@@ -178,6 +178,7 @@ export default {
   name: "NotaFinancierosEdit",
   components: { VueDatePicker, Multiselect },
   props: {
+    lista_solicitudesEdit: Array,
     lista_markets: Array,
     id: Number
   },
@@ -218,6 +219,26 @@ export default {
     this.csrf_token = document.querySelector(
       "[name=csrfmiddlewaretoken]"
     ).value;
+
+    // rellenamos los campos
+    console.log(this.lista_solicitudesEdit[0].FECHA_EMISION)
+    let solicitud = this.lista_solicitudesEdit[0];
+
+    this.datos_documento.establecimiento.value = solicitud.ID_ESTABLECIMIENTO;
+    this.datos_documento.fecha_emision.date = new Date(solicitud.FECHA_EMISION + "T00:00:00Z");
+    this.datos_documento.nro_comprobante = solicitud.NRO_COMPROBANTE;
+    this.datos_documento.importe_real = solicitud.IMPORTE_REAL;
+    this.datos_documento.descuento = solicitud.DESCUENTO;
+    this.datos_documento.total_descuento = solicitud.TOTAL_DESCUENTO;
+    this.datos_documento.boleteo = solicitud.BOLETEO;
+
+    this.detalle_solicitante.fecha_solicitud.date = new Date(solicitud.FECHA_SOLICITUD + "T00:00:00Z");
+    this.detalle_solicitante.dni = solicitud.DNI;
+    this.detalle_solicitante.ap_materno = solicitud.APELLIDO_MATERNO;
+    this.detalle_solicitante.ap_paterno = solicitud.APELLIDO_PATERNO;
+    this.detalle_solicitante.nombres = solicitud.NOMBRES;
+    this.detalle_solicitante.lugar_donde_labora.value = solicitud.ID_MARKET;
+
   },
   methods: {
     //

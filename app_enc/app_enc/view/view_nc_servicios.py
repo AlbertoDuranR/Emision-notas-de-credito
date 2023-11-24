@@ -17,10 +17,11 @@ class ViewNCServicios:
         
     ### Formulario Servicios edit
     def notaServiciosEdit(request, id):
-        lista = []
-        lista.append(12)
+        #lista = []
+        #lista.append(12)
+        lista_solicitudesEdit=ServiceNCServicios.lista_solicitudesEdit()
         return render(request,'NotaServiciosEdit',props={
-            'array': lista,
+            'lista_solicitudesEdit': lista_solicitudesEdit,
             'id': id
         })
     
