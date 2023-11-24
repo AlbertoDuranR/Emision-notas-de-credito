@@ -24,14 +24,27 @@ class ViewNCPDV:
      
      ## Formulario Punto de ventas edit   
     def notaPDVEdit(request, id):
+        
+        lista_productosEdit = []
         # Lógica para obtener productos y unidades desde el servicio Dynamics
         products_issues= serviceDynamics.getProductsIssued()
         unidades= serviceDynamics.getUnitsConversion()
+        
+        # Lógica para obtener datos de la base de datos local registrados
+        lista_solicitudesEdit=servicePDV.lista_solicitudesEdit(id)
+        
+       
+       # si es de tipo parical traer los productos 
+        if 'Parcial' in lista_solicitudesEdit[0]['METODO']:            
+            lista_productosEdit=servicePDV.lista_productosEdit(id)
+           
         #print(products_issues)
         #
         return render(request,'NotaPDVEdit',props={
             'productos': products_issues,
             'unidades':unidades,
+            'lista_solicitudesEdit': lista_solicitudesEdit,
+            'lista_productosEdit': lista_productosEdit,
             'id': id,
             '_token':get_token(request)
         })

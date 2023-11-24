@@ -31,6 +31,45 @@ class ServiceNCPDV:
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
+    
+    def lista_solicitudesEdit(id):
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM public.listar_solicitud_pdv({id})")
+            results = cursor.fetchall()
+        lista_diccionarios = []
+        for tupla in results:
+            #print(tupla)
+            diccionario = {
+                'ID_NC': tupla[0],
+                'FECHA_EMISION': tupla[1],
+                'NUMERO_COMPROBANTE': tupla[2],
+                'IMPORTE_TOTAL': tupla[3],
+                'FECHA_SOLICITUD': tupla[4],
+                'MOTIVO': tupla[5],
+                'JUSTIFICACION': tupla[6],
+                'METODO': tupla[7],
+            }
+            lista_diccionarios.append(diccionario)
+        return lista_diccionarios
+    
+    def lista_productosEdit(id):
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM public.producto_detalle where det_id = {id}")
+            results = cursor.fetchall()
+        lista_diccionarios = []
+        for tupla in results:
+            #print(tupla)
+            diccionario = {
+                'PRODUCTO_ID': tupla[0],
+                'PRODUCTO_CODIGO': tupla[1],
+                'PRODUCTO_DESCCRIPCION': tupla[2],
+                'PRODUCTO_UNIDAD': tupla[3],
+                'PRODUCTO_PRECIO': tupla[4],
+                'PRODUCTO_CANTIDAD': tupla[5],
+                'PRODUCTO_MONTO': tupla[6]
+            }
+            lista_diccionarios.append(diccionario)
+        return lista_diccionarios
 
     # huardar solicitud - púntos de venta
     def save_solicitud(data):

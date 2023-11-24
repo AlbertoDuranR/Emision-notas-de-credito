@@ -38,15 +38,14 @@
           <div class="space-y-1 py-2">
             <label class="typo__label text-sm">Establecimiento:</label>
             <multiselect
-              v-model="datos_documento.establecimiento.value"
-              id="multiselect"
-              :options="datos_documento.establecimiento.options"
-              :preserve-search="true"
-              placeholder="Seleccionar local..."
-              label="mar_descripcion"
-              track-by="mar_descripcion"
-            >
-            </multiselect>
+  v-model="datos_documento.establecimiento.value"
+  :options="datos_documento.establecimiento.options"
+  :preserve-search="true"
+  placeholder="Seleccionar local..."
+  label="mar_descripcion"
+  track-by="mar_descripcion"
+>
+</multiselect>
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Fecha emisión del comprobantes:</label>
@@ -141,15 +140,14 @@
           </div>
           <label class="typo__label text-sm">Lugar donde labora:</label>
           <multiselect
-            v-model="detalle_solicitante.lugar_donde_labora.value"
-            id="multiselect"
-            :options="detalle_solicitante.lugar_donde_labora.options"
-            :preserve-search="true"
-            placeholder="Seleccionar lugar de trabajo..."
-            label="mar_descripcion"
-            track-by="mar_descripcion"
-          >
-          </multiselect>
+  v-model="detalle_solicitante.lugar_donde_labora.value"
+  :options="detalle_solicitante.lugar_donde_labora.options"
+  :preserve-search="true"
+  placeholder="Seleccionar lugar de trabajo..."
+  label="mar_descripcion"
+  track-by="mar_descripcion"
+>
+</multiselect>
           <div class="py-2"></div>
         </form>
       </div>
@@ -215,24 +213,52 @@ export default {
       },
     };
   },
+
+  computed: {
+
+    
+    defaultEstablecimiento() {
+      return this.datos_documento.establecimiento.options.find(option => option.mar_id ===  parseInt(this.lista_solicitudesEdit[0].ID_ESTABLECIMIENTO));
+    },
+    defaultLugarLabora() {
+    return this.detalle_solicitante.lugar_donde_labora.options.find(option => option.mar_id === parseInt(this.lista_solicitudesEdit[0].ID_MARKET));
+  },
+  },
   mounted() {
     this.csrf_token = document.querySelector(
       "[name=csrfmiddlewaretoken]"
     ).value;
 
-    // rellenamos los campos
-    console.log(this.lista_solicitudesEdit[0].FECHA_EMISION)
+
+
+
+    // Usamos $nextTick para asegurarnos de que el componente se haya renderizado completamente
+    this.$nextTick(() => {
+      // Establecemos el valor predeterminado usando la propiedad computada
+      this.datos_documento.establecimiento.value = this.defaultEstablecimiento;
+    });
+
+    // Usamos $nextTick para asegurarnos de que el componente se haya renderizado completamente
+    this.$nextTick(() => {
+      // Establecemos el valor predeterminado usando la propiedad computada
+      this.detalle_solicitante.lugar_donde_labora.value = this.defaultLugarLabora;
+    });
+
+
     let solicitud = this.lista_solicitudesEdit[0];
 
-    this.datos_documento.establecimiento.value = solicitud.ID_ESTABLECIMIENTO;
-    this.datos_documento.fecha_emision.date = new Date(solicitud.FECHA_EMISION + "T00:00:00Z");
+    console.log(this.lista_solicitudesEdit[0].ID_MARKET);
+
+
+
+    this.datos_documento.fecha_emision.date = new Date(solicitud.FECHA_EMISION + "T00:00:00");
     this.datos_documento.nro_comprobante = solicitud.NRO_COMPROBANTE;
     this.datos_documento.importe_real = solicitud.IMPORTE_REAL;
     this.datos_documento.descuento = solicitud.DESCUENTO;
     this.datos_documento.total_descuento = solicitud.TOTAL_DESCUENTO;
     this.datos_documento.boleteo = solicitud.BOLETEO;
 
-    this.detalle_solicitante.fecha_solicitud.date = new Date(solicitud.FECHA_SOLICITUD + "T00:00:00Z");
+    this.detalle_solicitante.fecha_solicitud.date = new Date(solicitud.FECHA_SOLICITUD + "T00:00:00");
     this.detalle_solicitante.dni = solicitud.DNI;
     this.detalle_solicitante.ap_materno = solicitud.APELLIDO_MATERNO;
     this.detalle_solicitante.ap_paterno = solicitud.APELLIDO_PATERNO;

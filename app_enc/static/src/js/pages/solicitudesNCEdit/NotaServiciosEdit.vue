@@ -132,6 +132,9 @@ export default {
     this.datos_documento.fecha_emision_nc = {
       date: new Date(`${this.lista_solicitudesEdit[0].FECHA_SOLICITUD}T00:00:00`)
     };
+
+    // imprimimos
+    console.log(this.lista_solicitudesEdit[0].FECHA_EMISION);
   },
   methods: {
     //

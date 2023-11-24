@@ -3,7 +3,8 @@
   <div class="container px-6 mx-auto block">
     <div class="flex items-center justify-center py-5">
       <span class="font-bold text-gray-600"
-        >ACTUALIZAR - SOLICITUD NOTA DE CRÉDITO - PUNTOS DE VENTA - N° {{ id }}</span
+        >ACTUALIZAR - SOLICITUD NOTA DE CRÉDITO - PUNTOS DE VENTA - N°
+        {{ id }}</span
       >
     </div>
     <div class="grid grid-cols-3 pt-2">
@@ -275,8 +276,10 @@ export default {
   props: {
     productos: Array,
     unidades: Array,
+    lista_solicitudesEdit: Array,
+    lista_productosEdit: Array,
+    id: Number,
     _token: String,
-    id: Number  
   },
   data() {
     return {
@@ -286,18 +289,18 @@ export default {
       csrf_token: "",
       datos_documento: {
         fecha_emsion: {
-          date: null,
+          date: new Date(this.lista_solicitudesEdit[0].FECHA_EMISION+"T00:00:00"),
         },
-        nro_comprobante: "",
-        importe_total: "",
+        nro_comprobante: this.lista_solicitudesEdit[0].NUMERO_COMPROBANTE,
+        importe_total: this.lista_solicitudesEdit[0].IMPORTE_TOTAL,
       },
       detalle_solicitud: {
         fecha_solicitud: {
-          date: null,
+          date: new Date(this.lista_solicitudesEdit[0].FECHA_SOLICITUD+"T00:00:00"),
         },
-        motivo: "",
-        justificacion: "",
-        metodo: "Total",
+        motivo: this.lista_solicitudesEdit[0].MOTIVO,
+        justificacion:  this.lista_solicitudesEdit[0].JUSTIFICACION,
+        metodo: this.lista_solicitudesEdit[0].METODO,
       },
       metodo_parcial_productos: {
         products: this.productos,
@@ -339,24 +342,23 @@ export default {
       console.log(this.$data.metodo_parcial_productos);
       let jsonString = JSON.stringify(this.$data);
       console.log(jsonString);
-      axios.post('/solicitud_nota_credito/punto_venta/create/',jsonString)
-        .then(
-        response =>{
-        console.log(response)
-        notify({
-          title:"Registro Exitoso",
-          text: ""+response.data.message
+      axios
+        .post("/solicitud_nota_credito/punto_venta/create/", jsonString)
+        .then((response) => {
+          console.log(response);
+          notify({
+            title: "Registro Exitoso",
+            text: "" + response.data.message,
+          });
         })
-        }).catch(
-          err =>{
-            console.log(err)
-            notify({
-          title:"Error de Registro",
-          text: "Error al guardar datos verificar los campos",
-          type:"error"
-        })
-          }
-        );
+        .catch((err) => {
+          console.log(err);
+          notify({
+            title: "Error de Registro",
+            text: "Error al guardar datos verificar los campos",
+            type: "error",
+          });
+        });
     },
     //
     refreshLoading() {
@@ -375,6 +377,7 @@ export default {
       }, 2000);
     },
   },
+  
   created() {
     this.refreshLoading();
   },
