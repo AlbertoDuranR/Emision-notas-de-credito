@@ -83,3 +83,20 @@ class ViewNCPDV:
             #
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
+        
+    ## Editar solicitud PDV
+    def edit_solicitud_pdv(request):
+        if request.method == "POST":
+            # Transform data
+            form_request= str.join("",request.POST)
+            form_request = json.loads(form_request)
+            #
+            try:
+                servicePDV.edit_solicitud(form_request)
+                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
+            except Exception as e:
+                print(e)
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+            #
+        else:
+            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)

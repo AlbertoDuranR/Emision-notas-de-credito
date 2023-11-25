@@ -41,13 +41,14 @@ class ServiceNCPDV:
             #print(tupla)
             diccionario = {
                 'ID_NC': tupla[0],
-                'FECHA_EMISION': tupla[1],
-                'NUMERO_COMPROBANTE': tupla[2],
-                'IMPORTE_TOTAL': tupla[3],
-                'FECHA_SOLICITUD': tupla[4],
-                'MOTIVO': tupla[5],
-                'JUSTIFICACION': tupla[6],
-                'METODO': tupla[7],
+                'ID_DETALLE': tupla[1],
+                'FECHA_EMISION': tupla[2],
+                'NUMERO_COMPROBANTE': tupla[3],
+                'IMPORTE_TOTAL': tupla[4],
+                'FECHA_SOLICITUD': tupla[5],
+                'MOTIVO': tupla[6],
+                'JUSTIFICACION': tupla[7],
+                'METODO': tupla[8],
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -162,6 +163,90 @@ class ServiceNCPDV:
                 sol_id=solicitud_nc.sol_id
             )
             detalle.save()
+            
+    # Actualizar solicitud - puntos de venta
+    def edit_solicitud(data):
+        
+        sol_id = int(data["datos_documento"]["id_nc"])
+        det_id = int(data["datos_documento"]["id_detalle_nc"])
+        
+        # Solicitud NC
+        tipo_nc = "PDV"
+        usuario_creador = 1 ##
+        estado = "EMITIDO"
+        fecha_emision = data["datos_documento"]["fecha_emsion"]['date']
+        fecha_emision = datetime.strptime(fecha_emision, '%Y-%m-%dT%H:%M:%S.%fZ')
+        
+        # Imprimir variables de Solicitud NC
+        print(f'Solicitud NC - ID: {sol_id}, Tipo NC: {tipo_nc}, Usuario Creador: {usuario_creador}, Estado: {estado}, Fecha Emisión: {fecha_emision}')
+        
+        # Detalle 
+        fecha_solicitud = data["detalle_solicitud"]["fecha_solicitud"]['date']
+        fecha_solicitud = datetime.strptime(fecha_solicitud, '%Y-%m-%dT%H:%M:%S.%fZ')
+        nro_comprobante = data["datos_documento"]["nro_comprobante"]
+        motivo = data["detalle_solicitud"]["motivo"]
+        importe_total = data["datos_documento"]["importe_total"]
+        justificacion = data["detalle_solicitud"]["justificacion"]
+        metodo = data["detalle_solicitud"]["metodo"]
+        
+        # Imprimir variables de Detalle
+        print(f'Detalle - Fecha Solicitud: {fecha_solicitud}, Nro Comprobante: {nro_comprobante}, Motivo: {motivo}, Importe Total: {importe_total}, Justificación: {justificacion}, Método: {metodo}')
+        
+        # Producto
+        codigo_descripcion = data["metodo_parcial_productos"]["value"]
+        cont_productos = False
+        if codigo_descripcion is not None and metodo == "Parcial":
+            if len(codigo_descripcion) != 0:
+                monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
+                monto_total_productos = 0
+                for x in monto_producto:
+                    monto_total_productos = monto_total_productos + int(x["value"])
+                
+                cont_productos = True
+                print(f'Monto total de productos: {monto_total_productos}')
+            else:
+                raise TypeError("Campo necesario vacío.")
+        elif metodo == "Parcial" and codigo_descripcion is None:
+            raise TypeError("Campo necesario vacío.")
+        
+        # Imprimir variables de Producto
+        print(f'Producto - Código Descripción: {codigo_descripcion}, Contiene Productos: {cont_productos}')
+        
+    ## Resto del código sigue igual
+
+            
+            
+        # # ELIMNAR TODOS LOS ´PRODUCTOS
+        # productos_eliminados = ProductoDetalle.objects.filter(det_id=det_id)
+        # if productos_eliminados:
+        #     productos_eliminados.delete()
+        
+        # # AGREGAR NUEVOS PRODUCTOS
+        # if cont_productos:
+        #     unidades = data["metodo_parcial_productos"]["unidad"]["valores"][0:len(codigo_descripcion)]
+        #     precios = data["metodo_parcial_productos"]["precio"]["valores"][0:len(codigo_descripcion)]
+        #     cantidades = data["metodo_parcial_productos"]["cantidad"]["valores"][0:len(codigo_descripcion)]
+        #     monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
+        #     producto_detalle = []
+
+        #     for x in range(len(codigo_descripcion)):
+        #         # Código
+        #         producto_detalle.append(ProductoDetalle(
+        #             dpro_codigo=codigo_descripcion[x]["ProductNumber"],
+        #             dpro_descripcion=codigo_descripcion[x]["ProductDescription"],
+        #             dpro_unidad=unidades[x]["value"]["UnitSymbol"],
+        #             dpro_precio=float(precios[x]["value"]),
+        #             dpro_cantidad=int(cantidades[x]["value"]),
+        #             dpro_monto_total=float(monto_producto[x]["value"]),
+        #             det_id=det_id
+        #         ))
+
+        #     ProductoDetalle.objects.bulk_create(producto_detalle)
+
+
+        
+        
+        
     
     def getDataCorreo():
         with connection.cursor() as cursor:

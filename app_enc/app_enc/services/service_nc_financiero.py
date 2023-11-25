@@ -171,11 +171,6 @@ class ServiceNCFinanciero:
         lugar_donde_labora = data["detalle_solicitante"]["lugar_donde_labora"]["value"]["mar_id"]
         
         
-        #Imprimir todos los datos
-        print("sol_id:", int(sol_id))
-        print("det_id:", int(det_id))
-        print("sdet_id:", int(sdet_id))
-        
         detalle_solicitante_solicitud = SolicitanteDet.objects.filter(sdet_id=sdet_id).first()        
         #  Verificar si ya existe un registro en SolicitudNC
         solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()

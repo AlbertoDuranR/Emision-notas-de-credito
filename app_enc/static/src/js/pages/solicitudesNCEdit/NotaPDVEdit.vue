@@ -39,6 +39,16 @@
         <!-- Columna 1: Datos de Documentos de Origen -->
         <div class="col-span-1 text-cente px-5">
           <div class="py-2">
+            <input
+              type="text"
+              class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+              v-model="datos_documento.id_nc"
+            />
+            <input
+              type="text"
+              class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+              v-model="datos_documento.id_detalle_nc"
+            />
             <span class="text-sm font-bold text-gray-600 py-5 textcenter"
               >Datos de Documentos de Origen</span
             >
@@ -332,6 +342,8 @@ export default {
       fullPage: ref(true),
       csrf_token: "",
       datos_documento: {
+        id_nc: this.lista_solicitudesEdit[0].ID_NC,
+        id_detalle_nc: this.lista_solicitudesEdit[0].ID_DETALLE,
         fecha_emsion: {
           date: new Date(
             this.lista_solicitudesEdit[0].FECHA_EMISION + "T00:00:00"
@@ -391,7 +403,7 @@ export default {
       let jsonString = JSON.stringify(this.$data);
       console.log(jsonString);
       axios
-        .post("/solicitud_nota_credito/punto_venta/create/", jsonString)
+        .post("/solicitud_nota_credito/punto_venta/edit/", jsonString)
         .then((response) => {
           console.log(response);
           notify({

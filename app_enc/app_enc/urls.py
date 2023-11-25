@@ -57,7 +57,7 @@ urlpatterns = [
     ###
     
     ## Update NC
-    # path('solicitud_nota_credito/punto_venta/edit/', ViewNCPDV.edit_solicitud_pdv),
+    path('solicitud_nota_credito/punto_venta/edit/', ViewNCPDV.edit_solicitud_pdv),
     path('solicitud_nota_credito/financieros/edit/', ViewNCFinanciero.edit_solicitud_financieras),
     path('solicitud_nota_credito/servicios/edit/', ViewNCServicios.edit_solicitud_servicios),
     ##
