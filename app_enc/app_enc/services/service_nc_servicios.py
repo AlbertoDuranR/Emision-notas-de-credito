@@ -77,8 +77,11 @@ class ServiceNCServicios:
         )
         detalle_sol.save()
         
-    def update_solicitud(sol_id, det_id, data):
+    def edit_solicitud(data):
         # Solicitud NC
+        sol_id = data["datos_documento"]["id_nc"]
+        det_id = data["datos_documento"]["id_detalle_nc"]
+        
         tipo_nc = "SER"
         usuario_creador = 1
         estado = "ACTUALIZADO"
@@ -91,6 +94,18 @@ class ServiceNCServicios:
         nro_comprobante = data["datos_documento"]["nro_comprobante"]
         motivo = data["datos_documento"]["motivo"]
         importe_total = data["datos_documento"]["importe_nc"]
+        
+        # Imprimir todos los datos
+        # print("sol_id:", sol_id)
+        # print("det_id:", det_id)
+        # print("tipo_nc:", tipo_nc)
+        # print("usuario_creador:", usuario_creador)
+        # print("estado:", estado)
+        # print("fecha_solicitud:", fecha_solicitud)
+        # print("fecha_emision:", fecha_emision)
+        # print("nro_comprobante:", nro_comprobante)
+        # print("motivo:", motivo)
+        # print("importe_total:", importe_total)
 
         # Verificar si ya existe un registro en SolicitudNC
         solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()

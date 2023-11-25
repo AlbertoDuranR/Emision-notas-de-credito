@@ -49,19 +49,21 @@ class ServiceNCFinanciero:
             #print(tupla)
             diccionario = {
                'ID_NC': tupla[0],
-               'ID_ESTABLECIMIENTO': tupla[1],
-               'FECHA_EMISION': tupla[2],
-               'NRO_COMPROBANTE': tupla[3],
-               'IMPORTE_REAL': tupla[4],
-               'DESCUENTO': tupla[5],
-               'TOTAL_DESCUENTO': tupla[6],
-               'BOLETEO': tupla[7],
-               'FECHA_SOLICITUD': tupla[8],
-               'DNI': tupla[9],
-               'APELLIDO_MATERNO': tupla[10],
-               'APELLIDO_PATERNO': tupla[11],
-               'NOMBRES': tupla[12],
-               'ID_MARKET': tupla[13]
+               'ID_DETALLE': tupla[1],
+               'ID_DETALLE_SOLICITANTE': tupla[2],
+               'ID_ESTABLECIMIENTO': tupla[3],
+               'FECHA_EMISION': tupla[4],
+               'NRO_COMPROBANTE': tupla[5],
+               'IMPORTE_REAL': tupla[6],
+               'DESCUENTO': tupla[7],
+               'TOTAL_DESCUENTO': tupla[8],
+               'BOLETEO': tupla[9],
+               'FECHA_SOLICITUD': tupla[10],
+               'DNI': tupla[11],
+               'APELLIDO_MATERNO': tupla[12],
+               'APELLIDO_PATERNO': tupla[13],
+               'NOMBRES': tupla[14],
+               'ID_MARKET': tupla[15]
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -124,3 +126,93 @@ class ServiceNCFinanciero:
             sol_id=solicitud_nc.sol_id
         )
         detalle_sol.save()
+        
+    def edit_solicitud(data):
+        # Solicitud NC
+        sol_id = int(data["datos_documento"]["id_nc"])
+        det_id = int(data["datos_documento"]["id_detalle_nc"])
+        sdet_id = int(data["datos_documento"]["id_detalle_cliente"])
+        
+         # Solicitud NC
+        tipo_nc = "FIN"
+        usuario_creador = 1 ##
+        estado = "ACTUALIZADO"
+        
+        # Datos de Documento Solicitud
+        #Establecimiento
+        Establecimiento = data["datos_documento"]["establecimiento"]["value"]["mar_id"]
+        # Fecha emisión del comprobantes:
+        fecha_emision = data["datos_documento"]["fecha_emision"]['date']
+        fecha_emision = datetime.strptime(fecha_emision,'%Y-%m-%dT%H:%M:%S.%fZ')
+        # Nro. Comprobante:
+        nro_comprobante = data["datos_documento"]["nro_comprobante"]
+        # Importe Real
+        importe_real = data["datos_documento"]["importe_real"]
+        # Descuento 
+        descuento = data["datos_documento"]["descuento"]
+        # Total Descuento:
+        total_descuento = data["datos_documento"]["total_descuento"]
+        # Boleteo
+        boleteo = data["datos_documento"]["boleteo"]
+        
+        ## Detalle de Solicitante
+        # Fecha emisión de la nota de crédito:
+        fecha_solicitud = data["detalle_solicitante"]["fecha_solicitud"]['date']
+        fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
+        # DNI
+        dni = data["detalle_solicitante"]["dni"]
+        # Apellido Materno
+        ap_materno = data["detalle_solicitante"]["ap_materno"]
+        # Apellido Paterno
+        ap_paterno = data["detalle_solicitante"]["ap_paterno"]
+        # Nombres
+        nombres = data["detalle_solicitante"]["nombres"]
+        # Lugar donde labora:
+        lugar_donde_labora = data["detalle_solicitante"]["lugar_donde_labora"]["value"]["mar_id"]
+        
+        
+        #Imprimir todos los datos
+        print("sol_id:", int(sol_id))
+        print("det_id:", int(det_id))
+        print("sdet_id:", int(sdet_id))
+        
+        detalle_solicitante_solicitud = SolicitanteDet.objects.filter(sdet_id=sdet_id).first()        
+        #  Verificar si ya existe un registro en SolicitudNC
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+
+        if solicitud_existente:
+            # Actualizar el registro existente en SolicitudNC
+            solicitud_existente.sol_fecha_solicitud = fecha_solicitud.date()
+            solicitud_existente.sol_tipo_nc = tipo_nc
+            solicitud_existente.sol_usuario_creador = usuario_creador
+            solicitud_existente.sol_fecha_creacion = datetime.now().date()
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.save()
+            
+            # Verificar si ya existe un registro en DetalleSolicitud
+            detalle_existente = DetalleSolicitud.objects.filter(det_id=det_id).first()
+            
+            if detalle_existente:
+                detalle_existente.det_fecha_emision = fecha_emision.date()
+                detalle_existente.det_nro_comprobante = nro_comprobante
+                detalle_existente.det_importe_total = importe_real
+                detalle_existente.det_establecimiento = int(Establecimiento)
+                detalle_existente.det_descuento = int(descuento)
+                detalle_existente.det_total_descuento = total_descuento
+                detalle_existente.det_boleteo = boleteo
+                detalle_existente.save()
+                
+                detalle_solicitante_solicitud = SolicitanteDet.objects.filter(sdet_id=sdet_id).first()
+                
+                if detalle_solicitante_solicitud:
+                    print(int(sdet_id))
+                    
+                    detalle_solicitante_solicitud.sdet_dni = dni
+                    detalle_solicitante_solicitud.sdet_materno = ap_materno
+                    detalle_solicitante_solicitud.sdet_paterno = ap_paterno
+                    detalle_solicitante_solicitud.sdet_nombres = nombres
+                    detalle_solicitante_solicitud.save()
+               
+            
+                    
+                 

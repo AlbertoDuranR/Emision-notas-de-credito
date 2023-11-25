@@ -55,6 +55,12 @@ urlpatterns = [
     path('solicitud_nota_credito/financieros/create/', ViewNCFinanciero.create_solicitud_financieras),
     path('solicitud_nota_credito/servicios/create/', ViewNCServicios.create_solicitud_servicios),
     ###
+    
+    ## Update NC
+    # path('solicitud_nota_credito/punto_venta/edit/', ViewNCPDV.edit_solicitud_pdv),
+    path('solicitud_nota_credito/financieros/edit/', ViewNCFinanciero.edit_solicitud_financieras),
+    path('solicitud_nota_credito/servicios/edit/', ViewNCServicios.edit_solicitud_servicios),
+    ##
 
     ###
     path('admin/', admin.site.urls),
