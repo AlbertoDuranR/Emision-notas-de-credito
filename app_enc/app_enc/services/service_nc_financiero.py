@@ -40,9 +40,9 @@ class ServiceNCFinanciero:
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
     
-    def lista_solicitudesEdit():
+    def lista_solicitudesEdit(id):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM public.listar_solicitud_fin(14)")
+            cursor.execute(f"SELECT * FROM public.listar_solicitud_fin({id})")
             results = cursor.fetchall()
         lista_diccionarios = []
         for tupla in results:

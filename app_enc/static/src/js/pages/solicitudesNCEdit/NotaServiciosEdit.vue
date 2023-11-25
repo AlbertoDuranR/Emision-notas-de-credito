@@ -134,7 +134,8 @@ export default {
     };
 
     // imprimimos
-    console.log(this.lista_solicitudesEdit[0].FECHA_EMISION);
+    console.log(this.lista_solicitudesEdit[0].ID_NC);
+    console.log(this.lista_solicitudesEdit[0].ID_DETALLE_NC);
   },
   methods: {
     //

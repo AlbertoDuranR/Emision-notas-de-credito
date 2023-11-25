@@ -23,7 +23,7 @@ class ViewNCFinanciero:
     def notaFinancieroEdit(request, id):
         lista = []
         lista.append(12)
-        lista_solicitudesEdit=ServiceNCFinanciero.lista_solicitudesEdit()
+        lista_solicitudesEdit=ServiceNCFinanciero.lista_solicitudesEdit(id)
         #
         lista_markets= serviceFinanciero.get_all_markets()
         #

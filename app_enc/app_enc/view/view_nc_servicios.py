@@ -19,7 +19,7 @@ class ViewNCServicios:
     def notaServiciosEdit(request, id):
         #lista = []
         #lista.append(12)
-        lista_solicitudesEdit=ServiceNCServicios.lista_solicitudesEdit()
+        lista_solicitudesEdit=ServiceNCServicios.lista_solicitudesEdit(id)
         return render(request,'NotaServiciosEdit',props={
             'lista_solicitudesEdit': lista_solicitudesEdit,
             'id': id
