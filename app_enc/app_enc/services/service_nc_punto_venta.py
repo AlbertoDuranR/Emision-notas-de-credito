@@ -54,19 +54,18 @@ class ServiceNCPDV:
     
     def lista_productosEdit(id):
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM public.producto_detalle where det_id = {id}")
+            cursor.execute(f"select dpro_codigo, dpro_descripcion,dpro_unidad,dpro_precio,dpro_cantidad,dpro_monto_total from public.producto_detalle where det_id = {id}")
             results = cursor.fetchall()
         lista_diccionarios = []
         for tupla in results:
             #print(tupla)
             diccionario = {
-                'PRODUCTO_ID': tupla[0],
-                'PRODUCTO_CODIGO': tupla[1],
-                'PRODUCTO_DESCCRIPCION': tupla[2],
-                'PRODUCTO_UNIDAD': tupla[3],
-                'PRODUCTO_PRECIO': tupla[4],
-                'PRODUCTO_CANTIDAD': tupla[5],
-                'PRODUCTO_MONTO': tupla[6]
+                'PRODUCTO_CODIGO': tupla[0],
+                'PRODUCTO_DESCCRIPCION': tupla[1],
+                'PRODUCTO_UNIDAD': tupla[2],
+                'PRODUCTO_PRECIO': tupla[3],
+                'PRODUCTO_CANTIDAD': tupla[4],
+                'PRODUCTO_MONTO': tupla[5]
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
