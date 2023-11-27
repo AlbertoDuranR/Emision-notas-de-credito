@@ -173,12 +173,9 @@ class ServiceNCPDV:
         # Solicitud NC
         tipo_nc = "PDV"
         usuario_creador = 1 ##
-        estado = "EMITIDO"
+        estado = "ACTUALIZADO"
         fecha_emision = data["datos_documento"]["fecha_emsion"]['date']
         fecha_emision = datetime.strptime(fecha_emision, '%Y-%m-%dT%H:%M:%S.%fZ')
-        
-        # Imprimir variables de Solicitud NC
-        print(f'Solicitud NC - ID: {sol_id}, Tipo NC: {tipo_nc}, Usuario Creador: {usuario_creador}, Estado: {estado}, Fecha Emisión: {fecha_emision}')
         
         # Detalle 
         fecha_solicitud = data["detalle_solicitud"]["fecha_solicitud"]['date']
@@ -189,8 +186,21 @@ class ServiceNCPDV:
         justificacion = data["detalle_solicitud"]["justificacion"]
         metodo = data["detalle_solicitud"]["metodo"]
         
-        # Imprimir variables de Detalle
-        print(f'Detalle - Fecha Solicitud: {fecha_solicitud}, Nro Comprobante: {nro_comprobante}, Motivo: {motivo}, Importe Total: {importe_total}, Justificación: {justificacion}, Método: {metodo}')
+        # Imprime todas las variables
+        print("Solicitud ID: ", sol_id)
+        print("Detalle ID: ", det_id)
+        print("Tipo NC: ", tipo_nc)
+        print("Usuario creador: ", usuario_creador)
+        print("Estado: ", estado)
+        print("Fecha de emisión: ", fecha_emision)
+        print("Fecha de solicitud: ", fecha_solicitud)
+        print("Número de comprobante: ", nro_comprobante)
+        print("Motivo: ", motivo)
+        print("Importe total: ", importe_total)
+        print("Justificación: ", justificacion)
+        print("Método: ", metodo)
+        
+       
         
         # Producto
         codigo_descripcion = data["metodo_parcial_productos"]["value"]
@@ -209,17 +219,80 @@ class ServiceNCPDV:
         elif metodo == "Parcial" and codigo_descripcion is None:
             raise TypeError("Campo necesario vacío.")
         
-        # Imprimir variables de Producto
-        print(f'Producto - Código Descripción: {codigo_descripcion}, Contiene Productos: {cont_productos}')
+        
+        
+        # 1. eliminarmos productos
+        productos_eliminados = ProductoDetalle.objects.filter(det_id=19)
+        if productos_eliminados:
+            productos_eliminados.delete()
+        
+        
+        # 2. ACTUALIZAMOS solicitud_nc
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+        if solicitud_existente:
+            # Actualizar el registro existente en SolicitudNC
+            solicitud_existente.sol_fecha_solicitud = fecha_solicitud.date()
+            solicitud_existente.sol_tipo_nc = tipo_nc
+            solicitud_existente.sol_usuario_creador = usuario_creador
+            solicitud_existente.sol_fecha_creacion = datetime.now().date()
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.save()
+        ##
+        
+        # 3. actualizamos detalle_solicitud
+        detalle_existente = DetalleSolicitud.objects.filter(det_id=det_id).first()
+        if detalle_existente:
+            # Actualizar DetalleSolicitud
+            detalle_existente.det_fecha_emision = fecha_emision.date()
+            detalle_existente.det_nro_comprobante = nro_comprobante
+            detalle_existente.det_importe_total = importe_total
+            detalle_existente.det_motivo = motivo
+            detalle_existente.det_justificacion = justificacion
+            detalle_existente.det_metodo = metodo
+            detalle_existente.det_monto_total_prod = importe_total
+            detalle_existente.det_establecimiento = 1
+            detalle_existente.save()
+        ##
+        
+         # 4. creamos los nuevos productos
+        if cont_productos:     
+            unidades = data["metodo_parcial_productos"]["unidad"]["valores"][0:len(codigo_descripcion)]
+            precios = data["metodo_parcial_productos"]["precio"]["valores"][0:len(codigo_descripcion)]
+            cantidades = data["metodo_parcial_productos"]["cantidad"]["valores"][0:len(codigo_descripcion)]
+            monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
+            producto_detalle = []
+            
+            print(unidades)
+            print(precios)
+            print(cantidades)
+            print(monto_producto)
+            
+            for x in range(len(codigo_descripcion)):
+                #codigo
+                producto_detalle.append(ProductoDetalle(
+                    dpro_codigo=codigo_descripcion[x]["ProductNumber"],
+                    dpro_descripcion=codigo_descripcion[x]["ProductDescription"],
+                    dpro_unidad=unidades[x]["value"]["UnitSymbol"],
+                    dpro_precio=float(precios[x]["value"]),
+                    dpro_cantidad=int(cantidades[x]["value"]),
+                    dpro_monto_total= float(monto_producto[x]["value"]),
+                    det_id=det_id
+                ))
+                
+            ProductoDetalle.objects.bulk_create(producto_detalle)     
+            
+        
+            
+           
+           
+        
         
     ## Resto del código sigue igual
 
             
             
         # # ELIMNAR TODOS LOS ´PRODUCTOS
-        # productos_eliminados = ProductoDetalle.objects.filter(det_id=det_id)
-        # if productos_eliminados:
-        #     productos_eliminados.delete()
+        
         
         # # AGREGAR NUEVOS PRODUCTOS
         # if cont_productos:
