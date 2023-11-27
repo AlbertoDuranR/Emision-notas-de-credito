@@ -407,7 +407,7 @@ export default {
         .then((response) => {
           console.log(response);
           notify({
-            title: "Registro Exitoso",
+            title: "Actualizacion Exitoso",
             text: "" + response.data.message,
           });
         })
@@ -415,7 +415,7 @@ export default {
           console.log(err);
           notify({
             title: "Error de Registro",
-            text: "Error al guardar datos verificar los campos",
+            text: "Error al actualizar datos verificar los campos",
             type: "error",
           });
         });

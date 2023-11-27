@@ -214,7 +214,7 @@ export default {
           console.log(response);
           this.limpiarFormulario();
           notify({
-            title: "Registro Actualizado Exitosamente",
+            title: "Actualizacion Exitosa",
             text: "" + response.data.message,
           });
         })
@@ -222,7 +222,7 @@ export default {
           console.log(err);
           notify({
             title: "Error de Registro",
-            text: "Error al guardar datos verificar los campos",
+            text: "Error al actualizar datos verificar los campos",
             type: "error",
           });
         });
