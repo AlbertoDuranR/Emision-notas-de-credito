@@ -100,3 +100,18 @@ class ViewNCPDV:
             #
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
+        
+    ### Eliminar consolidado punto de venta
+    def delete_consolidado(request):
+        if request.method == "POST":
+            try:
+                # Obtener el id del cuerpo de la solicitud
+                data = json.loads(request.body.decode('utf-8'))
+                item_id = data.get('id')
+            
+
+                servicePDV.delete_solicitud(item_id)
+                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
+            except Exception as e:
+                print(e)
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)

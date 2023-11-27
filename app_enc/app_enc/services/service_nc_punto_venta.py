@@ -283,40 +283,13 @@ class ServiceNCPDV:
             
         
             
-           
-           
+    def delete_solicitud(id):
+        estado = 'ELIMINADO'
         
-        
-    ## Resto del código sigue igual
-
-            
-            
-        # # ELIMNAR TODOS LOS ´PRODUCTOS
-        
-        
-        # # AGREGAR NUEVOS PRODUCTOS
-        # if cont_productos:
-        #     unidades = data["metodo_parcial_productos"]["unidad"]["valores"][0:len(codigo_descripcion)]
-        #     precios = data["metodo_parcial_productos"]["precio"]["valores"][0:len(codigo_descripcion)]
-        #     cantidades = data["metodo_parcial_productos"]["cantidad"]["valores"][0:len(codigo_descripcion)]
-        #     monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
-        #     producto_detalle = []
-
-        #     for x in range(len(codigo_descripcion)):
-        #         # Código
-        #         producto_detalle.append(ProductoDetalle(
-        #             dpro_codigo=codigo_descripcion[x]["ProductNumber"],
-        #             dpro_descripcion=codigo_descripcion[x]["ProductDescription"],
-        #             dpro_unidad=unidades[x]["value"]["UnitSymbol"],
-        #             dpro_precio=float(precios[x]["value"]),
-        #             dpro_cantidad=int(cantidades[x]["value"]),
-        #             dpro_monto_total=float(monto_producto[x]["value"]),
-        #             det_id=det_id
-        #         ))
-
-        #     ProductoDetalle.objects.bulk_create(producto_detalle)
-
-
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
+        if solicitud_existente:
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.save()     
         
         
         

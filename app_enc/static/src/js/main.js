@@ -2,6 +2,8 @@ import {createApp, h} from 'vue';
 import {createInertiaApp} from '@inertiajs/vue3';
 import '../css/style.css';
 import Notifications from '@kyvg/vue3-notification'
+import VueSweetalert2 from 'vue-sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 // const pages = import.meta.glob('./pages/**/*.vue');
 
@@ -24,6 +26,7 @@ createInertiaApp({
         const app = createApp({render: () => h(App, props)})
         app.use(plugin)
         app.use(Notifications)
+        app.use(VueSweetalert2);
         app.mount(el)
     },
 })

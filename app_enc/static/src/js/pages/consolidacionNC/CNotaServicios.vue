@@ -76,6 +76,7 @@
 import Header from '../../layouts/Header.vue'
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net';
+import axios from "axios";
 
 DataTable.use(DataTablesCore)
 
@@ -97,9 +98,51 @@ export default {
     },
     eliminarItem(item) {
       // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
-      console.log('Eliminar:', item);
-      
-    }
+      //console.log("Eliminar item:", item);
+      this.$swal
+        .fire({
+          title: "Advertencia!",
+          text: "¿Estás seguro de eliminar?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            // Lógica para la confirmación
+            axios
+              .post("/solicitud_nota_credito/servicios/delete/", { id: item })
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "Eliminado",
+                  "El elemento ha sido eliminado.",
+                  "success"
+                );
+                // Recargar la página completa después de eliminar
+                location.reload();
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  title: "Error de Registro",
+                  text: "Error al Eliminar datos, verificar los campos",
+                  icon: "error",
+                });
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
   }
     
 }

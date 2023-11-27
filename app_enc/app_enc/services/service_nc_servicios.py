@@ -129,3 +129,11 @@ class ServiceNCServicios:
                 detalle_existente.det_importe_total = importe_total
                 detalle_existente.det_motivo = motivo
                 detalle_existente.save()
+
+    def delete_solicitud(id):
+            estado = 'ELIMINADO'
+            
+            solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
+            if solicitud_existente:
+                solicitud_existente.sol_estado = estado
+                solicitud_existente.save()  

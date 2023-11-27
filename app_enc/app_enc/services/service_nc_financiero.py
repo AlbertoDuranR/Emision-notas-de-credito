@@ -210,4 +210,10 @@ class ServiceNCFinanciero:
                
             
                     
-                 
+    def delete_solicitud(id):
+            estado = 'ELIMINADO'
+            
+            solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
+            if solicitud_existente:
+                solicitud_existente.sol_estado = estado
+                solicitud_existente.save()                  

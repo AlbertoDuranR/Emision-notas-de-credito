@@ -44,6 +44,12 @@ urlpatterns = [
     ##
     
     
+    ## Path Delete Consolidacion
+    path('solicitud_nota_credito/punto_venta/delete/', ViewNCPDV.delete_consolidado,name="new_nc_pdv"),
+    path('solicitud_nota_credito/financieros/delete/', ViewNCFinanciero.delete_consolidado),
+    path('solicitud_nota_credito/servicios/delete/', ViewNCServicios.delete_consolidado),
+    ##
+     
     ## Path View Bandeja
     path('bandeja_nota_credito/punto_venta/', ViewNCPDV.bnotaPDV),
     path('bandeja_nota_credito/financieros/', ViewNCFinanciero.bnotaFinanciero),
@@ -61,7 +67,7 @@ urlpatterns = [
     path('solicitud_nota_credito/financieros/edit/', ViewNCFinanciero.edit_solicitud_financieras),
     path('solicitud_nota_credito/servicios/edit/', ViewNCServicios.edit_solicitud_servicios),
     ##
-
+    
     ###
     path('admin/', admin.site.urls),
     path('oauth2/', include('django_auth_adfs.urls')),
