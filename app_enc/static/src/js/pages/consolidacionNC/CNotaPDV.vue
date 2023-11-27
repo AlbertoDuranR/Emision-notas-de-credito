@@ -51,7 +51,11 @@
           <td class="text-sm text-gray-600 text-center">{{ item.CREADOR_USUARIO }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.TIPO_COMPROBANTE }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.FECHA_CREAR_NC }}</td>
-          <td class="text-sm text-gray-600 text-center">{{ item.ESTADO }}</td>
+          <td class="text-sm text-gray-600 text-center">
+            <span :class="{'bg-yellow-500': item.ESTADO === 'PENDIENTE', 'bg-emerald-500': item.ESTADO === 'EMITIDO', 'bg-orange-500': item.ESTADO === 'ACTUALIZADO', 'bg-red-500': item.ESTADO === 'OBSERVADO'}" class="px-2 py-1 text-white rounded">
+              {{ item.ESTADO }}
+            </span>
+          </td>
           <td class="text-sm text-gray-600 text-center">{{ item.EMISION_COMPROBANTE }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.NRO }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.IMPORTE }}</td>
@@ -95,10 +99,12 @@ export default {
     editarItem(item) {
       // Lógica para editar el elemento (puedes implementar según tus necesidades)
       console.log('Editar:', item);
+      this.$inertia.visit(`/solicitud_nota_credito/punto_venta/edit/${item}/`)
     },
     eliminarItem(item) {
       // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
       console.log('Eliminar:', item);
+      
     }
   }
 };

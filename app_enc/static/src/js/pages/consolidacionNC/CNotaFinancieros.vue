@@ -43,8 +43,36 @@
                     <th class="text-sm text-gray-600 text-center">FECHA_SOLICITUD</th>
                     <th class="text-sm text-gray-600 text-center">SOLICITANTE</th>
                     <th class="text-sm text-gray-600 text-center">LABORA_EN</th>
+                    <th class="text-sm text-gray-600 text-center">OPCIONES</th>
                 </tr>
             </thead>
+            <tbody>
+  <tr v-for="item in lista_solicitudes" :key="item.ID_NC">
+    <td class="text-sm text-gray-600 text-center">{{ item.ID_NC }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.ID_DETALLE }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.ESTABLECIMIENTO }}</td>
+    <!-- ... otras columnas ... -->
+    <td class="text-sm text-gray-600 text-center">
+      <span :class="{'bg-yellow-500': item.ESTADO === 'PENDIENTE', 'bg-emerald-500': item.ESTADO === 'EMITIDO', 'bg-orange-500': item.ESTADO === 'ACTUALIZADO', 'bg-red-500': item.ESTADO === 'OBSERVADO'}" class="px-2 py-1 text-white rounded">
+        {{ item.ESTADO }}
+      </span>
+    </td>
+    <!-- ... otras columnas ... -->
+    <td class="text-sm text-gray-600 text-center">{{ item.EMISION_COMPROBANTE }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.NRO }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.IMPORTE }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.DESCUENTO }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.TOTAL_DESCUENTO }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.BOLETEO }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.FECHA_SOLICITUD }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.SOLICITANTE }}</td>
+    <td class="text-sm text-gray-600 text-center">{{ item.LABORA_EN }}</td>
+    <td class="text-sm text-gray-600 text-center">
+            <button @click="editarItem(item.ID_NC)" class="bg-blue-500 text-white px-2 py-1 mr-1">Editar</button>
+            <button @click="eliminarItem(item.ID_NC)" class="bg-red-500 text-white px-2 py-1">Eliminar</button>
+    </td>
+  </tr>
+</tbody>
         </DataTable>
     </div>
     <!-- -- -->
@@ -68,26 +96,18 @@ export default {
     props:{
         lista_solicitudes:Array
     },
-    data() {
-        return {
-            columms: [
-                { data: 'ID_NC' },
-                { data: 'ID_DETALLE' },
-                { data: 'ESTABLECIMIENTO' },
-                { data: 'ESTADO' },
-                { data: 'EMISION_COMPROBANTE' },
-                { data: 'NRO' },
-                { data: 'IMPORTE' },
-                { data: 'DESCUENTO' },
-                { data: 'TOTAL_DESCUENTO' },
-                { data: 'BOLETEO' },
-                { data: 'FECHA_SOLICITUD' },
-                { data: 'SOLICITANTE' },
-                { data: 'LABORA_EN' },
-            ],
-            data_table: this.lista_solicitudes
-        }
+    methods: {
+    editarItem(item) {
+      // Lógica para editar el elemento (puedes implementar según tus necesidades)
+      console.log('Editar:', item);
+      this.$inertia.visit(`/solicitud_nota_credito/financieros/edit/${item}/`)
     },
+    eliminarItem(item) {
+      // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
+      console.log('Eliminar:', item);
+      
+    }
+  }
 }
 </script>
 <style scope></style>
