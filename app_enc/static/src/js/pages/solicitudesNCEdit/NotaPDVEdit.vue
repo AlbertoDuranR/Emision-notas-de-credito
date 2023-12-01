@@ -395,6 +395,7 @@ export default {
     this.csrf_token = document.querySelector(
       "[name=csrfmiddlewaretoken]"
     ).value;
+    console.log(this.lista_solicitudesEdit);
   },
   methods: {
     //
@@ -406,9 +407,18 @@ export default {
         .post("/solicitud_nota_credito/punto_venta/edit/", jsonString)
         .then((response) => {
           console.log(response);
-          notify({
-            title: "Actualizacion Exitoso",
-            text: "" + response.data.message,
+          this.$swal
+          .fire({
+            title: "Solicitud Editada",
+            text: "seleccione ok para dirigirse al consolidado",
+            icon: "success",
+            showConfirmButton: true,
+            allowOutsideClick: false,
+          })
+          .then(() => {
+            // Después de que se complete la animación de SweetAlert 2
+            // Ejecutar la visita a la ruta de Inertia
+            this.$inertia.visit(`/consolidacion_nota_credito/punto_venta/`);
           });
         })
         .catch((err) => {

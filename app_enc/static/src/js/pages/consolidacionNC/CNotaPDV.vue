@@ -109,7 +109,7 @@
           <td class="text-sm text-gray-600 text-center">{{ item.METODO }}</td>
           <td class="text-sm text-gray-600 text-center">
             <button
-              @click="editarItem(item.ID_NC)"
+              @click="editarItem(item.ID_NC,item.ID_DETALLE)"
               class="bg-blue-500 text-white px-2 py-1 mr-2"
             >
               Editar
@@ -151,18 +151,21 @@ export default {
     //console.log(this.lista_solicitudes);
   },
   methods: {
-    editarItem(item) {
-      // Lógica para editar el elemento (puedes implementar según tus necesidades)
-      console.log("Editar:", item);
-      this.$swal.fire({
-        title: "Cargando la ventana de edición",
-        text: "Espere por favor...",
-        icon: "info",
-        showConfirmButton: true,
-        allowOutsideClick: false,
-      });
-      this.$inertia.visit(`/solicitud_nota_credito/punto_venta/edit/${item}/`);
-    },
+    editarItem(item_nota, item_producto) {
+  console.log("Editar:", item_nota, item_producto);
+  
+  this.$swal.fire({
+    title: "Cargando la ventana de edición",
+    text: "Espere por favor...",
+    icon: "info",
+    showConfirmButton: true,
+    allowOutsideClick: false,
+  });
+
+  // Agregar las variables a la URL como parámetros de ruta
+  this.$inertia.visit(`/solicitud_nota_credito/punto_venta/edit/${item_nota}/${item_producto}`);
+}
+,
     eliminarItem(item) {
       // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
       //console.log("Eliminar item:", item);

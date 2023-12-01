@@ -213,9 +213,18 @@ export default {
         .then((response) => {
           console.log(response);
           this.limpiarFormulario();
-          notify({
-            title: "Actualizacion Exitosa",
-            text: "" + response.data.message,
+          this.$swal
+          .fire({
+            title: "Solicitud Editada",
+            text: "seleccione ok para dirigirse al consolidado",
+            icon: "success",
+            showConfirmButton: true,
+            allowOutsideClick: false,
+          })
+          .then(() => {
+            // Después de que se complete la animación de SweetAlert 2
+            // Ejecutar la visita a la ruta de Inertia
+            this.$inertia.visit(`/consolidacion_nota_credito/servicios/`);
           });
         })
         .catch((err) => {

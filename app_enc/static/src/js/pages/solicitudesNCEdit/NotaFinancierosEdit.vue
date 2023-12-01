@@ -274,7 +274,7 @@ export default {
     this.datos_documento.fecha_emision.date = new Date(solicitud.FECHA_EMISION + "T00:00:00");
     this.datos_documento.nro_comprobante = solicitud.NRO_COMPROBANTE;
     this.datos_documento.importe_real = solicitud.IMPORTE_REAL;
-    this.datos_documento.descuento = solicitud.DESCUENTO;
+    this.datos_documento.descuento =  Math.floor(solicitud.DESCUENTO);
     this.datos_documento.total_descuento = solicitud.TOTAL_DESCUENTO;
     this.datos_documento.boleteo = solicitud.BOLETEO;
 
@@ -294,10 +294,21 @@ export default {
         .post("/solicitud_nota_credito/financieros/edit/", jsonString)
         .then((response) => {
           console.log(response);
-          notify({
-            title: "Actualizacion Exitosa",
-            text: "" + response.data.message,
+         // Mostrar SweetAlert 2
+        this.$swal
+          .fire({
+            title: "Solicitud Editada",
+            text: "seleccione ok para dirigirse al consolidado",
+            icon: "success",
+            showConfirmButton: true,
+            allowOutsideClick: false,
+          })
+          .then(() => {
+            // Después de que se complete la animación de SweetAlert 2
+            // Ejecutar la visita a la ruta de Inertia
+            this.$inertia.visit(`/consolidacion_nota_credito/financieros/`);
           });
+
         })
         .catch((err) => {
           console.log(err);

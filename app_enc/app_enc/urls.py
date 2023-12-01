@@ -38,7 +38,7 @@ urlpatterns = [
     ###
     
     ## Path View Edit Consolidacion
-    path('solicitud_nota_credito/punto_venta/edit/<int:id>/', ViewNCPDV.notaPDVEdit,name="new_nc_pdv"),
+    path('solicitud_nota_credito/punto_venta/edit/<int:id>/<int:id_product>/', ViewNCPDV.notaPDVEdit,name="new_nc_pdv"),
     path('solicitud_nota_credito/financieros/edit/<int:id>/', ViewNCFinanciero.notaFinancieroEdit),
     path('solicitud_nota_credito/servicios/edit/<int:id>/', ViewNCServicios.notaServiciosEdit),
     ##
