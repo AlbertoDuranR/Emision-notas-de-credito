@@ -68,12 +68,11 @@
           </td>
           <td class="text-sm text-gray-600 text-center">
             <span
-              :class="{
-                'bg-yellow-500': item.ESTADO === 'PENDIENTE',
-                'bg-emerald-500': item.ESTADO === 'EMITIDO',
-                'bg-orange-500': item.ESTADO === 'ACTUALIZADO',
+            :class="{
+                'bg-emerald-500': item.ESTADO === 'PENDIENTE',
+                'bg-yellow-500': item.ESTADO === 'ACTUALIZADO',
                 'bg-red-500': item.ESTADO === 'OBSERVADO',
-                'bg-cyan-600': item.ESTADO == 'VALIDADO'
+                'bg-cyan-500': item.ESTADO == 'VALIDADO',
               }"
               class="px-2 py-1 text-white rounded"
             >

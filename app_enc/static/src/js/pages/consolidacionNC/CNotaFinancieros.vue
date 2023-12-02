@@ -108,12 +108,11 @@
           </td>
           <td class="text-sm text-gray-600 text-center">
             <span
-              :class="{
-                'bg-yellow-500': item.ESTADO === 'PENDIENTE',
-                'bg-emerald-500': item.ESTADO === 'EMITIDO',
-                'bg-orange-500': item.ESTADO === 'ACTUALIZADO',
+            :class="{
+                'bg-emerald-500': item.ESTADO === 'PENDIENTE',
+                'bg-yellow-500': item.ESTADO === 'ACTUALIZADO',
                 'bg-red-500': item.ESTADO === 'OBSERVADO',
-                'bg-cyan-600': item.ESTADO == 'VALIDADO'
+                'bg-cyan-500': item.ESTADO == 'VALIDADO',
               }"
               class="px-2 py-1 text-white rounded"
             >
@@ -123,7 +122,7 @@
           <td class="text-sm text-gray-600 text-center">
             <button
               v-if="item.ESTADO !== 'VALIDADO'"
-              @click="editarItem(item.ID_NC, item.ID_DETALLE)"
+              @click="editarItem(item.ID_NC)"
               class="bg-blue-0 text-white px-2 py-1 mr-2"
             >
               <svg
@@ -178,7 +177,7 @@ import axios from "axios";
 DataTable.use(DataTablesCore);
 </script>
 <script>
-import data from "../../../../dist/muestra.json";
+
 
 export default {
   name: "CNotaPDV",
@@ -191,20 +190,11 @@ export default {
     //console.log(this.lista_solicitudes);
   },
   methods: {
-    editarItem(item_nota, item_producto) {
-      console.log("Editar:", item_nota, item_producto);
-
-      this.$swal.fire({
-        title: "Cargando la ventana de edición",
-        text: "Espere por favor...",
-        icon: "info",
-        showConfirmButton: true,
-        allowOutsideClick: false,
-      });
+    editarItem(item_nota) {
 
       // Agregar las variables a la URL como parámetros de ruta
       this.$inertia.visit(
-        `/solicitud_nota_credito/punto_venta/edit/${item_nota}/${item_producto}`
+        `/solicitud_nota_credito/financieros/edit/${item_nota}/`
       );
     },
     eliminarItem(item) {
