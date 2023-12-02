@@ -63,10 +63,11 @@ class ViewNCPDV:
     
     ### Bandeja Punto de Venta
     def bnotaPDV(request):
-        lista = []
-        lista.append(12)
+        #lista = []
+        #lista.append(12)
+        lista_solicitudes= servicePDV.lista_solicitudes()
         return render(request,'BNotaPDV',props={
-            'array': lista
+            'lista_solicitudes':lista_solicitudes
         })
     
 
@@ -118,3 +119,21 @@ class ViewNCPDV:
             except Exception as e:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
+            
+     
+    ## validar
+    def validar_solicitud(request):
+        if request.method == "POST":
+            # Transform data
+            data = json.loads(request.body.decode('utf-8'))
+
+            try:
+                #print(data)
+                servicePDV.validate_solicitud(data)
+                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
+            except Exception as e:
+                print(e)
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+             #
+        else:
+            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)       

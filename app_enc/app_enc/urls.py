@@ -55,6 +55,12 @@ urlpatterns = [
     path('bandeja_nota_credito/financieros/', ViewNCFinanciero.bnotaFinanciero),
     path('bandeja_nota_credito/servicios/', ViewNCServicios.bnotaServicios),
     ###
+    
+    ## Path View validacion Consolidacion
+    path('solicitud_nota_credito/punto_venta/validar/', ViewNCPDV.validar_solicitud,name="new_nc_pdv"),
+    path('solicitud_nota_credito/financieros/validar/', ViewNCFinanciero.validar_solicitud),
+    path('solicitud_nota_credito/servicios/validar/', ViewNCServicios.notaServiciosEdit),
+    ##
 
     ## Create NC
     path('solicitud_nota_credito/punto_venta/create/', ViewNCPDV.create_solicitud_pdv),

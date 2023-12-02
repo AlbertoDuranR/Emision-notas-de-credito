@@ -34,10 +34,11 @@ class ViewNCServicios:
     
     ### Bandeja Servicios
     def bnotaServicios(request):
-        lista = []
-        lista.append(12)
+        # lista = []
+        # lista.append(12)
+        lista_solicitudes=ServiceNCServicios.lista_solicitudes()
         return render(request,'BNotaServicios',props={
-            'array': lista
+            'lista_solicitudes': lista_solicitudes
         })
     
     ### Crear solicitud Servicios
@@ -88,3 +89,21 @@ class ViewNCServicios:
             except Exception as e:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
+            
+
+    ## validar
+    def validar_solicitud(request):
+        if request.method == "POST":
+            # Transform data
+            data = json.loads(request.body.decode('utf-8'))
+
+            try:
+                #print(data)
+                serviceServ.validate_solicitud(data)
+                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
+            except Exception as e:
+                print(e)
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+             #
+        else:
+            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)       

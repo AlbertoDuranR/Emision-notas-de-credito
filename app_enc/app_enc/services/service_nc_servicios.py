@@ -7,20 +7,22 @@ class ServiceNCServicios:
 
     def lista_solicitudes():
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM listar_consolidado_ser()")
+            cursor.execute("SELECT * FROM consolidado_servicios")
             results = cursor.fetchall()
         lista_diccionarios = []
         for tupla in results:
             #print(tupla)
             diccionario = {
                 'ID_NC': tupla[0],
-                'ID_DETALLE': tupla[1],
-                'EMISION_COMPROBANTE': tupla[2],
-                'ESTADO': tupla[3],
-                'NRO': tupla[4],
-                'MOTIVO': tupla[5],
-                'IMPORTE_TOTAL': tupla[6],
-                'FECHA_CREAR_NC':tupla[7]
+                'FECHA_SOLICITUD': tupla[1],
+                'USUARIO_CREADOR': tupla[2],
+                'ESTABLECIMIENTO': tupla[3],
+                'FECHA_EMISION': tupla[4],
+                'TIPO': tupla[5],
+                'COMPROBANTE': tupla[6],
+                'ESTADO':tupla[7],
+                'IMPORTE_TOTAL':tupla[8],
+                'ACEPTA':tupla[9]
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -137,3 +139,15 @@ class ServiceNCServicios:
             if solicitud_existente:
                 solicitud_existente.sol_estado = estado
                 solicitud_existente.save()  
+
+    def validate_solicitud(data):
+        print(data)
+        
+        id = data['id']
+        estado = data['estado']
+        
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
+        if solicitud_existente:
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.sol_fecha_modificacion = datetime.now().date()
+            solicitud_existente.save() 

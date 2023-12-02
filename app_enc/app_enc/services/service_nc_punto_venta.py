@@ -11,7 +11,7 @@ class ServiceNCPDV:
     # vista
     def lista_solicitudes():
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM listar_consolidado_pdv()")
+            cursor.execute("SELECT * FROM consolidado_pdv")
             results = cursor.fetchall()
         lista_diccionarios = []
         for tupla in results:
@@ -19,15 +19,16 @@ class ServiceNCPDV:
             diccionario = {
                 'ID_NC': tupla[0],
                 'ID_DETALLE': tupla[1],
-                'CREADOR_USUARIO': tupla[2],
-                'TIPO_COMPROBANTE': tupla[3],
-                'FECHA_CREAR_NC': tupla[4],
-                'ESTADO': tupla[5],
-                'EMISION_COMPROBANTE': tupla[6],
-                'NRO': tupla[7],
-                'IMPORTE': tupla[8],
-                'IMPORTE_PRODUCTOS': tupla[9],
-                'METODO': tupla[10]
+                'FECHA_SOLICITUD': tupla[2],
+                'USUARIO_CREADOR': tupla[3],
+                'ESTABLECIMIENTO': tupla[4],
+                'FECHA_EMISION': tupla[5],
+                'TIPO': tupla[6],
+                'NRO_COMPROBANTE': tupla[7],
+                'ESTADO': tupla[8],
+                'METODO': tupla[9],
+                'MONTO_TOTAL': tupla[10],
+                'ACEPTA': tupla[11],
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -185,22 +186,7 @@ class ServiceNCPDV:
         importe_total = data["datos_documento"]["importe_total"]
         justificacion = data["detalle_solicitud"]["justificacion"]
         metodo = data["detalle_solicitud"]["metodo"]
-        
-        # Imprime todas las variables
-        print("Solicitud ID: ", sol_id)
-        print("Detalle ID: ", det_id)
-        print("Tipo NC: ", tipo_nc)
-        print("Usuario creador: ", usuario_creador)
-        print("Estado: ", estado)
-        print("Fecha de emisión: ", fecha_emision)
-        print("Fecha de solicitud: ", fecha_solicitud)
-        print("Número de comprobante: ", nro_comprobante)
-        print("Motivo: ", motivo)
-        print("Importe total: ", importe_total)
-        print("Justificación: ", justificacion)
-        print("Método: ", metodo)
-        
-       
+              
         
         # Producto
         codigo_descripcion = data["metodo_parcial_productos"]["value"]
@@ -291,6 +277,17 @@ class ServiceNCPDV:
             solicitud_existente.sol_estado = estado
             solicitud_existente.save()     
         
+    def validate_solicitud(data):
+        print(data)
+        
+        id = data['id']
+        estado = data['estado']
+        
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
+        if solicitud_existente:
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.sol_fecha_modificacion = datetime.now().date()
+            solicitud_existente.save()     
         
         
     

@@ -17,25 +17,24 @@ class ServiceNCFinanciero:
     
     def lista_solicitudes():
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM listar_consolidado_fin()")
+            cursor.execute("SELECT * FROM consolidado_financiero")
             results = cursor.fetchall()
         lista_diccionarios = []
         for tupla in results:
             #print(tupla)
             diccionario = {
                 'ID_NC': tupla[0],
-                'ID_DETALLE': tupla[1],
-                'ESTABLECIMIENTO': tupla[2],
-                'ESTADO': tupla[3],
-                'EMISION_COMPROBANTE': tupla[4],
-                'NRO': tupla[5],
-                'IMPORTE': tupla[6],
+                'FECHA_SOLICITUD': tupla[1],
+                'USUARIO_CREADOR': tupla[2],
+                'ESTABLECIMIENTO': tupla[3],
+                'FECHA_EMISION': tupla[4],
+                'TIPO_COMPROBANTE': tupla[5],
+                'NUMERO_COMPROBANTE': tupla[6],
                 'DESCUENTO': tupla[7],
                 'TOTAL_DESCUENTO': tupla[8],
-                'BOLETEO': tupla[9],
-                'FECHA_SOLICITUD': tupla[10],
-                'SOLICITANTE': tupla[11],
-                'LABORA_EN': tupla[12]
+                'ESTADO': tupla[9],
+                'IMPORTE_TOTAL': tupla[10],
+                'ACEPTA': tupla[11],
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -217,3 +216,13 @@ class ServiceNCFinanciero:
             if solicitud_existente:
                 solicitud_existente.sol_estado = estado
                 solicitud_existente.save()                  
+                
+    def validate_solicitud(data):
+        id = data['id']
+        estado = data['estado']
+        
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
+        if solicitud_existente:
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.sol_fecha_modificacion = datetime.now().date()
+            solicitud_existente.save()                 

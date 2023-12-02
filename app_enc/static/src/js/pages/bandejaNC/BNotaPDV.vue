@@ -29,16 +29,69 @@
             },
         }'>
             <thead>
-                <tr>
-                    <th class="text-sm text-gray-600 text-center">Id</th>
-                    <th class="text-sm text-gray-600 text-center">Name</th>
-                    <th class="text-sm text-gray-600 text-center">Position</th>
-                    <th class="text-sm text-gray-600 text-center">Salary</th>
-                    <th class="text-sm text-gray-600 text-center">Start Date</th>
-                    <th class="text-sm text-gray-600 text-center">Office</th>
-                    <th class="text-sm text-gray-600 text-center">Extn</th>
-                </tr>
-            </thead>
+        <tr>
+          <th class="text-sm text-gray-600 text-center">ID</th>
+          <th class="text-sm text-gray-600 text-center">ID_DETALLE</th>
+          <th class="text-sm text-gray-600 text-center">FECHA SOLICITUD</th>
+          <th class="text-sm text-gray-600 text-center">USUARIO CREADOR</th>
+          <th class="text-sm text-gray-600 text-center">SUCURSAL</th>
+          <th class="text-sm text-gray-600 text-center">FECHA DE E.N.C. ORIGEN</th>
+          <th class="text-sm text-gray-600 text-center">TIPO COMPROBANTE ORIGEN</th>
+          <th class="text-sm text-gray-600 text-center">N° COMPROBANTE ORIGEN</th>
+          <th class="text-sm text-gray-600 text-center">ESTADO</th>
+          <th class="text-sm text-gray-600 text-center">OPCIONES</th>
+          <th class="text-sm text-gray-600 text-center">METODO</th>
+          <th class="text-sm text-gray-600 text-center">IMPORTE TOTAL</th>
+          <th class="text-sm text-gray-600 text-center">ACEPTA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in lista_solicitudes" :key="item.ID_NC">
+          <td class="text-sm text-gray-600 text-center">{{ item.ID_NC }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.ID_DETALLE }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.FECHA_SOLICITUD }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.USUARIO_CREADOR }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.ESTABLECIMIENTO }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.FECHA_EMISION }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.TIPO }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.NRO_COMPROBANTE }}</td>
+          <td class="text-sm text-gray-600 text-center">
+            <span
+              :class="{
+                'bg-yellow-500': item.ESTADO === 'PENDIENTE',
+                'bg-emerald-500': item.ESTADO === 'EMITIDO',
+                'bg-orange-500': item.ESTADO === 'ACTUALIZADO',
+                'bg-red-500': item.ESTADO === 'OBSERVADO',
+                'bg-cyan-600': item.ESTADO == 'VALIDADO'
+              }"
+              class="px-2 py-1 text-white rounded"
+            >
+              {{ item.ESTADO }}
+            </span>
+          </td>
+          <td class="text-sm text-gray-600 text-center">
+            <button
+              @click="validar_item(item.ID_NC)"
+              class="bg-blue-0 text-white px-2 py-1 mr-2"
+            >
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"/>
+            </svg>
+
+
+            </button>
+            <button
+              @click="observar_item(item.ID_NC)"
+              class="bg-red-0 text-white px-2 py-1"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"/></svg>
+            </button>
+          </td>
+          <td class="text-sm text-gray-600 text-center">{{ item.METODO }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.MONTO_TOTAL }}</td>
+          <td class="text-sm text-gray-600 text-center">{{ item.ACEPTA }}</td>
+        </tr>
+      </tbody>
         </DataTable>
     </div>
     <!-- -- -->
@@ -46,33 +99,124 @@
 </template>
 <script setup>
 // Importando layouts
-import Header from '../../layouts/Header.vue'
+import Header from "../../layouts/Header.vue";
+import DataTable from "datatables.net-vue3";
+import DataTablesCore from "datatables.net";
+import axios from "axios";
 
-import DataTable from 'datatables.net-vue3';
-import DataTablesCore from 'datatables.net';
-
-DataTable.use(DataTablesCore)
+DataTable.use(DataTablesCore);
 //
 </script>
+
 <script>
-import data from "../../../../dist/muestra.json"
 export default {
-    name: "BNotaPDV",
-    components: { DataTable },
-    data() {
-        return {
-            columms: [
-                { data: 'id' },
-                { data: 'name' },
-                { data: 'position' },
-                { data: 'salary' },
-                { data: 'start_date' },
-                { data: 'office' },
-                { data: 'extn' },
-            ],
-            data_table: data["data"]
-        }
+  name: "BNotaPDV",
+  components: { DataTable },
+  props: {
+    lista_solicitudes: Array,
+  },
+  mounted() {
+    // Imprimir datos en la consola
+    //console.log(this.lista_solicitudes);
+  },
+  methods: {
+    validar_item(item_nota) {
+      console.log("Editar:", item_nota);
+
+      this.$swal
+        .fire({
+          title: "Advertencia!",
+          text: "¿Estás seguro de validar la solicitud?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, validar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            // Lógica para la confirmación
+            axios
+              .post("/solicitud_nota_credito/punto_venta/validar/", { id: item_nota, estado: 'VALIDADO' })
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "Validado",
+                  "El elemento ha sido validado.",
+                  "success"
+                );
+                // Recargar la página completa después de eliminar
+                location.reload();
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  title: "Error de Registro",
+                  text: "Error al validar la solicitud",
+                  icon: "error",
+                });
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+
+     
     },
-}
+    observar_item(item_nota) {
+      // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
+      //console.log("Eliminar item:", item);
+      this.$swal
+        .fire({
+          title: "Advertencia!",
+          text: "¿Estás seguro de observar la solicitud?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            // Lógica para la confirmación
+            axios
+              .post("/solicitud_nota_credito/punto_venta/validar/", { id: item_nota, estado: 'OBSERVADO' })
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "Observar",
+                  "El elemento ha sido observado y sera enviado a verificacion.",
+                  "success"
+                );
+                // Recargar la página completa después de eliminar
+                location.reload();
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  title: "Error de Registro",
+                  text: "Error al Observar datos",
+                  icon: "error",
+                });
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
+  },
+};
 </script>
 <style scope></style>
