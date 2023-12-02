@@ -278,14 +278,15 @@ class ServiceNCPDV:
             solicitud_existente.save()     
         
     def validate_solicitud(data):
-        print(data)
         
         id = data['id']
         estado = data['estado']
+        observacion = data['observacion']
         
         solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
         if solicitud_existente:
             solicitud_existente.sol_estado = estado
+            solicitud_existente.sol_observacion = observacion
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()
             solicitud_existente.save()     
         
