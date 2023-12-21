@@ -5,6 +5,7 @@ from ..models.model_solicitante_detalle import SolicitanteDet
 from ..models.model_market import Market
 from datetime import datetime
 from django.db import connection
+import requests
 
 class ServiceNCFinanciero:
 
@@ -73,7 +74,7 @@ class ServiceNCFinanciero:
         # Solicitud NC
         tipo_nc = "FIN"
         usuario_creador = 1 ##
-        estado = "EMITIDO"
+        estado = "PENDIENTE"
         fecha_solicitud = data["detalle_solicitante"]["fecha_solicitud"]['date']
         fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
         
@@ -240,4 +241,27 @@ class ServiceNCFinanciero:
         if solicitud_existente:
             solicitud_existente.sol_estado = estado
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()
-            solicitud_existente.save()                 
+            solicitud_existente.save()
+            
+    def fetch_reniec_data(data):
+        
+       
+        dni = data["dni"]
+        base_url = "https://api.dniruc.com/api/search/dni/"
+        api_key = "Live_c386df4ae4f0f64f4c5ab574e5a71a59f22e08b6"  # Reemplaza con tu clave API
+
+        url = f"{base_url}{dni}/{api_key}"
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+
+            data = response.json()
+            
+            #print(data)
+            return data["data"]
+
+        except requests.exceptions.RequestException as error:
+            print(f"Error en la solicitud: {error}")
+            return None  # Puedes manejar el error de otra manera si es necesario
+                    

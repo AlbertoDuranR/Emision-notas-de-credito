@@ -113,6 +113,8 @@
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
               v-model="detalle_solicitante.dni"
+              @input="handleDniInput"
+              maxlength="8" 
             />
           </div>
           <div class="space-y-1 py-2">
@@ -121,6 +123,7 @@
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
               v-model="detalle_solicitante.ap_materno"
+              readonly
             />
           </div>
           <div class="space-y-1 py-2">
@@ -129,6 +132,7 @@
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
               v-model="detalle_solicitante.ap_paterno"
+              readonly
             />
           </div>
           <div class="space-y-1 py-2">
@@ -137,6 +141,7 @@
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
               v-model="detalle_solicitante.nombres"
+              readonly
             />
           </div>
           <label class="typo__label text-sm">Lugar donde labora:</label>
@@ -220,6 +225,42 @@ export default {
   },
   methods: {
     //
+
+    handleDniInput() {
+      if (this.detalle_solicitante.dni.length === 8) {
+        // Execute the query to RENIEC
+        this.queryReniec();
+        //console.log("CUMPLIO 8");
+      }else{
+          this.detalle_solicitante.ap_materno = ""
+          this.detalle_solicitante.ap_paterno = ""
+          this.detalle_solicitante.nombres = ""
+      }
+    },
+    queryReniec() {
+      let jsonString = {
+        dni : this.detalle_solicitante.dni
+      }
+
+      axios.post("/solicitud_nota_credito/financieros/reniec/", jsonString)
+        .then(data => {
+          // Handle the RENIEC response
+          console.log(data);
+          let ap = data["data"]["ap_paterno"]
+          let am = data["data"]["ap_materno"]
+          let nombres = data["data"]["nombres"]
+
+          //this.reniecData.dni = data.nombres || "";
+          this.detalle_solicitante.ap_materno = am
+          this.detalle_solicitante.ap_paterno = ap
+          this.detalle_solicitante.nombres = nombres
+
+        })
+        .catch(error => {
+          console.error(error);
+          // Handle the error if needed
+        });
+    },
     enviarSolicitud() {
       let jsonString = JSON.stringify(this.$data);
       axios

@@ -51,7 +51,7 @@ class ServiceNCServicios:
         # Solicitud NC
         tipo_nc = "SER"
         usuario_creador=1 ##
-        estado = "EMITIDO"
+        estado = "PENDIENTE"
         fecha_solicitud = data["datos_documento"]["fecha_emision_nc"]['date']
         fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
 
@@ -165,3 +165,4 @@ class ServiceNCServicios:
             solicitud_existente.sol_estado = estado
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()
             solicitud_existente.save() 
+

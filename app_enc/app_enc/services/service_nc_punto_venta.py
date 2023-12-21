@@ -76,10 +76,11 @@ class ServiceNCPDV:
 
     # huardar solicitud - púntos de venta
     def save_solicitud(data):
+
         # Solicitud NC
         tipo_nc = "PDV"
         usuario_creador = 1 ##
-        estado = "EMITIDO"
+        estado = "PENDIENTE"
         fecha_emision = data["datos_documento"]["fecha_emsion"]['date']
         fecha_emision = datetime.strptime(fecha_emision,'%Y-%m-%dT%H:%M:%S.%fZ')
         # Detalle 
@@ -87,19 +88,20 @@ class ServiceNCPDV:
         fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
         nro_comprobante = data["datos_documento"]["nro_comprobante"]
         motivo = data["detalle_solicitud"]["motivo"]
-        importe_total = data["datos_documento"]["importe_total"]
+        importe_total = float(data["datos_documento"]["importe_total"])
         justificacion = data["detalle_solicitud"]["justificacion"]
         metodo = data["detalle_solicitud"]["metodo"]
         # Producto
         codigo_descripcion = data["metodo_parcial_productos"]["value"]
         cont_productos=False
+        
         if codigo_descripcion is not None and metodo=="Parcial":
             if len(codigo_descripcion) != 0:
                 monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
                 ##
                 monto_total_productos = 0
                 for x in monto_producto:
-                    monto_total_productos = monto_total_productos + int(x["value"])
+                    monto_total_productos = monto_total_productos + float(x["value"])
                 
                 cont_productos=True
                 print(monto_total_productos)
@@ -108,8 +110,8 @@ class ServiceNCPDV:
         elif metodo == "Parcial" and codigo_descripcion is None:
             raise TypeError("Campo necesario vacio.")
         
-        #print(fecha_emision.date())
-        # Guardando
+        print(fecha_emision.date())
+        #Guardando
         solicitud_nc = SolicitudNC(
             sol_fecha_solicitud=fecha_solicitud.date(),
             sol_tipo_nc=tipo_nc,
@@ -120,6 +122,7 @@ class ServiceNCPDV:
         solicitud_nc.save()
         #
         if cont_productos: #Si contiene productos
+            print("Si contiene productos")
             detalle = DetalleSolicitud(
                 det_fecha_emision=fecha_emision.date(),
                 det_nro_comprobante=nro_comprobante,
@@ -149,9 +152,14 @@ class ServiceNCPDV:
                     dpro_monto_total= float(monto_producto[x]["value"]),
                     det_id=detalle.det_id
                 ))
-            ##
-            # print("aquiiii")
-            # print(producto_detalle)
+                
+                print("PRECIO")
+                print(float(precios[x]["value"]))
+                print("MONTO TOTAL")
+                print(float(monto_producto[x]["value"]))
+            #
+            print("aquiiii")
+            print(producto_detalle)
             ProductoDetalle.objects.bulk_create(producto_detalle)
         else: #No contiene productos
             detalle = DetalleSolicitud(

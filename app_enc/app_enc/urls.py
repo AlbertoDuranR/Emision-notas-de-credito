@@ -79,6 +79,9 @@ urlpatterns = [
     path('solicitud_nota_credito/servicios/edit/', ViewNCServicios.edit_solicitud_servicios),
     ##
     
+    
+    path('solicitud_nota_credito/financieros/reniec/', ViewNCFinanciero.obtener_datos_personales),
+    
     ###
     path('admin/', admin.site.urls),
     path('oauth2/', include('django_auth_adfs.urls')),

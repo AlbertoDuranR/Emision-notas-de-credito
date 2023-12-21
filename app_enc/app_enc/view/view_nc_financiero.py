@@ -132,3 +132,16 @@ class ViewNCFinanciero:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
              #    
+             
+    def obtener_datos_personales(request):
+        if request.method == "POST":
+            # Transform data
+            data = json.loads(request.body.decode('utf-8'))
+
+            try:
+                #print(data)
+                response = serviceFinanciero.fetch_reniec_data(data)
+                return JsonResponse(response, status=200)
+            except Exception as e:
+                print(e)
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
