@@ -26,9 +26,11 @@ class ServiceNCPDV:
                 'TIPO': tupla[6],
                 'NRO_COMPROBANTE': tupla[7],
                 'ESTADO': tupla[8],
-                'METODO': tupla[9],
-                'MONTO_TOTAL': tupla[10],
-                'ACEPTA': tupla[11],
+                'FECHA_CREACION': tupla[9],
+                'METODO': tupla[10],
+                'MONTO_TOTAL': tupla[11],
+                'ACEPTA': tupla[12],
+                'OBSERVACION': tupla[13],
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -164,6 +166,18 @@ class ServiceNCPDV:
                 sol_id=solicitud_nc.sol_id
             )
             detalle.save()
+           
+    def save_observacion(data):
+        sol_id = int(data["id"])
+        observacion = data["observacion"]
+        estado = "OBSERVADO"
+        
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+        if solicitud_existente:
+            # Actualizar el registro existente en SolicitudNC
+            solicitud_existente.sol_observacion = observacion
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.save()        
             
     # Actualizar solicitud - puntos de venta
     def edit_solicitud(data):

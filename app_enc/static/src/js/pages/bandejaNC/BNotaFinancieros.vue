@@ -47,6 +47,7 @@
           <th class="text-sm text-gray-600 text-center">DESCUENTO TOTAL</th>
           <th class="text-sm text-gray-600 text-center">ESTADO</th>
           <th class="text-sm text-gray-600 text-center">OPCIONES</th>
+          <th class="text-sm text-gray-600 text-center">FECHA CREACIÓN SOLI.</th>
           <th class="text-sm text-gray-600 text-center">
             IMPORTE NOTA DE CREDITO
           </th>
@@ -111,6 +112,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"/></svg>
             </button>
           </td>
+          <td class="text-sm text-gray-600 text-center">{{ item.FECHA_CREACION }}</td>
           <td class="text-sm text-gray-600 text-center">
             {{ item.IMPORTE_TOTAL }}
           </td>
@@ -199,42 +201,58 @@ export default {
      
     },
     observar_item(item_nota) {
-      // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
-      //console.log("Eliminar item:", item);
       this.$swal
         .fire({
-          title: "Advertencia!",
-          text: "¿Estás seguro de observar la solicitud?",
+          title: "Observar solicitud",
+          text: "Ingresa la observación",
           icon: "warning",
           showCancelButton: true,
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
-          confirmButtonText: "Sí, eliminar",
+          confirmButtonText: "Sí, observar",
           cancelButtonText: "Cancelar",
+          input: "textarea", // Cambiar a un campo de entrada de texto tipo textarea
+          inputAttributes: {
+            placeholder: "Describe la observación", // Título del campo de entrada
+            rows: 3, // Altura del textarea (puedes ajustar este valor según tus necesidades)
+          },
         })
         .then((result) => {
           if (result.isConfirmed) {
-            // Lógica para la confirmación
-            axios
-              .post("/solicitud_nota_credito/financieros/validar/", { id: item_nota, estado: 'OBSERVADO' })
-              .then((response) => {
-                console.log(response);
-                this.$swal.fire(
-                  "Observar",
-                  "El elemento ha sido observado y sera enviado a verificacion.",
-                  "success"
-                );
-                // Recargar la página completa después de eliminar
-                location.reload();
-              })
-              .catch((err) => {
-                console.log(err);
-                Swal.fire({
-                  title: "Error de Registro",
-                  text: "Error al Observar datos",
-                  icon: "error",
-                });
+            console.log(result);
+            // Verificar si se ingresó un texto
+            if (result.value == "" || result.value === null) {
+              this.$swal.fire({
+                title: "Error",
+                text: "Debes ingresar una razón para observar la solicitud.",
+                icon: "error",
               });
+            } else {
+              // Lógica para la observación
+              axios
+                .post("/solicitud_nota_credito/financieros/observacion/", {
+                  id: item_nota,
+                  observacion: result.value, // Agregar la razón al objeto que envías al servidor
+                })
+                .then((response) => {
+                  console.log(response);
+                  this.$swal.fire(
+                    "Observar",
+                    "El elemento ha sido observado y será enviado a verificación.",
+                    "success"
+                  );
+                  // Recargar la página completa después de observar
+                  location.reload();
+                })
+                .catch((err) => {
+                  console.log(err);
+                  this.$swal.fire({
+                    title: "Error de Registro",
+                    text: "Error al Observar datos",
+                    icon: "error",
+                  });
+                });
+            }
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
             // Lógica para la cancelación
             this.$swal.fire(
@@ -245,6 +263,13 @@ export default {
           }
         });
     },
+    ver_observacion(observacion){
+      this.swal.fire({
+        title: 'Observación',
+        text: observacion,
+        icon: 'info',
+      });
+    }
   },
 };
 </script>

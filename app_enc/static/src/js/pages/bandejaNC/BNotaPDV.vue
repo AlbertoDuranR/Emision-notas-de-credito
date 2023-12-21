@@ -72,6 +72,7 @@
           </th>
           <th class="text-sm text-gray-600 text-center">ESTADO</th>
           <th class="text-sm text-gray-600 text-center">OPCIONES</th>
+          <th class="text-sm text-gray-600 text-center">FECHA CREACIÓN SOLI.</th>
           <th class="text-sm text-gray-600 text-center">METODO</th>
           <th class="text-sm text-gray-600 text-center">IMPORTE TOTAL</th>
           <th class="text-sm text-gray-600 text-center">ACEPTA</th>
@@ -144,6 +145,7 @@
               </svg>
             </button>
           </td>
+          <td class="text-sm text-gray-600 text-center">{{ item.FECHA_CREACION }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.METODO }}</td>
           <td class="text-sm text-gray-600 text-center">
             {{ item.MONTO_TOTAL }}
@@ -259,9 +261,8 @@ export default {
             } else {
               // Lógica para la observación
               axios
-                .post("/solicitud_nota_credito/punto_venta/validar/", {
+                .post("/solicitud_nota_credito/punto_venta/observacion/", {
                   id: item_nota,
-                  estado: "OBSERVADO",
                   observacion: result.value, // Agregar la razón al objeto que envías al servidor
                 })
                 .then((response) => {

@@ -33,8 +33,10 @@ class ServiceNCFinanciero:
                 'DESCUENTO': tupla[7],
                 'TOTAL_DESCUENTO': tupla[8],
                 'ESTADO': tupla[9],
-                'IMPORTE_TOTAL': tupla[10],
-                'ACEPTA': tupla[11],
+                'FECHA_CREACION': tupla[10],
+                'IMPORTE_TOTAL': tupla[11],
+                'ACEPTA': tupla[12],
+                'OBSERVACION': tupla[13],
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -125,7 +127,20 @@ class ServiceNCFinanciero:
             sol_id=solicitud_nc.sol_id
         )
         detalle_sol.save()
+    
+    def save_observacion(data):
+        sol_id = int(data["id"])
+        observacion = data["observacion"]
+        estado = "OBSERVADO"
         
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+        if solicitud_existente:
+            # Actualizar el registro existente en SolicitudNC
+            solicitud_existente.sol_observacion = observacion
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.save()
+    
+      
     def edit_solicitud(data):
         # Solicitud NC
         sol_id = int(data["datos_documento"]["id_nc"])

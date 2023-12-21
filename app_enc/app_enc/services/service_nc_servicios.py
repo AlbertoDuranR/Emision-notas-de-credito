@@ -21,8 +21,10 @@ class ServiceNCServicios:
                 'TIPO': tupla[5],
                 'COMPROBANTE': tupla[6],
                 'ESTADO':tupla[7],
-                'IMPORTE_TOTAL':tupla[8],
-                'ACEPTA':tupla[9]
+                'FECHA_CREACION':tupla[8],
+                'IMPORTE_TOTAL':tupla[9],
+                'ACEPTA':tupla[10],
+                'OBSERVACION': tupla[11],
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -78,6 +80,18 @@ class ServiceNCServicios:
             sol_id=solicitud_nc.sol_id
         )
         detalle_sol.save()
+
+    def save_observacion(data):
+        sol_id = int(data["id"])
+        observacion = data["observacion"]
+        estado = "OBSERVADO"
+        
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+        if solicitud_existente:
+            # Actualizar el registro existente en SolicitudNC
+            solicitud_existente.sol_observacion = observacion
+            solicitud_existente.sol_estado = estado
+            solicitud_existente.save()
         
     def edit_solicitud(data):
         # Solicitud NC

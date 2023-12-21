@@ -118,3 +118,17 @@ class ViewNCFinanciero:
              #
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)       
+
+    def observar_solicitud(request):
+        if request.method == "POST":
+            # Transform data
+            data = json.loads(request.body.decode('utf-8'))
+
+            try:
+                #print(data)
+                serviceFinanciero.save_observacion(data)
+                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
+            except Exception as e:
+                print(e)
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+             #    

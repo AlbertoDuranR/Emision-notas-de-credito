@@ -68,6 +68,11 @@ urlpatterns = [
     path('solicitud_nota_credito/servicios/create/', ViewNCServicios.create_solicitud_servicios),
     ###
     
+    ## Create Observacion
+    path('solicitud_nota_credito/punto_venta/observacion/', ViewNCPDV.observar_solicitud_pdv),
+    path('solicitud_nota_credito/financieros/observacion/', ViewNCFinanciero.observar_solicitud),
+    path('solicitud_nota_credito/servicios/observacion/', ViewNCServicios.observar_solicitud),
+    
     ## Update NC
     path('solicitud_nota_credito/punto_venta/edit/', ViewNCPDV.edit_solicitud_pdv),
     path('solicitud_nota_credito/financieros/edit/', ViewNCFinanciero.edit_solicitud_financieras),

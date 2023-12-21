@@ -136,4 +136,18 @@ class ViewNCPDV:
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
              #
         else:
-            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)       
+            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)   
+        
+    def observar_solicitud_pdv(request):
+        if request.method == "POST":
+            # Transform data
+            data = json.loads(request.body.decode('utf-8'))
+
+            try:
+                #print(data)
+                servicePDV.save_observacion(data)
+                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
+            except Exception as e:
+                print(e)
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+             #    
