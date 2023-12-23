@@ -99,45 +99,57 @@ class Acepta_Bot_Selenium:
             time.sleep(10)
             self.driver.quit()
             print("Sesión cerrada")
+    
+    def cambiar_pestaña(self, numero_pestaña):
+        # Cambiar a la pestaña especificada
+        self.driver.find_element(By.XPATH, f"//nav/ul[@class='pagination pagination-lg']/li/a[text()='{numero_pestaña}']").click()
 
-    def imprimir_datos_tabla(self):  # Agrega 'self' como primer parámetro
+    def imprimir_datos_tabla(self):
         try:
-            
-            
             # Encontrar todos los elementos <li> dentro de la estructura
             elementos_li = self.driver.find_elements(By.XPATH, "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li")
 
-
             # Imprimir la cantidad de elementos <li>
             print(f"La cantidad de elementos <li> es: {len(elementos_li)}")
-            
+
             # Imprimir cada elemento <li>
             for elemento in elementos_li:
                 print(elemento.text)
 
-            
-            xpath_tabla = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
-            # Esperar a que la tabla esté presente
-            espera = WebDriverWait(self.driver, 10)
-            espera.until(EC.presence_of_element_located((By.XPATH, xpath_tabla)))
+            # Lista para almacenar todos los datos de las pestañas
+            datos_totales = []
 
-            # Extraer datos de la tabla
-            tabla = self.driver.find_element(By.XPATH, xpath_tabla)
-            
-            # Lista para almacenar los datos
-            datos = []
+            # Iterar a través de todas las pestañas
+            for numero_pestaña in range(1, len(elementos_li) - 1):
+                # Cambiar a la pestaña correspondiente
+                self.cambiar_pestaña(numero_pestaña)
 
-            # Recorrer filas y columnas
-            for fila in tabla.find_elements(By.TAG_NAME, 'tr'):
-                columnas = fila.find_elements(By.TAG_NAME, 'td')
+                xpath_tabla = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
+                
+                # Esperar a que la tabla esté presente
+                espera = WebDriverWait(self.driver, 10)
+                espera.until(EC.presence_of_element_located((By.XPATH, xpath_tabla)))
 
-                # Imprimir las columnas 1, 3 y 7
-                if len(columnas) > 7:  # Asegurarse de que hay suficientes columnas
-                    # print(columnas[0].text, columnas[3].text, columnas[7].text)
-                    datos.append((columnas[3].text, columnas[7].text))
-            
+                # Extraer datos de la tabla
+                tabla = self.driver.find_element(By.XPATH, xpath_tabla)
+
+                # Lista para almacenar los datos de la pestaña actual
+                datos_pestaña = []
+
+                # Recorrer filas y columnas
+                for fila in tabla.find_elements(By.TAG_NAME, 'tr'):
+                    columnas = fila.find_elements(By.TAG_NAME, 'td')
+
+                    # Imprimir las columnas 1, 3 y 7
+                    if len(columnas) > 7:  # Asegurarse de que hay suficientes columnas
+                        # print(columnas[0].text, columnas[3].text, columnas[7].text)
+                        datos_pestaña.append((columnas[3].text, columnas[7].text))
+
+                # Agregar los datos de la pestaña actual a la lista total
+                datos_totales.extend(datos_pestaña)
+
             # Convertir la lista de datos en un DataFrame
-            df = pd.DataFrame(datos, columns=['Estado', 'NRO CPE'])
+            df = pd.DataFrame(datos_totales, columns=['Estado', 'NRO CPE'])
 
             # Imprimir el DataFrame
             print(df)
