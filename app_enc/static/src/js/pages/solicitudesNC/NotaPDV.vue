@@ -341,7 +341,8 @@ export default {
       axios.post('/solicitud_nota_credito/punto_venta/create/',jsonString)
         .then(
         response =>{
-        console.log(response)
+        //console.log(response)
+        location.reload();
         notify({
           title:"Registro Exitoso",
           text: ""+response.data.message

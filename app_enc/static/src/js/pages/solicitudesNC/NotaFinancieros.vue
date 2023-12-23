@@ -266,7 +266,8 @@ export default {
       axios
         .post("/solicitud_nota_credito/financieros/create/", jsonString)
         .then((response) => {
-          console.log(response);
+          //console.log(response);
+          location.reload();
           notify({
             title: "Registro Exitoso",
             text: "" + response.data.message,
