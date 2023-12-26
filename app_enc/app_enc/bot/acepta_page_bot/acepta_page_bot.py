@@ -1,3 +1,4 @@
+# acepta_functions.py
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,159 +8,177 @@ import time
 import pandas as pd
 
 
-class Acepta_Bot_Selenium:
-    def __init__(self) -> None:
-        self.url = "https://escritorio.acepta.pe/"
-        self.usuario = "wilfredo.caceres@terranovatrading.com.pe"
-        self.contrasena = "118499544"
+class AceptaFunctions:
+    def __init__(self):
+        
+        # Configuración del navegador
         self.driver = webdriver.Chrome()
-        self.wait =  WebDriverWait(self.driver, 10)
+        self.wait = WebDriverWait(self.driver , 10)
         self.driver.maximize_window()
 
+        # Credenciales
+        self.usuario = "wilfredo.caceres@terranovatrading.com.pe"
+        self.contrasena = "118499544"
+
+        # XPaths
+        self.xpath_opcion_emitido = "/html/body/div[8]/div[1]/aside/ul/li[2]/a"
+        self.xpath_desde = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[3]/input"
+        self.xpath_hasta = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[5]/input"
+        self.xpath_buscar = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[9]/input"
+        self.xpath_tabla_opciones = '/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table'
+        self.xpath_tabla_resultados = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
+        self.xpath_nota_credito = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table/tbody/tr[4]/td[10]/a"
+        self.xpath_paginacion = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li"
+        
     def iniciar_sesion(self):
         try:
-            self.driver.get(self.url)
-
-            # Introducir el nombre de usuario y contraseña
-            self.wait.until(EC.element_to_be_clickable((By.ID, "loginrut"))).send_keys(
-                self.usuario
-            )
-            self.driver.find_element(By.NAME, "LoginForm[password]").send_keys(
-                self.contrasena
-            )
-
-            # Hacer clic en el botón de ingresar
-            self.driver.find_element(By.CLASS_NAME, "btn-acepta").click()
-
+            self.driver.get("https://escritorio.acepta.pe/")
+            self._ingresar_valor_en_input_id("loginrut", self.usuario)
+            self._ingresar_valor_en_input_name("LoginForm[password]", self.contrasena)
+            self._hacer_clic_class_name("btn-acepta")
         except (WebDriverException, NoSuchElementException) as e:
             print(f"Error al iniciar sesión: {str(e)}")
 
-    def seleccionar_opcion_emitido(self):
+    def seleccionar_opcion(self):
         try:
-            xpath = "/html/body/div[8]/div[1]/aside/ul/li[2]/a"
-            elemento = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+            elemento = self.wait.until(EC.element_to_be_clickable((By.XPATH, self.xpath_opcion_emitido)))
             elemento.click()
         except Exception as e:
             print(f"Error al clickear en la opción: {str(e)}")
 
-    def seleccionar_opciones(self):
+    def seleccionar_opciones(self, desde, hasta):
         try:
-            # Seleccionar periodo desde
-            xpath_desde = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[3]/input"
-            elemento_desde = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath_desde)))
-            elemento_desde.send_keys("01122023")
+            self._ingresar_valor_en_input_xpath(self.xpath_desde, desde)
+            self._ingresar_valor_en_input_xpath(self.xpath_hasta, hasta)
 
-            # Seleccionar periodo hasta
-            xpath_hasta = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[5]/input"
-            elemento_hasta = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath_hasta)))
-            elemento_hasta.send_keys("20122023")
+            self._hacer_clic_xpath(self.xpath_buscar)
 
-            # Click en el botón de búsqueda
-            xpath_buscar = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[9]/input"
-            elemento_buscar = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath_buscar)))
-            elemento_buscar.click()
-           
-            time.sleep(5)
-           
-            tabla_xpath = '/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table'
-            self.wait.until(EC.presence_of_element_located((By.XPATH, tabla_xpath)))
+            # Reemplazar time.sleep(5) con una espera explícita para que el elemento esté presente y sea clickeable
+            espera = WebDriverWait(self.driver, 10)
+            espera.until(EC.element_to_be_clickable((By.XPATH, self.xpath_nota_credito))).click()
 
-            # Extraer datos de la tabla
-            tabla = self.driver.find_element(By.XPATH, tabla_xpath)
-
-            # Recorrer filas y columnas
-            indice_fila_objetivo = 3  # Tercera fila (indexación basada en cero)
-            indice_columna_objetivo = 9  # Décima columna (indexación basada en cero)
-            elemento_objetivo  = None
-
-            for i, fila in enumerate(tabla.find_elements(By.TAG_NAME, 'tr')):
-                # Verificar si es la fila objetivo
-                if i == indice_fila_objetivo:
-                    columnas = fila.find_elements(By.TAG_NAME, 'td')
-
-                    # Verificar si la columna objetivo existe
-                    if len(columnas) > indice_columna_objetivo:
-                        elemento_objetivo = columnas[indice_columna_objetivo].find_element(By.TAG_NAME, 'a')
-                        break
-
-            # Imprimir el valor si se encuentra
-            if elemento_objetivo is not None:
-                elemento_objetivo.click()
-                print("Valor en la tercera fila, décima columna:")
-            else:
-                print("No se encontró el valor en la tercera fila, décima columna")
-                    
-            time.sleep(5)
-
+            # Reemplazar time.sleep(3) con una espera explícita si es necesario después de hacer clic en nota_credito
+            # espera.until(...)  # Agregar espera explícita si es necesario
         except Exception as e:
-            print(f"Error al realizar la operación: {str(e)}")
+            print(f"Error al seleccionar opciones: {str(e)}")
 
-                
-        def cerrar_sesion(self):
-            time.sleep(10)
-            self.driver.quit()
-            print("Sesión cerrada")
-    
-    def cambiar_pestaña(self, numero_pestaña):
-        # Cambiar a la pestaña especificada
-        self.driver.find_element(By.XPATH, f"//nav/ul[@class='pagination pagination-lg']/li/a[text()='{numero_pestaña}']").click()
-
-    def imprimir_datos_tabla(self):
+    def extraer_estados(self):
         try:
-            # Encontrar todos los elementos <li> dentro de la estructura
-            elementos_li = self.driver.find_elements(By.XPATH, "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li")
+            # Utilizar WebDriverWait en lugar de time.sleep
+            espera = WebDriverWait(self.driver, 10)
 
-            # Imprimir la cantidad de elementos <li>
-            print(f"La cantidad de elementos <li> es: {len(elementos_li)}")
-
-            # Imprimir cada elemento <li>
-            for elemento in elementos_li:
-                print(elemento.text)
-
-            # Lista para almacenar todos los datos de las pestañas
+            # Esperar a que la paginación esté presente
+            paginacion_li = espera.until(EC.presence_of_all_elements_located((By.XPATH, self.xpath_paginacion)))
+            # Lista para almacenar los datos
             datos_totales = []
-
-            # Iterar a través de todas las pestañas
-            for numero_pestaña in range(1, len(elementos_li) - 1):
-                # Cambiar a la pestaña correspondiente
-                self.cambiar_pestaña(numero_pestaña)
-
-                xpath_tabla = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
-                
-                # Esperar a que la tabla esté presente
+            
+            if not paginacion_li or len(paginacion_li) == 1:
                 espera = WebDriverWait(self.driver, 10)
-                espera.until(EC.presence_of_element_located((By.XPATH, xpath_tabla)))
-
+                espera.until(EC.presence_of_element_located((By.XPATH, self.xpath_tabla_resultados)))
+                
                 # Extraer datos de la tabla
-                tabla = self.driver.find_element(By.XPATH, xpath_tabla)
-
-                # Lista para almacenar los datos de la pestaña actual
-                datos_pestaña = []
+                tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
 
                 # Recorrer filas y columnas
-                for fila in tabla.find_elements(By.TAG_NAME, 'tr'):
+                for fila in tabla_resultado.find_elements(By.TAG_NAME, 'tr'):
                     columnas = fila.find_elements(By.TAG_NAME, 'td')
 
-                    # Imprimir las columnas 1, 3 y 7
-                    if len(columnas) > 7:  # Asegurarse de que hay suficientes columnas
-                        # print(columnas[0].text, columnas[3].text, columnas[7].text)
-                        datos_pestaña.append((columnas[3].text, columnas[7].text))
+                    if len(columnas) > 7:  
+                        datos_totales.append((columnas[3].text, columnas[7].text))
+            else:
+                
+                 for numero_pestaña in range(1, len(paginacion_li) - 1):
+                    # Cambiar a la pestaña correspondiente
+                    self.cambiar_pestaña(numero_pestaña)
+                    
+                    # Esperar a que la tabla esté presente
+                    espera = WebDriverWait(self.driver, 10)
+                    espera.until(EC.presence_of_element_located((By.XPATH, self.xpath_tabla_resultados)))
+                    
+                    # Extraer datos de la tabla
+                    tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
+                    
+                    # Lista para almacenar los datos de la pestaña actual
+                    datos_pestaña = []
+                    
+                     # Recorrer filas y columnas
+                    for fila in tabla_resultado.find_elements(By.TAG_NAME, 'tr'):
+                        columnas = fila.find_elements(By.TAG_NAME, 'td')
 
-                # Agregar los datos de la pestaña actual a la lista total
-                datos_totales.extend(datos_pestaña)
+                        # Imprimir las columnas 1, 3 y 7
+                        if len(columnas) > 7:  # Asegurarse de que hay suficientes columnas
+                            # print(columnas[0].text, columnas[3].text, columnas[7].text)
+                            datos_pestaña.append((columnas[3].text, columnas[7].text))
+
+                    # Agregar los datos de la pestaña actual a la lista total
+                    datos_totales.extend(datos_pestaña)
 
             # Convertir la lista de datos en un DataFrame
             df = pd.DataFrame(datos_totales, columns=['Estado', 'NRO CPE'])
 
             # Imprimir el DataFrame
-            print(df)
-
+            print(df)       
+                
         except Exception as e:
-            print(f"Error al imprimir datos de la tabla: {str(e)}")
+            print(f"Error al imprimir datos de la tabla: {str(e)}")    
+               
+    def cambiar_pestaña(self, numero_pestaña):
+        # Cambiar a la pestaña especificada
+        self.driver.find_element(By.XPATH, f"//nav/ul[@class='pagination pagination-lg']/li/a[text()='{numero_pestaña}']").click()
+    
+    def cerrar_sesion(self):
+        time.sleep(10)
+        self.driver.quit()
+        print("Sesión cerrada")
+
+    # Funciones auxiliares
+    def _ingresar_valor_en_input_id(self, xpath, valor):
+        elemento = self.wait.until(EC.element_to_be_clickable((By.ID, xpath)))
+        elemento.clear()
+        elemento.send_keys(valor)
+    
+    def _ingresar_valor_en_input_name(self, xpath, valor):
+        elemento = self.wait.until(EC.element_to_be_clickable((By.NAME, xpath)))
+        elemento.clear()
+        elemento.send_keys(valor)
+        
+    def _ingresar_valor_en_input_xpath(self, xpath, valor):
+        elemento = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+        elemento.clear()
+        elemento.send_keys(valor)
+        
+    def _hacer_clic_class_name(self, class_name):
+        elemento = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, class_name)))
+        elemento.click()
+    
+    def _hacer_clic_xpath(self, class_name):
+        elemento = self.wait.until(EC.element_to_be_clickable((By.XPATH, class_name)))
+        elemento.click()
+
+    def _extraer_datos_tabla(self, tabla):
+        datos_totales = []
+
+        for fila in tabla.find_elements(By.TAG_NAME, 'tr'):
+            columnas = fila.find_elements(By.TAG_NAME, 'td')
+
+            if len(columnas) > 7:
+                datos_totales.append((columnas[3].text, columnas[7].text))
+
+        return datos_totales
+    
 
 
-bot = Acepta_Bot_Selenium()
-bot.iniciar_sesion()
-bot.seleccionar_opcion_emitido()
-bot.seleccionar_opciones()
-bot.imprimir_datos_tabla()  
+
+desde = "01122023"
+hasta = "15122023"
+
+
+
+# Crear instancia de AceptaFunctions
+acepta_bot = AceptaFunctions()
+
+# Ejecutar acciones
+acepta_bot.iniciar_sesion()
+acepta_bot.seleccionar_opcion()
+acepta_bot.seleccionar_opciones(desde, hasta)
+acepta_bot.extraer_estados()
