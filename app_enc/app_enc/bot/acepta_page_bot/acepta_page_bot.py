@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 import time
 import pandas as pd
+from acepta_functions import AuxiliaryFunctions
 
 
 class AceptaFunctions:
@@ -132,46 +133,26 @@ class AceptaFunctions:
         print("Sesión cerrada")
 
     # Funciones auxiliares
+ # Funciones auxiliares
     def _ingresar_valor_en_input_id(self, xpath, valor):
-        elemento = self.wait.until(EC.element_to_be_clickable((By.ID, xpath)))
-        elemento.clear()
-        elemento.send_keys(valor)
-    
+        AuxiliaryFunctions.ingresar_valor_en_input_id(self.driver, self.wait, xpath, valor)
+
     def _ingresar_valor_en_input_name(self, xpath, valor):
-        elemento = self.wait.until(EC.element_to_be_clickable((By.NAME, xpath)))
-        elemento.clear()
-        elemento.send_keys(valor)
-        
+        AuxiliaryFunctions.ingresar_valor_en_input_name(self.driver, self.wait, xpath, valor)
+
     def _ingresar_valor_en_input_xpath(self, xpath, valor):
-        elemento = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
-        elemento.clear()
-        elemento.send_keys(valor)
-        
+        AuxiliaryFunctions.ingresar_valor_en_input_xpath(self.driver, self.wait, xpath, valor)
+
     def _hacer_clic_class_name(self, class_name):
-        elemento = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, class_name)))
-        elemento.click()
-    
-    def _hacer_clic_xpath(self, class_name):
-        elemento = self.wait.until(EC.element_to_be_clickable((By.XPATH, class_name)))
-        elemento.click()
+        AuxiliaryFunctions.hacer_clic_class_name(self.driver, self.wait, class_name)
 
-    def _extraer_datos_tabla(self, tabla):
-        datos_totales = []
-
-        for fila in tabla.find_elements(By.TAG_NAME, 'tr'):
-            columnas = fila.find_elements(By.TAG_NAME, 'td')
-
-            if len(columnas) > 7:
-                datos_totales.append((columnas[3].text, columnas[7].text))
-
-        return datos_totales
-    
+    def _hacer_clic_xpath(self, xpath):
+        AuxiliaryFunctions.hacer_clic_xpath(self.driver, self.wait, xpath)
 
 
 
 desde = "01122023"
 hasta = "15122023"
-
 
 
 # Crear instancia de AceptaFunctions
