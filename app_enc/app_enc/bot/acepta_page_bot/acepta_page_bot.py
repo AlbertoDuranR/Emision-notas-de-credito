@@ -18,6 +18,7 @@ class AceptaFunctions:
         self.driver.maximize_window()
 
         # Credenciales
+        self.url = "https://escritorio.acepta.pe/"
         self.usuario = "wilfredo.caceres@terranovatrading.com.pe"
         self.contrasena = "118499544"
 
@@ -33,7 +34,7 @@ class AceptaFunctions:
         
     def iniciar_sesion(self):
         try:
-            self.driver.get("https://escritorio.acepta.pe/")
+            self.driver.get(self.url)
             self._ingresar_valor_en_input_id("loginrut", self.usuario)
             self._ingresar_valor_en_input_name("LoginForm[password]", self.contrasena)
             self._hacer_clic_class_name("btn-acepta")
