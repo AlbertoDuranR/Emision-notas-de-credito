@@ -57,7 +57,7 @@
       <thead>
         <tr>
           <th class="text-sm text-gray-600 text-center">ID</th>
-          <th class="text-sm text-gray-600 text-center">ID_DETALLE</th>
+          <!-- <th class="text-sm text-gray-600 text-center">ID_DETALLE</th> -->
           <th class="text-sm text-gray-600 text-center">FECHA SOLICITUD</th>
           <th class="text-sm text-gray-600 text-center">USUARIO CREADOR</th>
           <th class="text-sm text-gray-600 text-center">SUCURSAL</th>
@@ -72,18 +72,21 @@
           </th>
           <th class="text-sm text-gray-600 text-center">ESTADO</th>
           <th class="text-sm text-gray-600 text-center">OPCIONES</th>
-          <th class="text-sm text-gray-600 text-center">FECHA CREACIÓN SOLI.</th>
+          <th class="text-sm text-gray-600 text-center">FECHA N. DE CRÉDITO</th>
           <th class="text-sm text-gray-600 text-center">METODO</th>
-          <th class="text-sm text-gray-600 text-center">IMPORTE TOTAL</th>
+          <th class="text-sm text-gray-600 text-center">IMPORTE N. DE CRÉDITO</th>
+          <th class="text-sm text-gray-600 text-center">NRO N. DE CRÉDITO</th>
           <th class="text-sm text-gray-600 text-center">ACEPTA</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in lista_solicitudes" :key="item.ID_NC">
           <td class="text-sm text-gray-600 text-center">{{ item.ID_NC }}</td>
-          <td class="text-sm text-gray-600 text-center">
+          <!--
+            <td class="text-sm text-gray-600 text-center">
             {{ item.ID_DETALLE }}
           </td>
+          -->
           <td class="text-sm text-gray-600 text-center">
             {{ item.FECHA_SOLICITUD }}
           </td>
@@ -144,12 +147,28 @@
                 />
               </svg>
             </button>
+            <button
+              v-if="item.ESTADO == 'VALIDADO'"
+              @click="generar_nota_item(item.ID_NC)"
+              class="bg-red-0 text-white px-2 py-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                <path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/>
+              </svg>
+            </button>
           </td>
           <td class="text-sm text-gray-600 text-center">{{ item.FECHA_CREACION }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.METODO }}</td>
           <td class="text-sm text-gray-600 text-center">
             {{ item.MONTO_TOTAL }}
           </td>
+          <td class="text-sm text-gray-600 text-center">{{ item.ACEPTA }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.ACEPTA }}</td>
         </tr>
       </tbody>
@@ -300,7 +319,55 @@ export default {
         text: observacion,
         icon: 'info',
       });
-    }
+    },
+    generar_nota_item(item_nota) {
+      this.$swal
+        .fire({
+          title: "Advertencia!",
+          text: "¿Estás seguro de Generar la Nota de Crédito?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, validar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            // Lógica para la confirmación
+            axios
+              .post("/nota_credito/punto_venta/create/", {
+                id: item_nota,
+                estado: "VALIDADO",
+              })
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "CREADO",
+                  "Nota de crédito CREADA",
+                  "success"
+                );
+                // Recargar la página completa
+                location.reload();
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  title: "Error de Registro",
+                  text: "Error al crear la Nota de Crédito",
+                  icon: "error",
+                });
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
   },
 };
 </script>
