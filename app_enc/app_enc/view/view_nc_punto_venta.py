@@ -14,15 +14,14 @@ class ViewNCPDV:
         # Lógica para obtener productos y unidades desde el servicio Dynamics
         products_issues= serviceDynamics.getProductsIssued()
         unidades= serviceDynamics.getUnitsConversion()
-        #print(products_issues)
-        #
+
         return render(request,'NotaPDV',props={
             'productos': products_issues,
             'unidades':unidades,
             '_token':get_token(request)
         })
-     
-     ## Formulario Punto de ventas edit   
+
+     ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
         
         lista_productosEdit = []
@@ -126,18 +125,22 @@ class ViewNCPDV:
         if request.method == "POST":
             # Transform data
             data = json.loads(request.body.decode('utf-8'))
-
+            nro_comprobante = data['nro_comprobante'] # 'BG02-00052743'
+            sales_invoice = serviceDynamics.get_sales_invoice_headers_by_invoice_number(nro_comprobante)
+            if not sales_invoice:
+                data["observacion"] = "Comprobante de origen no se encontro en Dynamics365. Verificar Nro de Comprobante"
+                servicePDV.save_observacion(data)
+                return JsonResponse({'message': 'Comprobante de origen no se encontro en Dynamics365'}, status=404)
             try:
-                #print(data)
                 servicePDV.validate_solicitud(data)
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print(e)
-                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
              #
         else:
-            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)   
-        
+            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
+
     def observar_solicitud_pdv(request):
         if request.method == "POST":
             # Transform data

@@ -298,21 +298,16 @@ class ServiceNCPDV:
         if solicitud_existente:
             solicitud_existente.sol_estado = estado
             solicitud_existente.save()     
-        
+
     def validate_solicitud(data):
-        
         id = data['id']
-        estado = data['estado']
-        #observacion = data['observacion']
-        
+        estado = 'VALIDADO'
         solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
         if solicitud_existente:
             solicitud_existente.sol_estado = estado
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()
-            solicitud_existente.save()     
-        
-        
-    
+            solicitud_existente.save()
+
     def getDataCorreo():
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM listar_consolidado_pdv()")
