@@ -43,15 +43,17 @@
             <label class="text-sm">Fecha emisión del comprobantes:</label>
             <VueDatePicker
               v-model="datos_documento.fecha_emsion.date"
+              required
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
-            <label class="text-sm">Nro. Comprobante:</label>
+            <label class="text-sm">N° Comprobante:</label>
             <input
               v-model="datos_documento.nro_comprobante"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-            />
+              required
+              />
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Importe Total:</label>
@@ -59,7 +61,8 @@
               v-model="datos_documento.importe_total"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-            />
+              required
+              />
           </div>
           <div class="pt-4 pb-1">
             <span class="text-sm font-bold text-gray-600 py-5"
@@ -78,7 +81,8 @@
               v-model="detalle_solicitud.motivo"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-            />
+              required
+              />
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Justificación:</label>
@@ -87,7 +91,8 @@
               name="textarea-name"
               rows="5"
               class="focus:shadow-soft-primary-outline min-h-unset text-sm leading-5.6 ease-soft block h-auto w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-            ></textarea>
+              required
+              ></textarea>
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Método:</label>
@@ -105,7 +110,9 @@
               <label
                 class="p-5 mx-3 my-5 bg-white border rounded-lg cursor-pointer peer-checked/draft:border-sky-500 hover:border-sky-500 peer-checked/draft:border-sky-500 peer-checked/draft:ring-1 peer-checked/draft:bg-sky-100"
                 for="draft"
-                >Total</label
+              >
+                Total
+              </label
               >
               <input
                 id="published"
@@ -118,8 +125,9 @@
               <label
                 class="p-5 mx-3 my-5 bg-white border rounded-lg cursor-pointer peer-checked/published:border-sky-500 hover:border-sky-500 peer-checked/published:border-sky-500 peer-checked/published:ring-1 peer-checked/published:bg-sky-100"
                 for="published"
-                >Parcial</label
               >
+                Parcial
+              </label>
               <div class="my-8"></div>
               <div
                 class="hidden flex items-center justify-center peer-checked/draft:block"
