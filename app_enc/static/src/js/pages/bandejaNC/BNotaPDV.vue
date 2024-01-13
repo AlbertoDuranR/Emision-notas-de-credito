@@ -62,20 +62,20 @@
           <th class="text-sm text-gray-600 text-center">USUARIO CREADOR</th>
           <th class="text-sm text-gray-600 text-center">SUCURSAL</th>
           <th class="text-sm text-gray-600 text-center">
-            FECHA DE E.N.C. ORIGEN
+            FECHA COMPROBANTE
           </th>
           <th class="text-sm text-gray-600 text-center">
-            TIPO COMPROBANTE ORIGEN
+            TIPO COMPROBANTE
           </th>
           <th class="text-sm text-gray-600 text-center">
-            N° COMPROBANTE ORIGEN
+            N° COMPROBANTE
           </th>
           <th class="text-sm text-gray-600 text-center">ESTADO</th>
           <th class="text-sm text-gray-600 text-center">OPCIONES</th>
           <th class="text-sm text-gray-600 text-center">FECHA N. DE CRÉDITO</th>
           <th class="text-sm text-gray-600 text-center">METODO</th>
           <th class="text-sm text-gray-600 text-center">IMPORTE N. DE CRÉDITO</th>
-          <th class="text-sm text-gray-600 text-center">NRO N. DE CRÉDITO</th>
+          <th class="text-sm text-gray-600 text-center">N° N. DE CRÉDITO</th>
           <th class="text-sm text-gray-600 text-center">ACEPTA</th>
         </tr>
       </thead>
@@ -118,13 +118,14 @@
           </td>
           <td class="text-sm text-gray-600 text-center">
             <button
-              @click="validar_item(item.ID_NC)"
-              class="bg-blue-0 text-white px-2 py-1 mr-2"
+              v-show="item.ESTADO != 'VALIDADO'"
+              @click="validar_item(item.ID_NC, item.NRO_COMPROBANTE)"
+              class="bg-blue-0 text-white px-2 py-1"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                height="16"
-                width="16"
+                height="20"
+                width="20"
                 viewBox="0 0 512 512"
               >
                 <path
@@ -138,8 +139,8 @@
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                height="16"
-                width="16"
+                height="20"
+                width="20"
                 viewBox="0 0 512 512"
               >
                 <path
@@ -148,13 +149,13 @@
               </svg>
             </button>
             <button
-              v-if="item.ESTADO == 'VALIDADO'"
+              v-show="item.ESTADO == 'VALIDADO'"
               @click="generar_nota_item(item.ID_NC)"
               class="bg-red-0 text-white px-2 py-1"
             >
               <svg xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                height="22"
+                width="22"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -200,8 +201,8 @@ export default {
     //console.log(this.lista_solicitudes);
   },
   methods: {
-    validar_item(item_nota) {
-      console.log("Editar:", item_nota);
+    validar_item(itemNota, nroComprobante) {
+      console.log("Editar:", itemNota);
 
       this.$swal
         .fire({
@@ -219,8 +220,8 @@ export default {
             // Lógica para la confirmación
             axios
               .post("/solicitud_nota_credito/punto_venta/validar/", {
-                id: item_nota,
-                estado: "VALIDADO",
+                id: itemNota,
+                nro_comprobante: nroComprobante
               })
               .then((response) => {
                 console.log(response);
@@ -233,12 +234,13 @@ export default {
                 location.reload();
               })
               .catch((err) => {
-                console.log(err);
-                Swal.fire({
-                  title: "Error de Registro",
-                  text: "Error al validar la solicitud",
+                const msg_error = err.response.data.message
+                this.$swal.fire({
+                  title: "Error de Validación",
+                  text: `${msg_error}`,
                   icon: "error",
                 });
+                location.reload();
               });
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
             // Lógica para la cancelación
@@ -329,7 +331,7 @@ export default {
           showCancelButton: true,
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
-          confirmButtonText: "Sí, validar",
+          confirmButtonText: "Sí, Generar",
           cancelButtonText: "Cancelar",
         })
         .then((result) => {
