@@ -52,8 +52,6 @@ class ServiceDynamics:
         elif method == 2:
             query_update = f"{path}&$top=1000&$skip={int(i)}"
             return self.fetch_data(query_update)["value"]
-        
-
     def getProductsIssued(self):
 
         #Definir url
@@ -196,4 +194,36 @@ class ServiceDynamics:
             return result.to_dict(orient='records')
         except Exception as e:
             print(f"An exception occurred in get_sales_invoice_headers_by_invoice_number: {e}")
+            return None
+
+    def get_sales_invoice_lines(self, invoice_number: str):
+        """
+            :param invoice_number: The invoice number to query.
+            :return: A list of dictionaries containing invoice lines details.
+        """
+        # https://mistr.operations.dynamics.com/data/SalesInvoiceLines?$count=true&$filter=InvoiceNumber eq 'BA01-00249590'
+        # Definir url
+        path = f"{self.url}/data/SalesInvoiceLines"
+        token = self.get_Token()
+        query = f"?$count=true&$filter=InvoiceNumber eq '{invoice_number}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            products = pd.read_json(json.dumps(data["value"]))
+            products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
+            print('C',  products["Product"])
+            result = products[["ProductNumber", "ProductDescription", "Product"]]
+            print('D', result)
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_sales_invoice_lines_by_invoice_number: {e}")
             return None

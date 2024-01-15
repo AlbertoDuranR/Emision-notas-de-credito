@@ -21,6 +21,11 @@ class ViewNCPDV:
             '_token':get_token(request)
         })
 
+    def get_sales_invoice_details(request, nro_comprobante):
+        invoice_products = serviceDynamics.get_sales_invoice_lines(nro_comprobante)
+        print('get_sales_invoices_details', invoice_products)
+        return JsonResponse(invoice_products, safe=False)
+
      ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
         
@@ -119,7 +124,6 @@ class ViewNCPDV:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
             
-     
     ## validar
     def validar_solicitud(request):
         if request.method == "POST":

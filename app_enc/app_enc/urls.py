@@ -79,10 +79,12 @@ urlpatterns = [
     path('solicitud_nota_credito/financieros/edit/', ViewNCFinanciero.edit_solicitud_financieras),
     path('solicitud_nota_credito/servicios/edit/', ViewNCServicios.edit_solicitud_servicios),
     ##
-    
-    
+
     ## Create Nota de Credito
     path('nota_credito/punto_venta/create/', ViewNotaCredito.create_nota_credito),
+
+    ## Get Datos Comprobante
+    path('comprobante/detalle_comprobante/<str:nro_comprobante>', ViewNCPDV.get_sales_invoice_details),
 
     ## Get datos de reniec
     path('solicitud_nota_credito/financieros/reniec/', ViewNCFinanciero.obtener_datos_personales),
