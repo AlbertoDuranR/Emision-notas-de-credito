@@ -121,6 +121,7 @@
                 name="status"
                 value="Parcial"
                 v-model="detalle_solicitud.metodo"
+                @click="obtenerProductosDelComprobante"
               />
               <label
                 class="p-5 mx-3 my-5 bg-white border rounded-lg cursor-pointer peer-checked/published:border-sky-500 hover:border-sky-500 peer-checked/published:border-sky-500 peer-checked/published:ring-1 peer-checked/published:bg-sky-100"
@@ -281,7 +282,7 @@ export default {
   name: "NotaPDV",
   components: { VueDatePicker, Multiselect },
   props: {
-    productos: Array,
+    // productos: Array,
     unidades: Array,
     _token: String,
   },
@@ -307,11 +308,12 @@ export default {
         metodo: "Total",
       },
       metodo_parcial_productos: {
-        products: this.productos,
+        products: [],
         value: null,
         selectedOptions: [],
         unidad: {
           unidades: this.unidades,
+          // valores: this.unidades,
           valores: Array.from({ length: this.productos.length }, () => ({
             value: null,
           })),
@@ -382,7 +384,35 @@ export default {
         loader.hide();
       }, 2000);
     },
+
+    async obtenerProductosDelComprobante() {
+      console.log('Click, nro_comprobante:', this.datos_documento.nro_comprobante)
+      // exa nro_comprobante = BA01-00249590
+      if(this.datos_documento.nro_comprobante == '') {
+        this.$swal.fire({
+                  title: "Verificar Campos",
+                  text: `N° Comprobante No puede estar Vacío o no existe`,
+                  icon: "warning",
+                });
+        return
+      }
+      try {
+        const response = await axios.get(`/comprobante/detalle_comprobante/${this.datos_documento.nro_comprobante}`);
+        console.log('obtenerProductss:::', response.data)
+        this.metodo_parcial_productos.products = response.data
+        // this.metodo_parcial_productos = [... this.metodo_parcial_productos.products, {"ProductNumber": 102598,}]
+        console.log('metodo_parcial_productos.productos:::', this.metodo_parcial_productos.products)
+      } catch (error) {
+        console.error('Error al obtener productos del comprobante', error)
+        this.$swal.fire({
+                  title: "Verificar Campos",
+                  text: 'Error al obtener productos del comprobante',
+                  icon: "error",
+                });
+      }
+    }
   },
+
   created() {
     this.refreshLoading();
   },
