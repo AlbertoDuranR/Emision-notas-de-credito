@@ -43,7 +43,7 @@
             <label class="text-sm">Fecha emisión del comprobantes:</label>
             <VueDatePicker
               v-model="datos_documento.fecha_emsion.date"
-            
+              required
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
@@ -52,7 +52,7 @@
               v-model="datos_documento.nro_comprobante"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-            
+              required
               />
           </div>
           <div class="space-y-1 py-2">
@@ -61,7 +61,7 @@
               v-model="datos_documento.importe_total"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-            
+              required
               />
           </div>
           <div class="pt-4 pb-1">
@@ -81,7 +81,7 @@
               v-model="detalle_solicitud.motivo"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-            
+              required
               />
           </div>
           <div class="space-y-1 py-2">
@@ -91,7 +91,7 @@
               name="textarea-name"
               rows="5"
               class="focus:shadow-soft-primary-outline min-h-unset text-sm leading-5.6 ease-soft block h-auto w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-            
+              required
               ></textarea>
           </div>
           <div class="space-y-1 py-2">
@@ -136,12 +136,23 @@
               <div class="hidden peer-checked/published:block">
                 <div class="space-y-1 py-2">
                   <div id="app" class="relative">
+                    <!-- <select v-model="selectedOptions" multiple id="multiselect"
+                                            class="block w-full px-4 py-2 pr-8 leading-tight bg-white border border-gray-300 rounded appearance-none focus:outline-none focus:bg-white focus:border-gray-500">
+                                            <option v-for="option in options" :key="option" :value="option">{{ option }}</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 19l-7-7 7-7"></path>
+                                            </svg>
+                                        </div> -->
                     <div>
                       <label class="typo__label text-sm">Producto:</label>
                       <multiselect
                         v-model="metodo_parcial_productos.value"
                         id="multiselect"
-                        :options="productos"
+                        :options="metodo_parcial_productos.products"
                         :multiple="true"
                         :close-on-select="false"
                         :clear-on-select="false"
@@ -149,8 +160,10 @@
                         placeholder="Seleccionar producto..."
                         label="Product"
                         track-by="Product"
-                        @update:modelValue="handleSelectionChange"
                       >
+                        <!-- <template slot="selection" slot-scope="{ values, search, isOpen }"><span
+                                                        class="multiselect__single" v-if="values.length" v-show="!isOpen">{{
+                                                            values.length }} options selected</span></template> -->
                       </multiselect>
                       <div class="py-2"></div>
                       <div
@@ -172,7 +185,8 @@
                             <label class="text-sm text-center">Unidad:</label>
                             <multiselect
                               v-model="
-                                metodo_parcial_productos.value[index].SalesUnitSymbol
+                                metodo_parcial_productos.unidad.valores[index]
+                                  .value
                               "
                               id="multiselect_unidad"
                               :options="
@@ -187,32 +201,33 @@
                           </div>
                           <div class="space-y-1 py-2 px-2">
                             <label class="text-sm">Precio:</label>
-                            {{val["InvoicedQuantity"]}}{{val["SalesUnitSymbol"]}}{{val["SalesPrice"]}}
                             <input
                               type="text"
                               v-model="
-                                metodo_parcial_productos.value[index].SalesPrice
+                                metodo_parcial_productos.precio.valores[index]
+                                  .value
                               "
                               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-                              @input="handleInputChange(index)"
-                              />
+                            />
                           </div>
                           <div class="space-y-1 py-2 px-2">
                             <label class="text-sm">Cantidad:</label>
                             <input
                               type="text"
                               v-model="
-                                metodo_parcial_productos.value[index].InvoicedQuantity
+                                metodo_parcial_productos.cantidad.valores[index]
+                                  .value
                               "
                               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-                              @input="handleInputChange(index)"
-                              />
+                            />
                           </div>
                           <div class="space-y-1 py-2 px-2">
                             <label class="text-sm">Monto Total:</label>
                             <input
                               v-model="
-                                metodo_parcial_productos.value[index].Total
+                                metodo_parcial_productos.monto_total.valores[
+                                  index
+                                ].value
                               "
                               type="text"
                               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
@@ -222,6 +237,13 @@
                       </div>
                     </div>
                   </div>
+                  <!-- 
+                                    <div id="etiquetas" class="mt-4 flex flex-wrap">
+                                        <span v-for="option in selectedOptions" :key="option"
+                                            class="inline-flex items-center px-2 py-1 mr-2 mt-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-full">
+                                            {{ value }}
+                                        </span>
+                                    </div> -->
                 </div>
               </div>
             </fieldset>
@@ -233,180 +255,185 @@
   <notifications />
 </template>
 <script setup>
-import { ref, onMounted, onUpdated } from 'vue';
-import axios from 'axios';
+// Importando layouts
+import Header from "../../layouts/Header.vue";
+//
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
+//
 import Multiselect from "vue-multiselect";
+//
+import axios from "axios";
+//
 import { notify } from "@kyvg/vue3-notification";
+//
+import { ref, onMounted } from "vue";
+// Import the method.
 import { useLoading } from "vue3-loading-overlay";
+// Import stylesheet
 import "vue3-loading-overlay/dist/vue3-loading-overlay.css";
-import Swal from 'sweetalert2'
+// Init plugin
 
-import Header from "../../layouts/Header.vue";
-
-
-const props = defineProps(['unidades', '_token'])
-const formContainer = ref(null);
-const fullPage = ref(true);
-const csrf_token = ref('');
-const datos_documento = ref({
-  fecha_emsion: {
-    date: null,
+// const fullPage = ref(true);
+// let formContainer = ref(null);
+// reactive state
+const count = ref(0)
+// lifecycle hooks
+onMounted(() => {
+  console.log(`The initial count is ${count.value}.`)
+})
+</script>
+<script>
+export default {
+  name: "NotaPDVCopy",
+  components: { VueDatePicker, Multiselect },
+  props: {
+    // productos: Array,
+    unidades: Array,
+    _token: String,
   },
-  nro_comprobante: '',
-  importe_total: '',
-});
-const detalle_solicitud = ref({
-  fecha_solicitud: {
-    date: null,
-  },
-  motivo: '',
-  justificacion: '',
-  metodo: 'Total',
-});
-const productos = ref([
-    {
+  data() {
+    return {
+      // csrf_token:this._token,
+      formContainer: ref(null),
+      fullPage: ref(true),
+      csrf_token: "",
+      datos_documento: {
+        fecha_emsion: {
+          date: null,
+        },
+        nro_comprobante: "",
+        importe_total: "",
+      },
+      detalle_solicitud: {
+        fecha_solicitud: {
+          date: null,
+        },
+        motivo: "",
+        justificacion: "",
+        metodo: "Total",
+      },
+      productos: [{
         "ProductNumber": 101764,
         "ProductDescription": "NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
-        "Product": "101764 - NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
-        "InvoicedQuantity": 1,
-        "SalesPrice": 6.2,
-        "SalesUnitSymbol": "U"
+        "Product": "101764 - NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G"
+      }],
+      metodo_parcial_productos: {
+        products: [],
+        value: null,
+        selectedOptions: [],
+        unidad: {
+          unidades: this.unidades,
+          // valores: this.unidades,
+          valores: Array.from({ length: 10 }, () => (
+          {
+            value: null,
+          })),
+          selectedOptions: [],
+        },
+        precio: {
+          valores: Array.from({ length: 10 }, () => ({
+            value: null,
+          })),
+        },
+        cantidad: {
+          valores: Array.from({ length: 10 }, () => ({
+            value: null,
+          })),
+        },
+        monto_total: {
+          valores: Array.from({ length: 10 }, () => ({
+            value: null,
+          })),
+        },
+      },
+    };
+  },
+  mounted() {
+    alert('mounted')
+    this.csrf_token = document.querySelector(
+      "[name=csrfmiddlewaretoken]"
+    ).value;
+    console.log('mounted:', this.productos)
+  },
+  methods: {
+    //
+    enviarSolicitud() {
+      console.log(this.$data.metodo_parcial_productos);
+      let jsonString = JSON.stringify(this.$data);
+      console.log(jsonString);
+      axios.post('/solicitud_nota_credito/punto_venta/create/',jsonString)
+        .then(
+        response =>{
+        //console.log(response)
+        location.reload();
+        notify({
+          title:"Registro Exitoso",
+          text: ""+response.data.message
+        })
+        }).catch(
+          err =>{
+            console.log(err)
+            notify({
+          title:"Error de Registro",
+          text: "Error al guardar datos verificar los campos",
+          type:"error"
+        })
+          }
+        );
     },
-    {
-        "ProductNumber": 101765,
-        "ProductDescription": "NAKAMITO 00G",
-        "Product": "101765 - NAKAMITO G",
-        "InvoicedQuantity": 2,
-        "SalesPrice": 6,
-        "SalesUnitSymbol": "U"
+    //
+    refreshLoading() {
+      const onCancel = () => {
+        console.log("User cancelled the loader.");
+      };
+      let loader = useLoading();
+      loader.show({
+        // Optional parameters
+        container: this.fullPage ? null : formContainer.value,
+        canCancel: true,
+        onCancel: onCancel,
+      });
+      setTimeout(() => {
+        loader.hide();
+      }, 2000);
     },
-]);
-console.log('productos.length', productos.length)
-const metodo_parcial_productos = ref({
-  products: [],
-  value: null,
-  // selectedOptions: [],
-  unidad: {
-    unidades: props.unidades,
-    valores: [],
-    // selectedOptions: [],
-  },
-  precio: {
-    // valores: Array.from({ length: 10 }, () => ({
-    //   value: null,
-    // })),
-    valores: []
-  },
-  cantidad: {
-    valores: [],
-  },
-  monto_total: {
-    valores: [],
-  },
-});
 
-const enviarSolicitud = () => {
-  console.log(metodo_parcial_productos.value);
-  const send_data = {
-    "datos_documento": datos_documento.value,
-    "detalle_solicitud": detalle_solicitud.value,
-    "metodo_parcial_productos": metodo_parcial_productos.value
-  }
-  console.log('enviar solcitud 1::', send_data)
-  const jsonString = JSON.stringify(send_data);
-  console.log('enviarr Solicitud', jsonString);
-  // axios
-  //   .post('/solicitud_nota_credito/punto_venta/create/', jsonString)
-  //   .then((response) => {
-  //     location.reload();
-  //     notify({
-  //       title: 'Registro Exitoso',
-  //       text: '' + response.data.message,
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     console.log(err);
-  //     notify({
-  //       title: 'Error de Registro',
-  //       text: 'Error al guardar datos verificar los campos',
-  //       type: 'error',
-  //     });
-  //   });
+    async getProductosDelComprobante() {
+      console.log('Click, nro_comprobante:', this.datos_documento.nro_comprobante)
+      // exa nro_comprobante = BA01-00249590
+      if(this.datos_documento.nro_comprobante == '') {
+        this.$swal.fire({
+                  title: "Verificar Campos",
+                  text: `N° Comprobante No puede estar Vacío o no existe`,
+                  icon: "warning",
+                });
+        return
+      }
+      try {
+        const response = await axios.get(`/comprobante/detalle_comprobante/${this.datos_documento.nro_comprobante}`);
+        console.log('obtenerProductss:::', response.data)
+        this.metodo_parcial_productos.products = response.data
+        // this.metodo_parcial_productos = [... this.metodo_parcial_productos.products, {"ProductNumber": 102598,}]
+        console.log('metodo_parcial_productos.productos:::', this.metodo_parcial_productos.products)
+      } catch (error) {
+        console.error('Error al obtener productos del comprobante', error)
+        this.$swal.fire({
+                  title: "Verificar Campos",
+                  text: 'Error al obtener productos del comprobante',
+                  icon: "error",
+                });
+      }
+    }
+  },
+
+  created() {
+    alert('aa')
+    console.log('created:', this.productos)
+    this.refreshLoading();
+  },
 };
-
-const refreshLoading = () => {
-  const onCancel = () => {
-    console.log('User cancelled the loader.');
-  };
-  let loader = useLoading();
-  loader.show({
-    container: fullPage.value ? null : formContainer.value,
-    canCancel: true,
-    onCancel: onCancel,
-  });
-  setTimeout(() => {
-    loader.hide();
-  }, 2000);
-};
-
-const getProductosDelComprobante = async () => {
-  console.log('Click, nro_comprobante:', datos_documento.value.nro_comprobante);
-  return
-  if (datos_documento.value.nro_comprobante == '') {
-    Swal.fire({
-      title: 'Verificar Campos',
-      text: `N° Comprobante No puede estar Vacío o no existe`,
-      icon: 'warning',
-    });
-    return;
-  }
-  try {
-    const response = await axios.get(`/comprobante/detalle_comprobante/${datos_documento.value.nro_comprobante}`);
-    // console.log('obtenerProductss:::', response.data);
-    productos.value = response.data;
-    console.log('metodo_parcial_productos.productos:::', productos.value);
-  } catch (error) {
-    console.error('Error al obtener productos del comprobante', error);
-    Swal.fire({
-      title: 'Verificar Campos',
-      text: 'Error al obtener productos del comprobante',
-      icon: 'error',
-    });
-  }
-};
-
-onMounted(() => {
-  console.log('onMounted')
-  // csrf_token = document.querySelector(
-  //     "[name=csrfmiddlewaretoken]"
-  //   ).value;
-}),
-
-onUpdated(() => {
-  console.log('onUpdated')
-  console.log('Metodo_parcial_productos.value: ', metodo_parcial_productos.value, metodo_parcial_productos.value.precio.valores[0]?.value)
-})
-
-const handleSelectionChange = (value) => {
-  value.forEach((element, index) => {
-    console.log('for::', index, element)
-    metodo_parcial_productos.value.value[index]["Total"] = (element.InvoicedQuantity * element.SalesPrice).toString()
-    // metodo_parcial_productos.value.value[index]["SalesUnitSymbol"] = {UnitSymbol: element.SalesUnitSymbol} Revisar si sirve esto para cambiar Unidad
-  });
-  // const precio = metodo_parcial_productos.value.precio.valores[0]?.value
-  // console.log('start SelectProduct', precio)
-  // metodo_parcial_productos.value.precio.valores[0].value='20'
-}
-const handleInputChange = (index) => {
-  console.log("hanldeInputChange"," metodo_parcial_productos.value[index].InvoicedQuantity", index, metodo_parcial_productos.value.value[index].InvoicedQuantity)
-  metodo_parcial_productos.value.value[index].Total = metodo_parcial_productos.value.value[index].InvoicedQuantity * metodo_parcial_productos.value.value[index].SalesPrice
-}
-
-refreshLoading();
 </script>
-
 <style scope>
 @import "https://unpkg.com/vue-multiselect@2.1.6/dist/vue-multiselect.min.css";
 </style>
