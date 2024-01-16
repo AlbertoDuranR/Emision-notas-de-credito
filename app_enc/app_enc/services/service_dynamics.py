@@ -221,7 +221,7 @@ class ServiceDynamics:
             products = pd.read_json(json.dumps(data["value"]))
             products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
             print('C',  products["Product"])
-            result = products[["ProductNumber", "ProductDescription", "Product"]]
+            result = products[["ProductNumber", "ProductDescription", "Product", "InvoicedQuantity", "SalesPrice", "SalesUnitSymbol"]]
             print('D', result)
             return result.to_dict(orient='records')
         except Exception as e:

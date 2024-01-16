@@ -12,7 +12,14 @@ class ViewNCPDV:
     ### Formulario Punto de Venta
     def notaPDV(request):
         # Lógica para obtener productos y unidades desde el servicio Dynamics
-        products_issues= serviceDynamics.getProductsIssued()
+        # products_issues= serviceDynamics.getProductsIssued()
+        products_issues=[
+            {
+                "ProductNumber": 101764,
+                "ProductDescription": "NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
+                "Product": "101764 - NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G"
+            },
+        ]
         unidades= serviceDynamics.getUnitsConversion()
 
         return render(request,'NotaPDV',props={
@@ -23,7 +30,7 @@ class ViewNCPDV:
 
     def get_sales_invoice_details(request, nro_comprobante):
         invoice_products = serviceDynamics.get_sales_invoice_lines(nro_comprobante)
-        print('get_sales_invoices_details', invoice_products)
+        # print('get_sales_invoices_details', invoice_products)
         return JsonResponse(invoice_products, safe=False)
 
      ## Formulario Punto de ventas edit
@@ -81,6 +88,7 @@ class ViewNCPDV:
             # Transform data
             form_request= str.join("",request.POST)
             form_request = json.loads(form_request)
+            print('CR'*20, form_request)
             #
             try:
                 servicePDV.save_solicitud(form_request)
