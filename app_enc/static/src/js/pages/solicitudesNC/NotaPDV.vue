@@ -265,24 +265,25 @@ const detalle_solicitud = ref({
   justificacion: '',
   metodo: 'Total',
 });
-const productos = ref([
-    {
-        "ProductNumber": 101764,
-        "ProductDescription": "NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
-        "Product": "101764 - NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
-        "InvoicedQuantity": 1,
-        "SalesPrice": 6.2,
-        "SalesUnitSymbol": "U"
-    },
-    {
-        "ProductNumber": 101765,
-        "ProductDescription": "NAKAMITO 00G",
-        "Product": "101765 - NAKAMITO G",
-        "InvoicedQuantity": 2,
-        "SalesPrice": 6,
-        "SalesUnitSymbol": "U"
-    },
-]);
+const productos = ref([]);
+// const productos = ref([
+//     {
+//         "ProductNumber": 101764,
+//         "ProductDescription": "NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
+//         "Product": "101764 - NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
+//         "InvoicedQuantity": 1,
+//         "SalesPrice": 6.2,
+//         "SalesUnitSymbol": "U"
+//     },
+//     {
+//         "ProductNumber": 101765,
+//         "ProductDescription": "NAKAMITO 00G",
+//         "Product": "101765 - NAKAMITO G",
+//         "InvoicedQuantity": 2,
+//         "SalesPrice": 6,
+//         "SalesUnitSymbol": "U"
+//     },
+// ]);
 console.log('productos.length', productos.length)
 const metodo_parcial_productos = ref({
   products: [],
@@ -353,7 +354,7 @@ const refreshLoading = () => {
 
 const getProductosDelComprobante = async () => {
   console.log('Click, nro_comprobante:', datos_documento.value.nro_comprobante);
-  return
+  // return
   if (datos_documento.value.nro_comprobante == '') {
     Swal.fire({
       title: 'Verificar Campos',
