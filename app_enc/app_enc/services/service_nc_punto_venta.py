@@ -74,16 +74,14 @@ class ServiceNCPDV:
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
 
-    # huardar solicitud - púntos de venta
     def save_solicitud(data):
-
         # Solicitud NC
         tipo_nc = "PDV"
-        usuario_creador = 1 ##
+        usuario_creador = 1 ## Sera el Id del Usuario
         estado = "PENDIENTE"
-        fecha_emision = data["datos_documento"]["fecha_emsion"]['date']
+        fecha_emision = data["datos_documento"]["fecha_emision"]['date']
         fecha_emision = datetime.strptime(fecha_emision,'%Y-%m-%dT%H:%M:%S.%fZ')
-        # Detalle 
+        # Detalle
         fecha_solicitud = data["detalle_solicitud"]["fecha_solicitud"]['date']
         fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
         nro_comprobante = data["datos_documento"]["nro_comprobante"]
@@ -91,27 +89,20 @@ class ServiceNCPDV:
         importe_total = float(data["datos_documento"]["importe_total"])
         justificacion = data["detalle_solicitud"]["justificacion"]
         metodo = data["detalle_solicitud"]["metodo"]
-        # Producto
-        codigo_descripcion = data["metodo_parcial_productos"]["value"]
-        cont_productos=False
-        
-        if codigo_descripcion is not None and metodo=="Parcial":
-            if len(codigo_descripcion) != 0:
-                monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
-                ##
-                monto_total_productos = 0
-                for x in monto_producto:
-                    monto_total_productos = monto_total_productos + float(x["value"])
-                
-                cont_productos=True
-                print(monto_total_productos)
+        # Productos
+        metodo_parcial_productos=data["metodo_parcial_productos"]
+        monto_total_productos=importe_total
+
+        if not motivo or not justificacion:
+            raise TypeError("Motivo y Jutificación son necesarios")
+
+        if metodo=="parcial":
+            if metodo_parcial_productos:
+                monto_total_productos = round(sum(float(producto["Total"]) for producto in metodo_parcial_productos), 2)
             else:
-                raise TypeError("Campo necesario vacio.")
-        elif metodo == "Parcial" and codigo_descripcion is None:
-            raise TypeError("Campo necesario vacio.")
-        
-        print(fecha_emision.date())
-        #Guardando
+                raise TypeError("Metodo Parcial no tiene productos")
+
+        # Guardar Solicitud de Nota de Crédito
         solicitud_nc = SolicitudNC(
             sol_fecha_solicitud=fecha_solicitud.date(),
             sol_tipo_nc=tipo_nc,
@@ -120,61 +111,37 @@ class ServiceNCPDV:
             sol_estado=estado
         )
         solicitud_nc.save()
-        #
-        if cont_productos: #Si contiene productos
+
+        # Guardar Detalle de la Solicitud de Nota de Crédito
+        detalle = DetalleSolicitud(
+            det_fecha_emision=fecha_emision.date(),
+            det_nro_comprobante=nro_comprobante,
+            det_importe_total=importe_total,
+            det_motivo=motivo,
+            det_justificacion=justificacion,
+            det_metodo=metodo,
+            det_monto_total_prod=monto_total_productos,
+            det_establecimiento=1, ## Lugar de solicitud
+            sol_id=solicitud_nc.sol_id
+        )
+        detalle.save()
+
+        # Guardar Productos de la Solicitud si es parcial
+        if metodo=="parcial" and metodo_parcial_productos:
             print("Si contiene productos")
-            detalle = DetalleSolicitud(
-                det_fecha_emision=fecha_emision.date(),
-                det_nro_comprobante=nro_comprobante,
-                det_importe_total=importe_total,
-                det_motivo=motivo,
-                det_justificacion=justificacion,
-                det_metodo=metodo,
-                det_monto_total_prod=monto_total_productos,
-                det_establecimiento=1, ##
-                sol_id=solicitud_nc.sol_id
-            )
-            detalle.save()
-            ##
-            unidades = data["metodo_parcial_productos"]["unidad"]["valores"][0:len(codigo_descripcion)]
-            precios = data["metodo_parcial_productos"]["precio"]["valores"][0:len(codigo_descripcion)]
-            cantidades = data["metodo_parcial_productos"]["cantidad"]["valores"][0:len(codigo_descripcion)]
-            monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
             producto_detalle = []
-            for x in range(len(codigo_descripcion)):
-                #codigo
+            for producto in metodo_parcial_productos:
                 producto_detalle.append(ProductoDetalle(
-                    dpro_codigo=codigo_descripcion[x]["ProductNumber"],
-                    dpro_descripcion=codigo_descripcion[x]["ProductDescription"],
-                    dpro_unidad=unidades[x]["value"]["UnitSymbol"],
-                    dpro_precio=float(precios[x]["value"]),
-                    dpro_cantidad=int(cantidades[x]["value"]),
-                    dpro_monto_total= float(monto_producto[x]["value"]),
+                    dpro_codigo=producto["ProductNumber"],
+                    dpro_descripcion=producto["ProductDescription"],
+                    dpro_unidad=producto["SalesUnitSymbol"],
+                    dpro_precio=float(producto["SalesPrice"]),
+                    dpro_cantidad=int(producto["InvoicedQuantity"]),
+                    dpro_monto_total= float(producto["Total"]),
                     det_id=detalle.det_id
                 ))
-                
-                print("PRECIO")
-                print(float(precios[x]["value"]))
-                print("MONTO TOTAL")
-                print(float(monto_producto[x]["value"]))
-            #
-            print("aquiiii")
-            print(producto_detalle)
             ProductoDetalle.objects.bulk_create(producto_detalle)
-        else: #No contiene productos
-            detalle = DetalleSolicitud(
-                det_fecha_emision=fecha_solicitud.date(),
-                det_nro_comprobante=nro_comprobante,
-                det_importe_total=importe_total,
-                det_motivo=motivo,
-                det_justificacion=justificacion,
-                det_metodo=metodo,
-                det_monto_total_prod=importe_total,
-                det_establecimiento=1, ##
-                sol_id=solicitud_nc.sol_id
-            )
-            detalle.save()
-           
+
     def save_observacion(data):
         sol_id = int(data["id"])
         observacion = data["observacion"]

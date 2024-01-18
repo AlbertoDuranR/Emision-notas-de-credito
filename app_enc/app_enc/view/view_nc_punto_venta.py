@@ -9,21 +9,10 @@ servicePDV = ServiceNCPDV
 serviceDynamics = ServiceDynamics()
 
 class ViewNCPDV:
-    ### Formulario Punto de Venta
+    ## Formulario Punto de Venta
     def notaPDV(request):
-        # Lógica para obtener productos y unidades desde el servicio Dynamics
-        # products_issues= serviceDynamics.getProductsIssued()
-        products_issues=[
-            {
-                "ProductNumber": 101764,
-                "ProductDescription": "NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
-                "Product": "101764 - NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G"
-            },
-        ]
         unidades= serviceDynamics.getUnitsConversion()
-
         return render(request,'NotaPDV',props={
-            'productos': products_issues,
             'unidades':unidades,
             '_token':get_token(request)
         })
@@ -31,6 +20,8 @@ class ViewNCPDV:
     def get_sales_invoice_details(request, nro_comprobante):
         invoice_products = serviceDynamics.get_sales_invoice_lines(nro_comprobante)
         # print('get_sales_invoices_details', invoice_products)
+        if not invoice_products:
+            return JsonResponse({'error': 'No se encontro productos para el N° Comprobante'}, status=404)
         return JsonResponse(invoice_products, safe=False)
 
      ## Formulario Punto de ventas edit
@@ -86,20 +77,19 @@ class ViewNCPDV:
     def create_solicitud_pdv(request):
         if request.method == "POST":
             # Transform data
-            form_request= str.join("",request.POST)
+            form_request= str.join("", request.POST)
             form_request = json.loads(form_request)
-            print('CR'*20, form_request)
             #
             try:
                 servicePDV.save_solicitud(form_request)
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print(e)
-                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
             #
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
-        
+
     ## Editar solicitud PDV
     def edit_solicitud_pdv(request):
         if request.method == "POST":
