@@ -151,6 +151,7 @@
                         track-by="Product"
                         @update:modelValue="handleSelectionChange"
                       >
+                      <!--  @select="handleSelectionChange" -->
                       </multiselect>
                       <div class="py-2"></div>
                       <div
@@ -171,23 +172,17 @@
                           <div class="space-y-1 py-2 px-2">
                             <label class="text-sm text-center">Unidad:</label>
                             <multiselect
-                              v-model="
-                                metodo_parcial_productos.value[index].SalesUnitSymbol
-                              "
                               id="multiselect_unidad"
-                              :options="
-                                metodo_parcial_productos.unidad.unidades
-                              "
-                              :preserve-search="true"
+                              v-model="metodo_parcial_productos.value[index].SalesUnitSymbol"
+                              :options="unidades"
+                              :close-on-select="true"
+                              :show-labels="false"
                               placeholder="Unidad"
-                              label="UnitSymbol"
-                              track-by="UnitSymbol"
-                            >
+                              >
                             </multiselect>
                           </div>
                           <div class="space-y-1 py-2 px-2">
                             <label class="text-sm">Precio:</label>
-                            {{val["InvoicedQuantity"]}}{{val["SalesUnitSymbol"]}}{{val["SalesPrice"]}}
                             <input
                               type="text"
                               v-model="
@@ -247,6 +242,7 @@ import Header from "../../layouts/Header.vue";
 
 
 const props = defineProps(['unidades', '_token'])
+// const props = defineProps(['_token'])
 const formContainer = ref(null);
 const fullPage = ref(true);
 const csrf_token = ref('');
@@ -265,6 +261,8 @@ const detalle_solicitud = ref({
   justificacion: '',
   metodo: 'Total',
 });
+
+const unidades = props.unidades.map( objUnidad => objUnidad.UnitSymbol)// ['U', 'LTR.']
 const productos = ref([]);
 // const productos = ref([
 //     {
@@ -288,9 +286,20 @@ console.log('productos.length', productos.length)
 const metodo_parcial_productos = ref({
   products: [],
   value: null,
+  select_product: null,
+  /**
+   * Ex. select_product
+    {
+      "ProductNumber": 101764,
+      "ProductDescription": "NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
+      "Product": "101764 - NAKAMITO SAZONADOR GLUTANO MONOSODICO 500G",
+      "InvoicedQuantity": 1,
+      "SalesPrice": 6.2,
+      "SalesUnitSymbol": "U"
+    }
+  */
   // selectedOptions: [],
   unidad: {
-    unidades: props.unidades,
     valores: [],
     // selectedOptions: [],
   },
