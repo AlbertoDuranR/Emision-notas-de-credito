@@ -1,6 +1,6 @@
 import json
 from inertia import render
-from django.http import HttpResponse,JsonResponse
+from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from ..services.service_nc_punto_venta import ServiceNCPDV
 from ..services.service_dynamics import ServiceDynamics

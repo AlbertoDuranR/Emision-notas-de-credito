@@ -19,10 +19,9 @@ class ServiceDynamics:
                 "grant_type":"client_credentials"
             }
         endp = 'https://login.microsoftonline.com/ceb88b8e-4e6a-4561-a112-5cf771712517/oauth2/token'
-        
+
         try:
             req = requests.post(endp,env)
-            
             if req.status_code == 200:
                 token = req.json()['access_token']
                 # print('token' * 20, token)
@@ -31,7 +30,7 @@ class ServiceDynamics:
                 return None
         except:
             return None
-        
+
     def fetch_data(self,query_update):
         token = self.get_Token()
         #Headers
@@ -44,7 +43,7 @@ class ServiceDynamics:
             return response.json()
         else:
             return []
-        
+
     def process_data(self,path,method=1,i=0):
         if method == 1:
             query_update = f"{path}"
@@ -52,22 +51,17 @@ class ServiceDynamics:
         elif method == 2:
             query_update = f"{path}&$top=1000&$skip={int(i)}"
             return self.fetch_data(query_update)["value"]
-    def getProductsIssued(self):
 
+    def getProductsIssued(self):
         #Definir url
         path = f"{self.url}/data/AllProducts"
-        
         # token = self.get_Token()
-        
         #Queries
         query_temp = f"?$count=true&$top=1"
         path_temp=path+query_temp
 
         query = f"?$count=true&$select=ProductNumber,ProductDescription"
         path_final=path+query
-
-        # def process_data_method_2(self,x):
-        #     return self.process_data(path=path_final,method=2,i=x)
 
         try:
             count_temp = self.process_data(path=path_temp)
@@ -93,38 +87,30 @@ class ServiceDynamics:
                 products = pd.read_json(json.dumps(result))
                 products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
                 result = products[["ProductNumber","ProductDescription","Product"]]
-                #print(result)
                 result = result.to_dict(orient='records')
                 return result
             else:
                 result = self.process_data(path=path_final)
-                ###
                 products = pd.read_json(json.dumps(result["value"]))
                 products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
                 result = products[["ProductNumber","ProductDescription","Product"]]
                 result = result.to_dict(orient='records')
-                ##
                 return result
         except Exception as e:
             print(e)
             return []
-        
-    def getUnitsConversion(self):
 
+    def getUnitsConversion(self):
         #Definir url
         path = f"{self.url}/data/UnitsOfMeasure"
-        
         token = self.get_Token()
-        
         #Queries
         query = f"?$count=true&$select=UnitSymbol"
-        
         #Headers
         headers = {
             "Authorization": token,
             "Content-Type": "application/json"
         }
-        
         path=path+query
 
         try:
@@ -220,9 +206,7 @@ class ServiceDynamics:
                 return None
             products = pd.read_json(json.dumps(data["value"]))
             products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
-            print('C',  products["Product"])
             result = products[["ProductNumber", "ProductDescription", "Product", "InvoicedQuantity", "SalesPrice", "SalesUnitSymbol"]]
-            print('D', result)
             return result.to_dict(orient='records')
         except Exception as e:
             print(f"An exception occurred in get_sales_invoice_lines_by_invoice_number: {e}")

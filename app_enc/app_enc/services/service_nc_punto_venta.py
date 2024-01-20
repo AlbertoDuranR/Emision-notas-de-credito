@@ -77,7 +77,7 @@ class ServiceNCPDV:
     def save_solicitud(data):
         # Solicitud NC
         tipo_nc = "PDV"
-        usuario_creador = 1 ## Sera el Id del Usuario
+        usuario_creador = 1 # Sera el Id del Usuario
         estado = "PENDIENTE"
         fecha_emision = data["datos_documento"]["fecha_emision"]['date']
         fecha_emision = datetime.strptime(fecha_emision,'%Y-%m-%dT%H:%M:%S.%fZ')
@@ -146,17 +146,15 @@ class ServiceNCPDV:
         sol_id = int(data["id"])
         observacion = data["observacion"]
         estado = "OBSERVADO"
-        
         solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
         if solicitud_existente:
             # Actualizar el registro existente en SolicitudNC
             solicitud_existente.sol_observacion = observacion
             solicitud_existente.sol_estado = estado
-            solicitud_existente.save()        
-            
+            solicitud_existente.save()
+
     # Actualizar solicitud - puntos de venta
     def edit_solicitud(data):
-        
         sol_id = int(data["datos_documento"]["id_nc"])
         det_id = int(data["datos_documento"]["id_detalle_nc"])
         
