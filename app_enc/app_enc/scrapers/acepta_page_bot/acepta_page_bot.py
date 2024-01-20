@@ -38,7 +38,9 @@ class AceptaScraper:
         self.xpath_paginacion = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li"
 
     def config_navigator(self):
-        self.driver = webdriver.Chrome()
+        options = webdriver.ChromeOptions()
+        # options.add_argument("--headless")
+        self.driver = webdriver.Chrome(options=options)
         self.wait_10 = WebDriverWait(self.driver , 10)
         self.wait_20 = WebDriverWait(self.driver , 20)
         self.driver.maximize_window()
@@ -108,7 +110,6 @@ class AceptaScraper:
             print(f"Error al imprimir datos de la tabla: {str(e)}")
 
     def get_estado_por_comprobante(self, nro_comprobante: str):
-        print('A'*20)
         self.config_navigator()
         # Ejecutar acciones
         self.iniciar_sesion()
