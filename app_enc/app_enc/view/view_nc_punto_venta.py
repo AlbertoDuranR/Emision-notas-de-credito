@@ -4,9 +4,11 @@ from django.http import HttpResponse,JsonResponse
 from django.middleware.csrf import get_token
 from ..services.service_nc_punto_venta import ServiceNCPDV
 from ..services.service_dynamics import ServiceDynamics
+from ..scrapers.acepta_page_bot.acepta_page_bot import AceptaScraper
 
 servicePDV = ServiceNCPDV
 serviceDynamics = ServiceDynamics()
+
 
 class ViewNCPDV:
     ### Formulario Punto de Venta
@@ -126,7 +128,9 @@ class ViewNCPDV:
         if request.method == "POST":
             # Transform data
             data = json.loads(request.body.decode('utf-8'))
-
+            aceptaScraper = AceptaScraper() # Creamos un Objeto - instancia
+            estado_acepta = aceptaScraper.get_estado_por_comprobante(nro_comprobante='01-0024')
+            print('B'*20, estado_acepta)
             try:
                 #print(data)
                 servicePDV.validate_solicitud(data)
