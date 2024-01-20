@@ -54,11 +54,17 @@ class AceptaFunctions:
             elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_opcion_emitido)))
             elemento.click()
         except Exception as e:
-            print(f"Error al clickear en la opción: {str(e)}")
+            print(f"Error al clickear en la opción emitidos: {str(e)}")
+
+    def seleccionar_busqueda_avanzada(self):
+        try:
+            elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_busqueda_avanzada)))
+            elemento.click()
+        except Exception as e:
+            print(f"Error al clickear en en opciones avanzadas: {str(e)}")
 
     def buscar_comprobante(self, serie, correlativo_desde):
         try:
-            self._hacer_clic_xpath(self.xpath_busqueda_avanzada)
             # Reemplazar time.sleep(3) con una espera explícita si es necesario después de hacer clic en nota_credito
             # espera.until(...)  # Agregar espera explícita si es necesario
             self._ingresar_valor_en_input_xpath(self.xpath_serie, serie)
@@ -84,21 +90,26 @@ class AceptaFunctions:
             print(f"Error al seleccionar opciones: {str(e)}")
 
     def extraer_estado_por_comprobante(self, nro_comprobante):
-        print('B'*20, nro_comprobante)
         serie, correlativo_desde = nro_comprobante.split('-')
+        # Vista de Documentos Emitidos - Opciones avanzadas
         self.buscar_comprobante(serie, correlativo_desde)
         try:
-            datos_totales = []
+            # Esperar a que la tabla esté presente
             self.wait_10.until(EC.presence_of_element_located((By.XPATH, self.xpath_tabla_resultados)))
             # Extraer datos de la tabla
             tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
+        except TimeoutException:
+            print("No se encontro la tabla de estados")
+            return None
+
+        try:
+            datos_totales = []
             # Recorrer filas y columnas
             for fila in tabla_resultado.find_elements(By.TAG_NAME, 'tr'):
                 # print('fila:', fila)
                 columnas = fila.find_elements(By.TAG_NAME, 'td')
                 if len(columnas) > 7:
                     datos_totales.append((columnas[3].text, columnas[7].text))
-
             # Convertir la lista de datos en un DataFrame
             df = pd.DataFrame(datos_totales, columns=['Estado', 'NRO CPE'])
             # Crear la lista de diccionarios
@@ -207,31 +218,33 @@ curr_date = datetime.datetime.now()
 dias = datetime.timedelta(days=1)
 # Restar un día a la fecha actual
 yesterday = curr_date - dias
-
 # Formatear la fecha en formato "DDMMAAAA"
 fecha_hoy = curr_date.strftime("%d%m%Y")
 fecha_ayer = yesterday.strftime("%d%m%Y")
-
 # Imprimir la fecha formateada
 print(fecha_hoy, fecha_ayer)
 
 desde = "01122023"
 hasta = "15122023"
 
-nro_comprobantes = ['BC11-00000329', 'BC11-00000329X', 'BA01-00249590']
+nro_comprobantes = ['BC11-00000329', 'BC11-00000329X', 'BA01-00249590', 'BA01-00249590']
 
+"""
+    INIT BOT
+"""
 # Crear instancia de AceptaFunctions
 acepta_bot = AceptaFunctions()
 
 # Ejecutar acciones
 acepta_bot.iniciar_sesion()
 acepta_bot.seleccionar_opcion_emitidos()
+acepta_bot.seleccionar_busqueda_avanzada()
 # acepta_bot.seleccionar_opciones(fecha_ayer, fecha_hoy)
 # acepta_bot.buscar_comprobante(serie, correlativo_desde)
-estado_comprobante = acepta_bot.extraer_estado_por_comprobante('BA01-00249590')
-# for nro_comprobante in nro_comprobantes:
-#     print('A'*20, nro_comprobante)
-#     estado_comprobante = acepta_bot.extraer_estado_por_comprobante(nro_comprobante)
-#     print('Estado Comprobante: ',estado_comprobante if estado_comprobante else 'No Existe')
+# estado_comprobante = acepta_bot.extraer_estado_por_comprobante('BA01-00249590')
+for nro_comprobante in nro_comprobantes:
+    estado_comprobante = acepta_bot.extraer_estado_por_comprobante(nro_comprobante)
+    print(f'Estado Comprobante: {nro_comprobante} : {estado_comprobante if estado_comprobante else 'No Existe'}')
+    time.sleep(1)
 # acepta_bot.extraer_estados()
 acepta_bot.cerrar_sesion()
