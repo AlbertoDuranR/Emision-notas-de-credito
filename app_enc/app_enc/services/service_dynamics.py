@@ -19,18 +19,18 @@ class ServiceDynamics:
                 "grant_type":"client_credentials"
             }
         endp = 'https://login.microsoftonline.com/ceb88b8e-4e6a-4561-a112-5cf771712517/oauth2/token'
-        
+
         try:
             req = requests.post(endp,env)
-            
             if req.status_code == 200:
                 token = req.json()['access_token']
+                # print('token' * 20, token)
                 return 'Bearer {0}'.format(token)
             else:
                 return None
         except:
             return None
-        
+
     def fetch_data(self,query_update):
         token = self.get_Token()
         #Headers
@@ -43,7 +43,7 @@ class ServiceDynamics:
             return response.json()
         else:
             return []
-        
+
     def process_data(self,path,method=1,i=0):
         if method == 1:
             query_update = f"{path}"
@@ -51,24 +51,17 @@ class ServiceDynamics:
         elif method == 2:
             query_update = f"{path}&$top=1000&$skip={int(i)}"
             return self.fetch_data(query_update)["value"]
-        
 
     def getProductsIssued(self):
-
         #Definir url
         path = f"{self.url}/data/AllProducts"
-        
         # token = self.get_Token()
-        
         #Queries
         query_temp = f"?$count=true&$top=1"
         path_temp=path+query_temp
 
         query = f"?$count=true&$select=ProductNumber,ProductDescription"
         path_final=path+query
-
-        # def process_data_method_2(self,x):
-        #     return self.process_data(path=path_final,method=2,i=x)
 
         try:
             count_temp = self.process_data(path=path_temp)
@@ -94,38 +87,30 @@ class ServiceDynamics:
                 products = pd.read_json(json.dumps(result))
                 products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
                 result = products[["ProductNumber","ProductDescription","Product"]]
-                #print(result)
                 result = result.to_dict(orient='records')
                 return result
             else:
                 result = self.process_data(path=path_final)
-                ###
                 products = pd.read_json(json.dumps(result["value"]))
                 products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
                 result = products[["ProductNumber","ProductDescription","Product"]]
                 result = result.to_dict(orient='records')
-                ##
                 return result
         except Exception as e:
             print(e)
             return []
-        
-    def getUnitsConversion(self):
 
+    def getUnitsConversion(self):
         #Definir url
         path = f"{self.url}/data/UnitsOfMeasure"
-        
         token = self.get_Token()
-        
         #Queries
         query = f"?$count=true&$select=UnitSymbol"
-        
         #Headers
         headers = {
             "Authorization": token,
             "Content-Type": "application/json"
         }
-        
         path=path+query
 
         try:
@@ -156,4 +141,73 @@ class ServiceDynamics:
                     return result
         except:
             return None
-    
+
+    def get_sales_invoice_headers_by_invoice_number(self, invoice_number: str):
+        """
+            :param invoice_number: The invoice number to query.
+                Ex. 'BG02-00052743'
+            :return: A list of dictionaries containing invoice details.
+                Ex.
+                    [{
+                        'InvoiceNumber': 'BG02-00052743',
+                        'InvoiceDate': '2024-01-10T12:00:00Z',
+                        'TotalTaxAmount': 29.07,
+                        'SalesOrderNumber': 'TRV-02697594',
+                        'TotalInvoiceAmount': 190.6
+                    }]
+        """
+        # Definir url
+        path = f"{self.url}/data/SalesInvoiceHeaders"
+        token = self.get_Token()
+        query = f"?$count=true&$filter=InvoiceNumber eq '{invoice_number}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            invoice_data = pd.read_json(json.dumps(data["value"]))
+            result = invoice_data[
+                ["InvoiceNumber", "InvoiceDate", "TotalTaxAmount", "SalesOrderNumber", "TotalInvoiceAmount"]
+            ]
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_sales_invoice_headers_by_invoice_number: {e}")
+            return None
+
+    def get_sales_invoice_lines(self, invoice_number: str):
+        """
+            :param invoice_number: The invoice number to query.
+            :return: A list of dictionaries containing invoice lines details.
+        """
+        # https://mistr.operations.dynamics.com/data/SalesInvoiceLines?$count=true&$filter=InvoiceNumber eq 'BA01-00249590'
+        # Definir url
+        path = f"{self.url}/data/SalesInvoiceLines"
+        token = self.get_Token()
+        query = f"?$count=true&$filter=InvoiceNumber eq '{invoice_number}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            products = pd.read_json(json.dumps(data["value"]))
+            products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
+            result = products[["ProductNumber", "ProductDescription", "Product", "InvoicedQuantity", "SalesPrice", "SalesUnitSymbol"]]
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_sales_invoice_lines_by_invoice_number: {e}")
+            return None

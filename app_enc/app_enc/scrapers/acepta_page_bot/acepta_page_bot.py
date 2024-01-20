@@ -107,7 +107,7 @@ class AceptaScraper:
         except Exception as e:
             print(f"Error al imprimir datos de la tabla: {str(e)}")
 
-    def get_estado_por_comprobante(self, nro_comprobante):
+    def get_estado_por_comprobante(self, nro_comprobante: str):
         print('A'*20)
         self.config_navigator()
         # Ejecutar acciones

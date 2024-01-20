@@ -20,6 +20,7 @@ from . import views
 from .view.view_nc_punto_venta import ViewNCPDV
 from .view.view_nc_financiero import ViewNCFinanciero
 from .view.view_nc_servicios import ViewNCServicios
+from .view.view_nota_credito import ViewNotaCredito
 
 urlpatterns = [
     ## Path Index
@@ -62,7 +63,7 @@ urlpatterns = [
     path('solicitud_nota_credito/servicios/validar/', ViewNCServicios.notaServiciosEdit),
     ##
 
-    ## Create NC
+    ## Create Solicitud Nota de Credito
     path('solicitud_nota_credito/punto_venta/create/', ViewNCPDV.create_solicitud_pdv),
     path('solicitud_nota_credito/financieros/create/', ViewNCFinanciero.create_solicitud_financieras),
     path('solicitud_nota_credito/servicios/create/', ViewNCServicios.create_solicitud_servicios),
@@ -78,8 +79,14 @@ urlpatterns = [
     path('solicitud_nota_credito/financieros/edit/', ViewNCFinanciero.edit_solicitud_financieras),
     path('solicitud_nota_credito/servicios/edit/', ViewNCServicios.edit_solicitud_servicios),
     ##
-    
-    
+
+    ## Create Nota de Credito
+    path('nota_credito/punto_venta/create/', ViewNotaCredito.create_nota_credito),
+
+    ## Get Datos Comprobante
+    path('comprobante/detalle_comprobante/<str:nro_comprobante>', ViewNCPDV.get_sales_invoice_details),
+
+    ## Get datos de reniec
     path('solicitud_nota_credito/financieros/reniec/', ViewNCFinanciero.obtener_datos_personales),
     
     ###

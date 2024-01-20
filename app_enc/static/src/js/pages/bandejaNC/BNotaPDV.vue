@@ -57,33 +57,36 @@
       <thead>
         <tr>
           <th class="text-sm text-gray-600 text-center">ID</th>
-          <th class="text-sm text-gray-600 text-center">ID_DETALLE</th>
+          <!-- <th class="text-sm text-gray-600 text-center">ID_DETALLE</th> -->
           <th class="text-sm text-gray-600 text-center">FECHA SOLICITUD</th>
           <th class="text-sm text-gray-600 text-center">USUARIO CREADOR</th>
           <th class="text-sm text-gray-600 text-center">SUCURSAL</th>
           <th class="text-sm text-gray-600 text-center">
-            FECHA DE E.N.C. ORIGEN
+            FECHA COMPROBANTE
           </th>
           <th class="text-sm text-gray-600 text-center">
-            TIPO COMPROBANTE ORIGEN
+            TIPO COMPROBANTE
           </th>
           <th class="text-sm text-gray-600 text-center">
-            N° COMPROBANTE ORIGEN
+            N° COMPROBANTE
           </th>
           <th class="text-sm text-gray-600 text-center">ESTADO</th>
           <th class="text-sm text-gray-600 text-center">OPCIONES</th>
-          <th class="text-sm text-gray-600 text-center">FECHA CREACIÓN SOLI.</th>
+          <th class="text-sm text-gray-600 text-center">FECHA N. DE CRÉDITO</th>
           <th class="text-sm text-gray-600 text-center">METODO</th>
-          <th class="text-sm text-gray-600 text-center">IMPORTE TOTAL</th>
+          <th class="text-sm text-gray-600 text-center">IMPORTE N. DE CRÉDITO</th>
+          <th class="text-sm text-gray-600 text-center">N° N. DE CRÉDITO</th>
           <th class="text-sm text-gray-600 text-center">ACEPTA</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in lista_solicitudes" :key="item.ID_NC">
           <td class="text-sm text-gray-600 text-center">{{ item.ID_NC }}</td>
-          <td class="text-sm text-gray-600 text-center">
+          <!--
+            <td class="text-sm text-gray-600 text-center">
             {{ item.ID_DETALLE }}
           </td>
+          -->
           <td class="text-sm text-gray-600 text-center">
             {{ item.FECHA_SOLICITUD }}
           </td>
@@ -115,13 +118,14 @@
           </td>
           <td class="text-sm text-gray-600 text-center">
             <button
-              @click="validar_item(item.ID_NC)"
-              class="bg-blue-0 text-white px-2 py-1 mr-2"
+              v-show="item.ESTADO != 'VALIDADO'"
+              @click="validar_item(item.ID_NC, item.NRO_COMPROBANTE)"
+              class="bg-blue-0 text-white px-2 py-1"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                height="16"
-                width="16"
+                height="20"
+                width="20"
                 viewBox="0 0 512 512"
               >
                 <path
@@ -135,13 +139,28 @@
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                height="16"
-                width="16"
+                height="20"
+                width="20"
                 viewBox="0 0 512 512"
               >
                 <path
                   d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"
                 />
+              </svg>
+            </button>
+            <button
+              v-show="item.ESTADO == 'VALIDADO'"
+              @click="generar_nota_item(item.ID_NC)"
+              class="bg-red-0 text-white px-2 py-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg"
+                height="22"
+                width="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                <path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/>
               </svg>
             </button>
           </td>
@@ -150,6 +169,7 @@
           <td class="text-sm text-gray-600 text-center">
             {{ item.MONTO_TOTAL }}
           </td>
+          <td class="text-sm text-gray-600 text-center">{{ item.ACEPTA }}</td>
           <td class="text-sm text-gray-600 text-center">{{ item.ACEPTA }}</td>
         </tr>
       </tbody>
@@ -181,8 +201,8 @@ export default {
     //console.log(this.lista_solicitudes);
   },
   methods: {
-    validar_item(item_nota) {
-      console.log("Editar:", item_nota);
+    validar_item(itemNota, nroComprobante) {
+      console.log("Editar:", itemNota);
 
       this.$swal
         .fire({
@@ -200,8 +220,8 @@ export default {
             // Lógica para la confirmación
             axios
               .post("/solicitud_nota_credito/punto_venta/validar/", {
-                id: item_nota,
-                estado: "VALIDADO",
+                id: itemNota,
+                nro_comprobante: nroComprobante
               })
               .then((response) => {
                 console.log(response);
@@ -214,12 +234,13 @@ export default {
                 location.reload();
               })
               .catch((err) => {
-                console.log(err);
-                Swal.fire({
-                  title: "Error de Registro",
-                  text: "Error al validar la solicitud",
+                const msg_error = err.response.data.message
+                this.$swal.fire({
+                  title: "Error de Validación",
+                  text: `${msg_error}`,
                   icon: "error",
                 });
+                location.reload();
               });
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
             // Lógica para la cancelación
@@ -300,7 +321,55 @@ export default {
         text: observacion,
         icon: 'info',
       });
-    }
+    },
+    generar_nota_item(item_nota) {
+      this.$swal
+        .fire({
+          title: "Advertencia!",
+          text: "¿Estás seguro de Generar la Nota de Crédito?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, Generar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            // Lógica para la confirmación
+            axios
+              .post("/nota_credito/punto_venta/create/", {
+                id: item_nota,
+                estado: "VALIDADO",
+              })
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "CREADO",
+                  "Nota de crédito CREADA",
+                  "success"
+                );
+                // Recargar la página completa
+                location.reload();
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  title: "Error de Registro",
+                  text: "Error al crear la Nota de Crédito",
+                  icon: "error",
+                });
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
   },
 };
 </script>
