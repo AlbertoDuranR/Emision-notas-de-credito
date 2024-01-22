@@ -1,4 +1,6 @@
 # acepta_functions.py
+from dotenv import load_dotenv
+import os
 import pandas as pd
 import time
 
@@ -10,17 +12,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from acepta_functions import AuxiliaryFunctions
+from .acepta_functions import AuxiliaryFunctions
 
+load_dotenv()
 
-class AceptaFunctions:
+class AceptaScraper:
     def __init__(self):
-        # Configuración del navegador
-        self.driver = webdriver.Chrome()
-        self.wait_10 = WebDriverWait(self.driver , 10)
-        self.wait_20 = WebDriverWait(self.driver , 10)
-        self.driver.maximize_window()
-
         # Credenciales
         self.url = "https://escritorio.acepta.pe/"
         self.usuario = "wilfredo.caceres@terranovatrading.com.pe"
@@ -39,6 +36,14 @@ class AceptaFunctions:
         self.xpath_tabla_resultados = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
         self.xpath_nota_credito = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table/tbody/tr[4]/td[10]/a"
         self.xpath_paginacion = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li"
+
+    def config_navigator(self):
+        options = webdriver.ChromeOptions()
+        # options.add_argument("--headless")
+        self.driver = webdriver.Chrome(options=options)
+        self.wait_10 = WebDriverWait(self.driver , 10)
+        self.wait_20 = WebDriverWait(self.driver , 20)
+        self.driver.maximize_window()
 
     def iniciar_sesion(self):
         try:
@@ -73,22 +78,6 @@ class AceptaFunctions:
         except Exception as e:
             print(f"Error al seleccionar opciones: {str(e)}")
 
-    def seleccionar_opciones(self, desde, hasta):
-        try:
-            self._ingresar_valor_en_input_xpath(self.xpath_desde, desde)
-            self._ingresar_valor_en_input_xpath(self.xpath_hasta, hasta)
-
-            self._hacer_clic_xpath(self.xpath_buscar)
-
-            # Reemplazar time.sleep(5) con una espera explícita para que el elemento esté presente y sea clickeable
-            espera = WebDriverWait(self.driver, 10)
-            espera.until(EC.element_to_be_clickable((By.XPATH, self.xpath_nota_credito))).click()
-
-            # Reemplazar time.sleep(3) con una espera explícita si es necesario después de hacer clic en nota_credito
-            # espera.until(...)  # Agregar espera explícita si es necesario
-        except Exception as e:
-            print(f"Error al seleccionar opciones: {str(e)}")
-
     def extraer_estado_por_comprobante(self, nro_comprobante):
         serie, correlativo_desde = nro_comprobante.split('-')
         # Vista de Documentos Emitidos - Opciones avanzadas
@@ -120,77 +109,22 @@ class AceptaFunctions:
         except Exception as e:
             print(f"Error al imprimir datos de la tabla: {str(e)}")
 
-    def extraer_estados(self):
-        try:
-            # Esperar a que la paginación esté presente
-            paginacion_li = self.wait_10.until(EC.presence_of_all_elements_located((By.XPATH, self.xpath_paginacion)))
-        except TimeoutException:
-            print("No se encontraron elementos de paginación.")
-            paginacion_li = None
+    def get_estado_por_comprobante(self, nro_comprobante: str):
+        self.config_navigator()
+        # Ejecutar acciones
+        self.iniciar_sesion()
+        self.seleccionar_opcion_emitidos()
+        self.seleccionar_busqueda_avanzada()
+        estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+        self.cerrar_sesion()
+        return estado_comprobante
 
-        try:
-            # Lista para almacenar los datos
-            datos_totales = []
-            if not paginacion_li or len(paginacion_li) == 1:
-                print('Entro paginacion_li = 1')
-                espera = WebDriverWait(self.driver, 10)
-                espera.until(EC.presence_of_element_located((By.XPATH, self.xpath_tabla_resultados)))
-                # Extraer datos de la tabla
-                tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
-                # Recorrer filas y columnas
-                for fila in tabla_resultado.find_elements(By.TAG_NAME, 'tr'):
-                    columnas = fila.find_elements(By.TAG_NAME, 'td')
-                    if len(columnas) > 7:
-                        datos_totales.append((columnas[3].text, columnas[7].text))
-            else:
-                 print('Entro en muchas paginacion_li')
-                 for numero_pestaña in range(1, len(paginacion_li) - 1):
-                    print('X'*20, numero_pestaña)
-                    # Cambiar a la pestaña correspondiente
-                    self.cambiar_pestaña(numero_pestaña)
-                    
-                    # Esperar a que la tabla esté presente
-                    espera = WebDriverWait(self.driver, 10)
-                    espera.until(EC.presence_of_element_located((By.XPATH, self.xpath_tabla_resultados)))
-                    
-                    # Extraer datos de la tabla
-                    tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
-                    
-                    # Lista para almacenar los datos de la pestaña actual
-                    datos_pestaña = []
-                    
-                     # Recorrer filas y columnas
-                    for fila in tabla_resultado.find_elements(By.TAG_NAME, 'tr'):
-                        columnas = fila.find_elements(By.TAG_NAME, 'td')
-
-                        # Imprimir las columnas 1, 3 y 7
-                        if len(columnas) > 7:  # Asegurarse de que hay suficientes columnas
-                            print(columnas[0].text, columnas[3].text, columnas[7].text)
-                            datos_pestaña.append((columnas[3].text, columnas[7].text))
-
-                    # Agregar los datos de la pestaña actual a la lista total
-                    datos_totales.extend(datos_pestaña)
-
-            # Convertir la lista de datos en un DataFrame
-            df = pd.DataFrame(datos_totales, columns=['Estado', 'NRO CPE'])
-
-            # Imprimir el DataFrame
-            print(df)
-                
-        except Exception as e:
-            print(f"Error al imprimir datos de la tabla: {str(e)}")    
-               
-    def cambiar_pestaña(self, numero_pestaña):
-        # Cambiar a la pestaña especificada
-        self.driver.find_element(By.XPATH, f"//nav/ul[@class='pagination pagination-lg']/li/a[text()='{numero_pestaña}']").click()
-    
     def cerrar_sesion(self):
         time.sleep(10)
         self.driver.quit()
         print("Sesión cerrada")
 
     # Funciones auxiliares
- # Funciones auxiliares
     def _ingresar_valor_en_input_id(self, xpath, valor):
         AuxiliaryFunctions.ingresar_valor_en_input_id(self.driver, self.wait_10, xpath, valor)
 
@@ -205,7 +139,6 @@ class AceptaFunctions:
 
     def _hacer_clic_xpath(self, xpath):
         AuxiliaryFunctions.hacer_clic_xpath(self.driver, self.wait_10, xpath)
-
 
 """
     Para Obtener el rango de tiempo de busqueda
@@ -232,19 +165,19 @@ nro_comprobantes = ['BC11-00000329', 'BC11-00000329X', 'BA01-00249590', 'BA01-00
 """
     INIT BOT
 """
-# Crear instancia de AceptaFunctions
-acepta_bot = AceptaFunctions()
+# # Crear instancia de AceptaScraper
+# acepta_bot = AceptaScraper()
 
-# Ejecutar acciones
-acepta_bot.iniciar_sesion()
-acepta_bot.seleccionar_opcion_emitidos()
-acepta_bot.seleccionar_busqueda_avanzada()
-# acepta_bot.seleccionar_opciones(fecha_ayer, fecha_hoy)
-# acepta_bot.buscar_comprobante(serie, correlativo_desde)
-# estado_comprobante = acepta_bot.extraer_estado_por_comprobante('BA01-00249590')
-for nro_comprobante in nro_comprobantes:
-    estado_comprobante = acepta_bot.extraer_estado_por_comprobante(nro_comprobante)
-    print(f'Estado Comprobante: {nro_comprobante} : {estado_comprobante if estado_comprobante else 'No Existe'}')
-    time.sleep(1)
-# acepta_bot.extraer_estados()
-acepta_bot.cerrar_sesion()
+# # Ejecutar acciones
+# acepta_bot.iniciar_sesion()
+# acepta_bot.seleccionar_opcion_emitidos()
+# acepta_bot.seleccionar_busqueda_avanzada()
+# # acepta_bot.seleccionar_opciones(fecha_ayer, fecha_hoy)
+# # acepta_bot.buscar_comprobante(serie, correlativo_desde)
+# # estado_comprobante = acepta_bot.extraer_estado_por_comprobante('BA01-00249590')
+# for nro_comprobante in nro_comprobantes:
+#     estado_comprobante = acepta_bot.extraer_estado_por_comprobante(nro_comprobante)
+#     print(f'Estado Comprobante: {nro_comprobante} : {estado_comprobante if estado_comprobante else 'No Existe'}')
+#     time.sleep(1)
+# # acepta_bot.extraer_estados()
+# acepta_bot.cerrar_sesion()

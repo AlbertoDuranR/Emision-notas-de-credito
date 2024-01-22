@@ -1,12 +1,20 @@
 import json
+import logging
 from inertia import render
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from ..services.service_nc_punto_venta import ServiceNCPDV
 from ..services.service_dynamics import ServiceDynamics
+from ..scrapers.acepta_page_bot.acepta_page_bot import AceptaScraper
 
 servicePDV = ServiceNCPDV
 serviceDynamics = ServiceDynamics()
+
+# Configurar el logging para mostrar mensajes en la consola
+# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Obtener el logger para el módulo actual (o elige un nombre específico)
+# logger = logging.getLogger(__name__)
 
 class ViewNCPDV:
     ## Formulario Punto de Venta
@@ -121,8 +129,7 @@ class ViewNCPDV:
             except Exception as e:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
-            
-    ## validar
+
     def validar_solicitud(request):
         if request.method == "POST":
             # Transform data
@@ -132,14 +139,23 @@ class ViewNCPDV:
             if not sales_invoice:
                 data["observacion"] = "Comprobante de origen no se encontro en Dynamics365. Verificar Nro de Comprobante"
                 servicePDV.save_observacion(data)
+                # logger.warning(f'Estado Dynamics 365: Existe')
                 return JsonResponse({'message': 'Comprobante de origen no se encontro en Dynamics365'}, status=404)
+            # logger.info(f'Estado Dynamics 365: {sales_invoice}')
+
+            aceptaScraper = AceptaScraper() # Creamos un Objeto - instancia
+            estado_acepta = aceptaScraper.get_estado_por_comprobante(nro_comprobante)
+            if not estado_acepta == 'ACEPTADO':
+                # logger.warning(f'Estado Portal Acepta: {estado_acepta}')
+                return JsonResponse({'message': 'Comprobante de origen no se encontra Aceptado en el Portal ACEPTA'}, status=404)
+            # logger.info(f'Estado Dynamics 365: {estado_acepta}')
+
             try:
                 servicePDV.validate_solicitud(data)
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
-             #
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
 
