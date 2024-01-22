@@ -25,6 +25,13 @@ class ViewNCPDV:
             '_token':get_token(request)
         })
 
+    def get_sales_invoice(request, nro_comprobante):
+        invoice = serviceDynamics.get_sales_invoice_headers_by_invoice_number(nro_comprobante)
+        print('get_sales_invoices', invoice)
+        if not invoice:
+            return JsonResponse({'error': 'No se encontro el N° Comprobante'}, status=404)
+        return JsonResponse(invoice, safe=False)
+
     def get_sales_invoice_details(request, nro_comprobante):
         invoice_products = serviceDynamics.get_sales_invoice_lines(nro_comprobante)
         # print('get_sales_invoices_details', invoice_products)

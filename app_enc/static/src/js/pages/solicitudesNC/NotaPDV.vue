@@ -14,6 +14,12 @@
           v-on:submit.prevent="enviarSolicitud()"
           :ref="formContainer"
         >
+          <loading-overlay
+            :active="isLoading"
+            :can-cancel="true"
+            :color="'#dc2626'"
+          >
+          </loading-overlay>
           <!-- <div class="px-4 flex justify-center">
             <button
               class="text-sm rounded-full bg-green-600 p-2 text-white font-bold flex"
@@ -52,6 +58,7 @@
               v-model="datos_documento.nro_comprobante"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+              @blur="getDatosDelComprobante"
             />
           </div>
           <div class="space-y-1 py-2">
@@ -136,7 +143,7 @@
 
                 <div class="space-y-1 py-2 relative" >
                   <loading-overlay
-                    :active="isLoading"
+                    :active="isLoadingProductos"
                     :can-cancel="true"
                     :is-full-page="false"
                     :color="'#dc2626'"
@@ -260,11 +267,13 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 
 import { notify } from "@kyvg/vue3-notification";
 import { useLoading } from "vue3-loading-overlay";
+import convertirFormatoFecha from "../../utils"
 
 import "@vuepic/vue-datepicker/dist/main.css";
 import "vue3-loading-overlay/dist/vue3-loading-overlay.css";
 
 const props = defineProps(['unidades', '_token'])
+const isLoadingProductos = ref(false);
 const isLoading = ref(false);
 const formContainer = ref(null);
 const fullPage = ref(true);
@@ -315,6 +324,8 @@ const enviarSolicitud = () => {
   }
   const jsonString = JSON.stringify(send_data);
   console.log('enviarr Solicitud', jsonString);
+  // return
+  isLoading.value = true;
   axios
     .post('/solicitud_nota_credito/punto_venta/create/', jsonString)
     .then((response) => {
@@ -331,7 +342,7 @@ const enviarSolicitud = () => {
         text: 'Error al guardar datos verificar los campos',
         type: 'error',
       });
-    });
+    })
 };
 
 const refreshLoading = () => {
@@ -349,6 +360,40 @@ const refreshLoading = () => {
   }, 1000);
 };
 
+const getDatosDelComprobante = async () => {
+  if (datos_documento.value.nro_comprobante == '') {
+    Swal.fire({
+      title: 'Verificar Campos',
+      text: `N° Comprobante no puede estar Vacío`,
+      icon: 'warning',
+    });
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    const response = await axios.get(`/comprobante/get_datos_comprobante/${datos_documento.value.nro_comprobante}`);
+    if(response.status == 200 && response.data[0]) {
+      datos_documento.value.importe_total = response.data[0].TotalInvoiceAmount
+      const fechaEmision = response.data[0].InvoiceDate
+      // datos_documento.value.fecha_emision.date = formatearFecha(fechaEmision)
+      datos_documento.value.fecha_emision.date = convertirFormatoFecha(fechaEmision)
+    }
+    console.log("fechaFormateada: ",  datos_documento.value.fecha_emision.date);
+
+  } catch (error) {
+    Swal.fire({
+      title: 'Verificar Campos',
+      text: `${error.response.data.error}`,
+      icon: 'error',
+    });
+    datos_documento.value.importe_total='';
+    datos_documento.value.fecha_emision.date.importe_total=null;
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 const getProductosDelComprobante = async () => {
   // return
   if (datos_documento.value.nro_comprobante == '') {
@@ -359,11 +404,10 @@ const getProductosDelComprobante = async () => {
     });
     return;
   }
-  isLoading.value = true;
+  isLoadingProductos.value = true;
   try {
     const response = await axios.get(`/comprobante/detalle_comprobante/${datos_documento.value.nro_comprobante}`);
     productos.value = response.data;
-    isLoading.value = false;
   } catch (error) {
     Swal.fire({
       title: 'Verificar Campos',
@@ -371,7 +415,8 @@ const getProductosDelComprobante = async () => {
       icon: 'error',
     });
     productos.value = [];
-    isLoading.value = false;
+  } finally {
+    isLoadingProductos.value = false;
   }
 };
 
@@ -382,6 +427,7 @@ onMounted(() => {
 onUpdated(() => {
   console.log('onUpdated')
   console.log('Metodo_parcial_productos: ', metodo_parcial_productos)
+  console.log('datos_documento: ', datos_documento)
 })
 
 const handleSelectionChange = (value) => {
