@@ -118,7 +118,7 @@
                   class="sr-only my-5 peer/draft"
                   type="radio"
                   name="status"
-                  value="Total"
+                  value="total"
                   v-model="detalle_solicitud.metodo"
                   checked
                 />
@@ -132,8 +132,9 @@
                   class="sr-only peer/published"
                   type="radio"
                   name="status"
-                  value="Parcial"
+                  value="parcial"
                   v-model="detalle_solicitud.metodo"
+                  @click="getProductosDelComprobante"
                 />
                 <label
                   class="p-5 mx-3 my-5 bg-white border rounded-lg cursor-pointer peer-checked/published:border-sky-500 hover:border-sky-500 peer-checked/published:border-sky-500 peer-checked/published:ring-1 peer-checked/published:bg-sky-100"
@@ -161,7 +162,7 @@
                       <div>
                         <label class="typo__label text-sm">Producto:</label>
                         <multiselect
-                          v-model="metodo_parcial_productos.value"
+                          v-model="metodo_parcial_productos.selected_products"
                           id="multiselect"
                           :options="metodo_parcial_productos.products"
                           :multiple="true"
@@ -171,6 +172,7 @@
                           placeholder="Seleccionar producto..."
                           label="Product"
                           track-by="Product"
+                          @update:modelValue="handleSelectionChange"
                         >
                           <!-- <template slot="selection" slot-scope="{ values, search, isOpen }"><span
                                                           class="multiselect__single" v-if="values.length" v-show="!isOpen">{{
@@ -178,74 +180,61 @@
                         </multiselect>
                         <div class="py-2"></div>
                         <div
-                          v-for="(val, index) in metodo_parcial_productos.value"
+                          v-for="(product, index) in metodo_parcial_productos.selected_products"
                           :key="index"
                           class="py-2"
                         >
-                          <div
-                            class="text-center text-sm font-bold bg-gray-600 text-white rounded-lg py-1"
-                          >
-                            {{
-                              val["ProductNumber"] +
-                              " - " +
-                              val["ProductDescription"]
-                            }}
+                        <div
+                          class="text-center text-sm font-bold bg-gray-600 text-white rounded-lg py-1"
+                        >
+                          {{
+                            product["ProductNumber"] +
+                            " - " +
+                            product["ProductDescription"]
+                          }}
+                        </div>
+                        <div class="columns-4">
+                          <div class="space-y-1 py-2 px-2">
+                            <label class="text-sm">Cantidad:</label>
+                            <input
+                              type="number"
+                              v-model="product.InvoicedQuantity"
+                              class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+                              @input="handleInputChange(index)"
+                            />
                           </div>
-                          <div class="flex">
-                            <div class="space-y-1 py-2 px-2">
-                              <label class="text-sm text-center">Unidad:</label>
-                              <multiselect
-                                v-model="
-                                  metodo_parcial_productos.unidad.valores[index]
-                                    .value
-                                "
-                                id="multiselect_unidad"
-                                :options="
-                                  metodo_parcial_productos.unidad.unidades
-                                "
-                                :preserve-search="true"
-                                placeholder="Unidad"
-                                label="UnitSymbol"
-                                track-by="UnitSymbol"
+                          <div class="space-y-1 py-2 px-2">
+                            <label class="text-sm text-center">Unidad:</label>
+                            <multiselect
+                              id="multiselect_unidad"
+                              v-model="product.SalesUnitSymbol"
+                              :options="unidades"
+                              :close-on-select="true"
+                              :show-labels="false"
+                              placeholder="Unidad"
                               >
-                              </multiselect>
-                            </div>
-                            <div class="space-y-1 py-2 px-2">
-                              <label class="text-sm">Precio:</label>
-                              <input
-                                type="text"
-                                v-model="
-                                  metodo_parcial_productos.precio.valores[index]
-                                    .value
-                                "
-                                class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-                              />
-                            </div>
-                            <div class="space-y-1 py-2 px-2">
-                              <label class="text-sm">Cantidad:</label>
-                              <input
-                                type="text"
-                                v-model="
-                                  metodo_parcial_productos.cantidad.valores[
-                                    index
-                                  ].value
-                                "
-                                class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-                              />
-                            </div>
-                            <div class="space-y-1 py-2 px-2">
-                              <label class="text-sm">Monto Total:</label>
-                              <input
-                                v-model="
-                                  metodo_parcial_productos.monto_total.valores[
-                                    index
-                                  ].value
-                                "
-                                type="text"
-                                class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-                              />
-                            </div>
+                            </multiselect>
                           </div>
+                          <div class="space-y-1 py-2 px-2">
+                            <label class="text-sm">Precio:</label>
+                            <input
+                              type="number"
+                              step="any"
+                              v-model="product.SalesPrice"
+                              class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+                              @input="handleInputChange(index)"
+                              />
+                          </div>
+                          <div class="space-y-1 py-2 px-2">
+                            <label class="text-sm">Monto Total:</label>
+                            <input
+                              v-model="product.Total"
+                              type="number"
+                              step="any"
+                              class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+                            />
+                          </div>
+                        </div>
                         </div>
                       </div>
                     </div>
@@ -362,6 +351,7 @@ export default {
         justificacion: this.lista_solicitudesEdit[0].JUSTIFICACION,
         metodo: this.lista_solicitudesEdit[0].METODO,
       },
+      productos_del_comprobante: [],
       metodo_parcial_productos: {
         products: this.productos,
         value: null,
@@ -388,7 +378,9 @@ export default {
             value: null,
           })),
         },
+        selected_products: [],
       },
+      isLoadingProductos: false,
     };
   },
   mounted() {
@@ -446,6 +438,18 @@ export default {
         loader.hide();
       }, 2000);
     },
+    handleSelectionChange(value) {
+      value.forEach((element, index) => this.metodo_parcial_productos.selected_products[index]["Total"] =
+          (element.InvoicedQuantity * element.SalesPrice).toString()
+      );
+    },
+    handleInputChange(index) {
+      this.metodo_parcial_productos.selected_products[index].Total =
+      (
+        this.metodo_parcial_productos.selected_products[index].InvoicedQuantity
+        * this.metodo_parcial_productos.selected_products[index].SalesPrice
+      ).toString()
+    }
   },
 
   created() {

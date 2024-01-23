@@ -41,20 +41,16 @@ class ViewNCPDV:
 
      ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
-        
         lista_productosEdit = []
         # Lógica para obtener productos y unidades desde el servicio Dynamics
-        products_issues= serviceDynamics.getProductsIssued()
         unidades= serviceDynamics.getUnitsConversion()
-        
         # Lógica para obtener datos de la base de datos local registrados
         lista_solicitudesEdit=servicePDV.lista_solicitudesEdit(id)
-        
-       
-       # si es de tipo parical traer los productos 
-        if 'Parcial' in lista_solicitudesEdit[0]['METODO']:            
+        products_issues=serviceDynamics.get_sales_invoice_lines(lista_solicitudesEdit[0]['NUMERO_COMPROBANTE'])
+        # si es de tipo parcial traer los productos
+        if 'parcial' in lista_solicitudesEdit[0]['METODO']:
             lista_productosEdit=servicePDV.lista_productosEdit(id_product)
-        
+
         print("LISTA DE PROPDUCTOS") 
         print(id)
         print(id_product)

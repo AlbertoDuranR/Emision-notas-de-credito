@@ -178,7 +178,7 @@ class ServiceNCPDV:
         # Producto
         codigo_descripcion = data["metodo_parcial_productos"]["value"]
         cont_productos = False
-        if codigo_descripcion is not None and metodo == "Parcial":
+        if codigo_descripcion is not None and metodo == "parcial":
             if len(codigo_descripcion) != 0:
                 monto_producto = data["metodo_parcial_productos"]["monto_total"]["valores"][0:len(codigo_descripcion)]
                 monto_total_productos = 0
@@ -189,7 +189,7 @@ class ServiceNCPDV:
                 print(f'Monto total de productos: {monto_total_productos}')
             else:
                 raise TypeError("Campo necesario vacío.")
-        elif metodo == "Parcial" and codigo_descripcion is None:
+        elif metodo == "parcial" and codigo_descripcion is None:
             raise TypeError("Campo necesario vacío.")
         
         
