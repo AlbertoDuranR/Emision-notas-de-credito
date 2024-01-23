@@ -20,37 +20,10 @@
             :color="'#dc2626'"
           >
           </loading-overlay>
-          <!-- <div class="px-4 flex justify-center">
-            <button
-              class="text-sm rounded-full bg-green-600 p-2 text-white font-bold flex"
-              type="submit"
-            >
-              <svg
-                class="h-5 w-5 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              &nbsp;Solicitar NC
-            </button>
-          </div> -->
           <div class="py-2">
             <span class="text-sm font-bold text-gray-600 py-5"
               >Datos de Documentos de Origen</span
             >
-          </div>
-          <div class="space-y-1 py-2">
-            <label class="text-sm">Fecha emisión del comprobantes:</label>
-            <VueDatePicker
-              v-model="datos_documento.fecha_emision.date"
-              required
-            ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">N° Comprobante:</label>
@@ -62,11 +35,19 @@
             />
           </div>
           <div class="space-y-1 py-2">
+            <label class="text-sm">Fecha emisión del comprobantes:</label>
+            <VueDatePicker
+              v-model="datos_documento.fecha_emision.date"
+              required
+            ></VueDatePicker>
+          </div>
+          <div class="space-y-1 py-2">
             <label class="text-sm">Importe Total:</label>
             <input
               v-model="datos_documento.importe_total"
               type="number"
               step="any"
+              placeholder="0.00"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
               />
           </div>
@@ -362,11 +343,11 @@ const refreshLoading = () => {
 
 const getDatosDelComprobante = async () => {
   if (datos_documento.value.nro_comprobante == '') {
-    Swal.fire({
-      title: 'Verificar Campos',
-      text: `N° Comprobante no puede estar Vacío`,
-      icon: 'warning',
-    });
+    notify({
+        title: 'Verificar Campos',
+        text: 'Ingresar Nro Comprobante',
+        type: 'warn',
+      });
     return;
   }
 
@@ -376,7 +357,6 @@ const getDatosDelComprobante = async () => {
     if(response.status == 200 && response.data[0]) {
       datos_documento.value.importe_total = response.data[0].TotalInvoiceAmount
       const fechaEmision = response.data[0].InvoiceDate
-      // datos_documento.value.fecha_emision.date = formatearFecha(fechaEmision)
       datos_documento.value.fecha_emision.date = convertirFormatoFecha(fechaEmision)
     }
     console.log("fechaFormateada: ",  datos_documento.value.fecha_emision.date);
@@ -395,13 +375,12 @@ const getDatosDelComprobante = async () => {
 }
 
 const getProductosDelComprobante = async () => {
-  // return
   if (datos_documento.value.nro_comprobante == '') {
-    Swal.fire({
-      title: 'Verificar Campos',
-      text: `N° Comprobante no puede estar Vacío`,
-      icon: 'warning',
-    });
+    notify({
+        title: 'Verificar Campos',
+        text: 'N° Comprobante no puede estar Vacío',
+        type: 'warn',
+      });
     return;
   }
   isLoadingProductos.value = true;
