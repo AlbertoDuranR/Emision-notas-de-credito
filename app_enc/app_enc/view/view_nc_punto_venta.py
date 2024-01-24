@@ -51,7 +51,7 @@ class ViewNCPDV:
         if 'parcial' in lista_solicitudesEdit[0]['METODO']:
             lista_productosEdit=servicePDV.lista_productosEdit(id_product)
 
-        print("LISTA DE PROPDUCTOS") 
+        print("LISTA DE PROPDUCTOS")
         print(id)
         print(id_product)
         print(lista_productosEdit)
@@ -64,7 +64,7 @@ class ViewNCPDV:
             'id': id,
             '_token':get_token(request)
         })
-    
+
     ### Consolidado Punto de Venta
     def cnotaPDV(request):
         #Listar Solicitudes
@@ -113,7 +113,7 @@ class ViewNCPDV:
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print(e)
-                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+                return JsonResponse({'message': f'{e}'}, status=404)
             #
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)

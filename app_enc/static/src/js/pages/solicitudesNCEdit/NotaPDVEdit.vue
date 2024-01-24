@@ -354,30 +354,6 @@ export default {
       productos_del_comprobante: [],
       metodo_parcial_productos: {
         products: this.productos,
-        value: null,
-        selectedOptions: [],
-        unidad: {
-          unidades: this.unidades,
-          valores: Array.from({ length: this.productos.length }, () => ({
-            value: null,
-          })),
-          selectedOptions: [],
-        },
-        precio: {
-          valores: Array.from({ length: this.productos.length }, () => ({
-            value: null,
-          })),
-        },
-        cantidad: {
-          valores: Array.from({ length: this.productos.length }, () => ({
-            value: null,
-          })),
-        },
-        monto_total: {
-          valores: Array.from({ length: this.productos.length }, () => ({
-            value: null,
-          })),
-        },
         selected_products: [],
       },
       isLoadingProductos: false,
@@ -393,8 +369,17 @@ export default {
     //
     enviarSolicitud() {
       console.log(this.$data.metodo_parcial_productos);
-      let jsonString = JSON.stringify(this.$data);
-      console.log(jsonString);
+      let metodoParcialProductos = []
+      if (this.detalle_solicitud.metodo == 'parcial') {
+        metodoParcialProductos = this.metodo_parcial_productos.selected_products
+      }
+      const send_data = {
+        "datos_documento": this.datos_documento,
+        "detalle_solicitud": this.detalle_solicitud,
+        "metodo_parcial_productos": metodoParcialProductos
+      }
+      const jsonString = JSON.stringify(send_data);
+      console.log('enviarr Solicitud', jsonString);
       axios
         .post("/solicitud_nota_credito/punto_venta/edit/", jsonString)
         .then((response) => {
@@ -417,7 +402,7 @@ export default {
           console.log(err);
           notify({
             title: "Error de Registro",
-            text: "Error al actualizar datos verificar los campos",
+            text: `Error al actualizar datos verificar los campos: ${err.response.data.message}`,
             type: "error",
           });
         });
@@ -440,7 +425,7 @@ export default {
     },
     handleSelectionChange(value) {
       value.forEach((element, index) => this.metodo_parcial_productos.selected_products[index]["Total"] =
-          (element.InvoicedQuantity * element.SalesPrice).toString()
+          (element.InvoicedQuantity * element.SalesPrice).toFixed(2)
       );
     },
     handleInputChange(index) {
@@ -448,7 +433,7 @@ export default {
       (
         this.metodo_parcial_productos.selected_products[index].InvoicedQuantity
         * this.metodo_parcial_productos.selected_products[index].SalesPrice
-      ).toString()
+      ).toFixed(2)
     }
   },
 
