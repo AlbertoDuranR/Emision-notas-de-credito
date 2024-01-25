@@ -16,12 +16,13 @@ class Dynamics_Bot:
         # Configuración del navegador
         self.driver = webdriver.Chrome()
         self.wait = WebDriverWait(self.driver , 10)
+        self.wait_10 = WebDriverWait(self.driver , 10)
         self.driver.maximize_window()
 
         # Credenciales
-        self.url = "https://mistr.operations.dynamics.com/"
-        self.usuario = "teogenes.duran@terranovatrading.com.pe"
-        self.contrasena = "pepito123"
+        self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=DefaultDashboard"
+        self.usuario = "robert.tolentino@terranovatrading.com.pe"
+        self.contrasena = "huaraz2023.."
 
         # XPaths
         self.xpath_siguiente = "/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div[1]/div[3]/div/div/div/div[4]/div/div/div/div/input"
@@ -30,7 +31,7 @@ class Dynamics_Bot:
         self.xpath_input_contrasena = '/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[3]/div/div[2]/input'
         
         self.xpath_contrasena = "/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[3]/div/div[2]/input"
-        self.xpath_iniciar_sesion = "/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[4]/div[2]/div/div/div/div/input"
+        self.xpath_iniciar_sesion = "/html/body/div[1]/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[5]/div/div/div/div/input"
         self.xpath_mantener_sesion = "/html/body/div/form/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[3]/div[2]/div/div/div[2]/input"
 
         self.xpath_favoritos = "/html/body/div[2]/div/div[5]/div/div/div[2]/div[2]/span[2]"
@@ -42,14 +43,21 @@ class Dynamics_Bot:
         self.xpath_boton_buscar_diario_factura = "/html/body/div[22]/div[4]/button[1]"
         self.path_resultado_diario_factura = "/html/body/div[2]/div/div[6]/div/form[2]/div[5]/div/div[3]/div[2]/div[1]/div[4]/div/div[2]/div/div/div/div[1]/div[3]/div/div/div[1]/div[2]/div/div[3]/div/div/div/div/div/div/input"
     
-    
         self.xpath_columna_numero_recibo = "/html/body/div[2]/div/div[6]/div/form/div[5]/div/div[2]/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[3]/div/div/div/div"
         self.xpath_input_busqueda_transacciones_tienda = "/html/body/div[21]/div[3]/div/div[3]/div/div/input"
         self.xpath_boton_buscar_transacciones_tienda = "/html/body/div[21]/div[4]/button[1]"
         self.xpath_resultado_transacciones_tienda = "/html/body/div[2]/div/div[6]/div/form/div[5]/div/div[2]/div[2]/div[2]/div/div/div/div[1]/div[3]/div/div/div[1]/div[2]/div/div[2]/div/div/div/div/div/div/input"
-        
-        
-        
+
+        self.xpath_modulos='//*[@id="navPaneModuleID"]' # si uso el full path se confunde si el modulo esta en otra posición
+        self.xpath_ventas_marketing='//*[@id="mainPane"]/div[5]/div/div[1]/div[2]/a[37]'
+        self.xpath_devolucion_ventas='/html/body/div[2]/div/div[5]/div/div[2]/div/div[2]/a[8]'
+        self.xpath_todos_pedidos_de_devolucion='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[2]/div[1]/a[1]'
+
+        self.xpath_expadir_todo='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[1]/button[1]'
+        # self.xpath_todos_pedidos_de_devolucion='/html/body/div[2]/div/div[5]/div/div[2]/div/div[2]/div[67]/a[1]' # ?? Hace click en "Buscar Precios"
+
+        self.xpath_boton_nuevo_pedido='//*[@id="returntablelistpage_6_SystemDefinedNewButton"]'
+
     def iniciar_sesion(self):
         try:
             self.driver.get(self.url)
@@ -65,11 +73,39 @@ class Dynamics_Bot:
             self._hacer_clic_xpath(self.xpath_iniciar_sesion)
             # boton mantener sesion abierta
             self._hacer_clic_xpath(self.xpath_mantener_sesion)
-            
-            
+
         except (WebDriverException, NoSuchElementException) as e:
             print(f"Error al iniciar sesión: {str(e)}")
-            
+
+    def seleccionar_todos_los_pedidos_de_devolucion(self):
+        try:
+            self._hacer_clic_xpath(self.xpath_modulos)
+            time.sleep(2)
+            self._hacer_clic_xpath(self.xpath_ventas_marketing)
+            time.sleep(2)
+            self._hacer_clic_xpath(self.xpath_devolucion_ventas)
+            try:
+                el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
+                print('text_pedidos_de_dev: ', el.text)
+                elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
+                elemento.click()
+            except TimeoutError:
+                print("TimeoutError, primer intento no encontro xpath_todos_pedidos_de_devolucion")
+                self._hacer_clic_xpath(self.xpath_devolucion_ventas)
+                el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
+                print('text_pedidos_de_dev2: ', el.text)
+                elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
+                elemento.click()
+
+
+        except Exception as e:
+            print(f"Error al clickear en la opción todos los pedidos de devolución: {str(e)}")
+    def crear_nuevo_pedido(self):
+        try:
+            self._hacer_clic_xpath(self.xpath_boton_nuevo_pedido)
+            time.sleep(5)
+        except Exception as e:
+            print(f"Error al crear nuevo pedido: {str(e)}")
     # def favoritos_diario_factura(self):
     #     try:
     #         self._hacer_clic_xpath(self.xpath_favoritos)
@@ -174,7 +210,10 @@ lista_a_verificar = ["B040-00047319", "BE01-00131658", "BE01-00131493"]
 
 # Ejecutar acciones
 dynamic_bot.iniciar_sesion()
+dynamic_bot.seleccionar_todos_los_pedidos_de_devolucion()
+time.sleep(1)
+dynamic_bot.crear_nuevo_pedido()
 # dynamic_bot.favoritos_diario_factura()
 # dynamic_bot.busqueda_diario_factura(lista_a_verificar)
-dynamic_bot.favoritos_transacciones_tienda()
-dynamic_bot.busqueda_transacciones_tienda(lista_a_verificar)
+# dynamic_bot.favoritos_transacciones_tienda()
+# dynamic_bot.busqueda_transacciones_tienda(lista_a_verificar)
