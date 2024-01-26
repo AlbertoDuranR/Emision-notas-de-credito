@@ -17,10 +17,10 @@ class Dynamics_Bot:
         self.driver = webdriver.Chrome()
         self.wait = WebDriverWait(self.driver , 10)
         self.wait_10 = WebDriverWait(self.driver , 10)
-        self.driver.maximize_window()
+        self.driver.maximize_window() # Colocar dimensiones exactas
 
         # Credenciales
-        self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=DefaultDashboard"
+        self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente al devoluciones
         self.usuario = "robert.tolentino@terranovatrading.com.pe"
         self.contrasena = "huaraz2023.."
 
@@ -51,6 +51,8 @@ class Dynamics_Bot:
         self.xpath_modulos='//*[@id="navPaneModuleID"]' # si uso el full path se confunde si el modulo esta en otra posición
         self.xpath_ventas_marketing='//*[@id="mainPane"]/div[5]/div/div[1]/div[2]/a[37]'
         self.xpath_devolucion_ventas='/html/body/div[2]/div/div[5]/div/div[2]/div/div[2]/a[8]'
+        self.xpath_contenedor_ventas_marketing='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[2]'
+
         self.xpath_todos_pedidos_de_devolucion='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[2]/div[1]/a[1]'
 
         self.xpath_expadir_todo='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[1]/button[1]'
@@ -77,25 +79,38 @@ class Dynamics_Bot:
         except (WebDriverException, NoSuchElementException) as e:
             print(f"Error al iniciar sesión: {str(e)}")
 
-    def seleccionar_todos_los_pedidos_de_devolucion(self):
+    def seleccionar_ventas_marketing(self):
         try:
             self._hacer_clic_xpath(self.xpath_modulos)
-            time.sleep(2)
             self._hacer_clic_xpath(self.xpath_ventas_marketing)
-            time.sleep(2)
-            self._hacer_clic_xpath(self.xpath_devolucion_ventas)
-            try:
-                el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
-                print('text_pedidos_de_dev: ', el.text)
-                elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
-                elemento.click()
-            except TimeoutError:
-                print("TimeoutError, primer intento no encontro xpath_todos_pedidos_de_devolucion")
-                self._hacer_clic_xpath(self.xpath_devolucion_ventas)
-                el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
-                print('text_pedidos_de_dev2: ', el.text)
-                elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
-                elemento.click()
+        except TimeoutError:
+            print("No se encontraron elementos modulos o ventas y marketing.")
+
+    def seleccionar_todos_los_pedidos_de_devolucion(self):
+        try:
+            div_contenedor = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_contenedor_ventas_marketing)))
+            print('div_contenedor: ', div_contenedor)
+            # Encontrar todos los <a> dentro del div
+            links = div_contenedor.find_elements_by_tag_name("a")
+            print('link: ', links)
+            # Iterar sobre los enlaces y obtener el texto y la URL
+            for link in links:
+                link_text = link.text
+                link_url = link.get_attribute("href")  # Obtener el atributo href del enlace
+                print(f"Texto del enlace: {link_text}, URL del enlace: {link_url}")
+            time.sleep(5)
+            # try:
+            #     el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
+            #     print('text_pedidos_de_dev: ', el.text)
+            #     elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
+            #     elemento.click()
+            # except TimeoutError:
+            #     print("TimeoutError, primer intento no encontro xpath_todos_pedidos_de_devolucion")
+            #     self._hacer_clic_xpath(self.xpath_devolucion_ventas)
+            #     el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
+            #     print('text_pedidos_de_dev2: ', el.text)
+            #     elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
+            #     elemento.click()
 
 
         except Exception as e:
@@ -210,6 +225,7 @@ lista_a_verificar = ["B040-00047319", "BE01-00131658", "BE01-00131493"]
 
 # Ejecutar acciones
 dynamic_bot.iniciar_sesion()
+dynamic_bot.seleccionar_ventas_marketing()
 dynamic_bot.seleccionar_todos_los_pedidos_de_devolucion()
 time.sleep(1)
 dynamic_bot.crear_nuevo_pedido()
