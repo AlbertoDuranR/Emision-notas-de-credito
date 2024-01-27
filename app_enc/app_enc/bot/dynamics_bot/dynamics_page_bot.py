@@ -16,7 +16,7 @@ class Dynamics_Bot:
         # Configuración del navegador
         self.driver = webdriver.Chrome()
         self.wait = WebDriverWait(self.driver , 10)
-        self.wait_10 = WebDriverWait(self.driver , 10)
+        self.wait_20 = WebDriverWait(self.driver , 10)
         self.driver.maximize_window() # Colocar dimensiones exactas
 
         # Credenciales
@@ -56,10 +56,33 @@ class Dynamics_Bot:
         self.xpath_todos_pedidos_de_devolucion='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[2]/div[1]/a[1]'
 
         self.xpath_expadir_todo='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[1]/button[1]'
-        # self.xpath_todos_pedidos_de_devolucion='/html/body/div[2]/div/div[5]/div/div[2]/div/div[2]/div[67]/a[1]' # ?? Hace click en "Buscar Precios"
 
-        self.xpath_boton_nuevo_pedido='//*[@id="returntablelistpage_6_SystemDefinedNewButton"]'
+        # Crear nuevo pedido
+        self.xpath_boton_nuevo_pedido='//*[contains(@id, "returntablelistpage") and contains(@id, "SystemDefinedNewButton")]' # XPAT que contenga subcadenas 'returntablelistpage' y 'SystemDefinedNewButton'
+        self.xpath_combobox_buscar_por='//*[contains(@id, "SalesCreateOrder") and contains(@id, "MCRCustSearchType")]/div'
+        self.xpath_combobox_item_pedido_ventas='//*[contains(@id, "SalesCreateOrder") and contains(@id, "MCRCustSearchType_list_item1")]'
+        self.xpath_input_num_pedido='//*[contains(@id, "SalesCreateOrder") and contains(@id, "MCRSearchText_input")]'
+        self.xpath_buscar_cliente='//*[contains(@id, "SalesCreateOrder") and contains(@id, "MCRCustomerSearch")]' # //*[@id="SalesCreateOrder_9_MCRCustomerSearch"]
+        self.xpath_table_row_cliente='//*[contains(@id, "MCRCustSearch") and contains(@id, "Grid")]/div/div/div/div/div[3]/div[1]'
+        self.xpath_boton_seleccionar_cliente='//*[contains(@id, "MCRCustSearch") and contains(@id, "ButtonSelect")]'
+        self.xpath_input_codigo_motivo_devolucion='//*[contains(@id, "SalesCreateOrder") and contains(@id, "SalesTable_ReturnReasonCodeId_input")]' # //*[@id="SalesCreateOrder_26_SalesTable_ReturnReasonCodeId_input"]
+        self.xpath_input_almacen='//*[contains(@id, "SalesCreateOrder") and contains(@id, "SalesTable_InventLocationId_input")]'
+        self.xpath_input_sitio='//*[contains(@id, "SalesCreateOrder") and contains(@id, "SalesTable_InventSiteId_input")]'
+        self.xpath_boton_crear_pedido_devolucion='//*[contains(@id, "SalesCreateOrder") and contains(@id, "OK")]'
 
+        # Enlazar pedido origen a pedido devolución
+        self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]'
+        self.xpath_columna_pedido_ventas='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Heading")]/div/div/div/div/div[2]/div/div/div[2]/div/div[2]'
+        self.xpath_input_columna_pedido_ventas= '//*[@id="__FilterField_CustInvoiceJour_SalesNum_SalesId_Input_0_0_input"]'
+        self.xpath_boton_aplicar_pedido_ventas='//*[@id="__CustInvoiceJour_SalesNum_ApplyFilters"]'
+        # seleccionar articulos si es parcial
+        self.xpath_contenedor_lineas_articulo='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Lines")]//*[@id="Invoice_Lines_1869_0_grid"]/div[1]/div[3]' # Para verificar si tiene lineas ?? hay un error
+        self.xpath_columna_articulo='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Lines")]/div/div/div/div/div[2]/div/div/div[2]/div/div[2]'
+        self.xpath_input_columna_articulo='//*[@id="__FilterField_CustInvoiceTrans_ItemId_ItemId_Input_0_0_input"]'
+        self.xpath_boton_aplicar_articulo='//*[@id="__CustInvoiceTrans_ItemId_ApplyFilters"]'
+        # self.xpath_contanedor_lineas_articulo='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Lines")]//*[@id="Invoice_Lines_1869_0_grid"]/div[1]/div[3]' # Para verificar si tiene lineas
+        self.xpath_checkbox_primera_linea_articulo= '//*[@id="CustInvoiceTrans_Copy_1869_0_0_input"]' # '//*[@id="Invoice_Lines_1869_0_grid"]/div[1]/div[3]/div'
+        # //*[@id="CustInvoiceTrans_Copy_1869_0_0_input"]
     def iniciar_sesion(self):
         try:
             self.driver.get(self.url)
@@ -75,7 +98,7 @@ class Dynamics_Bot:
             self._hacer_clic_xpath(self.xpath_iniciar_sesion)
             # boton mantener sesion abierta
             self._hacer_clic_xpath(self.xpath_mantener_sesion)
-
+            self.driver.implicitly_wait(10)
         except (WebDriverException, NoSuchElementException) as e:
             print(f"Error al iniciar sesión: {str(e)}")
 
@@ -117,10 +140,37 @@ class Dynamics_Bot:
             print(f"Error al clickear en la opción todos los pedidos de devolución: {str(e)}")
     def crear_nuevo_pedido(self):
         try:
+            # Crear nuevo pedido
             self._hacer_clic_xpath(self.xpath_boton_nuevo_pedido)
-            time.sleep(5)
+            time.sleep(1)
+            self._hacer_clic_xpath(self.xpath_combobox_buscar_por)
+            self._hacer_clic_xpath(self.xpath_combobox_item_pedido_ventas)
+            time.sleep(1)
+            self._ingresar_valor_en_input_xpath(self.xpath_input_num_pedido, 'TRV-02695597')
+            self.driver.find_element(By.XPATH, self.xpath_buscar_cliente).click()
+            time.sleep(1)
+            self._hacer_clic_xpath(self.xpath_boton_seleccionar_cliente)
+            time.sleep(1)
+            self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_motivo_devolucion, '07')
+            self._ingresar_valor_en_input_xpath(self.xpath_input_almacen, 'MD01_LUZ')
+            self._hacer_clic_xpath(self.xpath_input_sitio)
+            time.sleep(1)
+            self._hacer_clic_xpath(self.xpath_boton_crear_pedido_devolucion)
+            time.sleep(2)
+            # Enlazar pedido origen a pedido devolución
+            self._hacer_clic_xpath(self.xpath_boton_buscar_pedido_ventas)
+            self._hacer_clic_xpath(self.xpath_columna_pedido_ventas)
+            self._ingresar_valor_en_input_xpath(self.xpath_input_columna_pedido_ventas, 'TRV-02695597')
+            self._hacer_clic_xpath(self.xpath_boton_aplicar_pedido_ventas)
+            ## seleccionar productos si tiene y  si es metodo parcial
+            # contenedor_articulos=self.driver.find_element(By.XPATH, self.xpath_contenedor_lineas_articulo) # hay un error no reconoce el path
+            # div_lineas = contenedor_articulos.find_elements(By.CLASS_NAME, "fixedDataTableRowLayout_rowWrapper")
+            # print(contenedor_articulos, len(contenedor_articulos))
+            # print('lineas: ', div_lineas, len(div_lineas))
+            time.sleep(10)
         except Exception as e:
             print(f"Error al crear nuevo pedido: {str(e)}")
+
     # def favoritos_diario_factura(self):
     #     try:
     #         self._hacer_clic_xpath(self.xpath_favoritos)
@@ -225,8 +275,8 @@ lista_a_verificar = ["B040-00047319", "BE01-00131658", "BE01-00131493"]
 
 # Ejecutar acciones
 dynamic_bot.iniciar_sesion()
-dynamic_bot.seleccionar_ventas_marketing()
-dynamic_bot.seleccionar_todos_los_pedidos_de_devolucion()
+# dynamic_bot.seleccionar_ventas_marketing()
+# dynamic_bot.seleccionar_todos_los_pedidos_de_devolucion()
 time.sleep(1)
 dynamic_bot.crear_nuevo_pedido()
 # dynamic_bot.favoritos_diario_factura()
