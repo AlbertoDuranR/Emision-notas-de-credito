@@ -20,7 +20,7 @@ class Dynamics_Bot:
         self.driver.maximize_window() # Colocar dimensiones exactas
 
         # Credenciales
-        self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente al devoluciones
+        self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente a devoluciones
         self.usuario = "robert.tolentino@terranovatrading.com.pe"
         self.contrasena = "huaraz2023.."
 
@@ -71,18 +71,42 @@ class Dynamics_Bot:
         self.xpath_boton_crear_pedido_devolucion='//*[contains(@id, "SalesCreateOrder") and contains(@id, "OK")]'
 
         # Enlazar pedido origen a pedido devolución
-        self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]'
+        # self.buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl")]/button'
+        
+        """ Test avances """
+        self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]' # correcto
+        # self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "returntableforedit") and contains(@id, "ReturnFindSalesOrder")]' # test
+
         self.xpath_columna_pedido_ventas='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Heading")]/div/div/div/div/div[2]/div/div/div[2]/div/div[2]'
         self.xpath_input_columna_pedido_ventas= '//*[@id="__FilterField_CustInvoiceJour_SalesNum_SalesId_Input_0_0_input"]'
         self.xpath_boton_aplicar_pedido_ventas='//*[@id="__CustInvoiceJour_SalesNum_ApplyFilters"]'
         # seleccionar articulos si es parcial
-        self.xpath_contenedor_lineas_articulo='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Lines")]//*[@id="Invoice_Lines_1869_0_grid"]/div[1]/div[3]' # Para verificar si tiene lineas ?? hay un error
-        self.xpath_columna_articulo='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Lines")]/div/div/div/div/div[2]/div/div/div[2]/div/div[2]'
-        self.xpath_input_columna_articulo='//*[@id="__FilterField_CustInvoiceTrans_ItemId_ItemId_Input_0_0_input"]'
-        self.xpath_boton_aplicar_articulo='//*[@id="__CustInvoiceTrans_ItemId_ApplyFilters"]'
-        # self.xpath_contanedor_lineas_articulo='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Lines")]//*[@id="Invoice_Lines_1869_0_grid"]/div[1]/div[3]' # Para verificar si tiene lineas
-        self.xpath_checkbox_primera_linea_articulo= '//*[@id="CustInvoiceTrans_Copy_1869_0_0_input"]' # '//*[@id="Invoice_Lines_1869_0_grid"]/div[1]/div[3]/div'
-        # //*[@id="CustInvoiceTrans_Copy_1869_0_0_input"]
+        self.xpath_div_lineas_articulos='//div[contains(@id, "Invoice_Lines") and contains(@id, "row")]' # Selecciona todas las lineas del Invoice
+        self.xpath_checkbox_primera_linea_articulo= '//*[contains(@id, "CustInvoiceTrans_Copy") and contains(@id, "0_0_input")]'
+        self.xpath_boton_aceptar_enlazar_ventas='//button[contains(@id, "SalesCopying") and contains(@id, "OK")]'
+
+        # Confirmar registro
+        self.div_lineas_articulos_para_registro='//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]'
+        self.xpath_actualizar_linea='//*[contains(@id, "ReturnTable") and contains(@id, "Update_button")]'
+        self.xpath_registro_inventario='//button[contains(@id, "ReturnTable") and contains(@id, "InventTransRegister")]'
+        self.xpath_input_codigo_disposicion='//input[contains(@id, "Dialog") and contains(@id, "_Fld3_1_input")]'
+        self.xpath_boton_acptar_codigo_disposicion='//button[contains(@id, "Dialog") and contains(@id, "OkButton")]'
+        self.xpath_agregar_linea_registro='//button[contains(@id, "InventTransRegister") and contains(@id, "AddRegistrationLinesButton")]' # //*[@id="InventTransRegister_5_AddRegistrationLinesButton"]
+        self.xpath_confirmar_registro='//button[contains(@id, "InventTransRegister") and contains(@id, "ctrlUpdateButton")]' # Esto verificar q < disabled != "disabled" />
+        self.xpath_input_estado_recepcion='//input[contains(@id, "InventTrans_StatusReceipt") and contains(@id, "0_0_input")]'
+        self.xpath_boton_salir_registro='//button[contains(@id, "InventTransRegister") and contains(@id, "SystemDefinedCloseButton")]'
+
+        # Cambios en nuevo pedido de devolucióon
+        self.xpath_input_num_pedido_devolucion='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnOrder_SalesId_input")]'
+        self.xpath_button_vistas_globales='//button[contains(@id, "SalesTable") and contains(@id, "SystemDefinedManageViewFilters")]'
+        # //*[@id="SalesTable_6_SystemDefinedManageViewFilters"]
+        self.xpath_vista_estandar='//div[contains(@id, "ViewButtons")]/descendant::button[contains(@id, "5637889366")]'
+        self.xpath_edit_icon='//*[contains(@id, "SalesTable") and contains(@id, "Delivery_ReceiptDateRequestedHeader")]/div/div[2]/div'
+        self.xpath_input_fecha_envio_solicitada='//input[contains(@id, "SalesTable") and contains(@id, "Delivery_ShippingDateRequestedHeader_input")]'
+        self.xpath_input_fecha_envio_solicitada_icon_editar='//input[contains(@id, "SalesTable") and contains(@id, "Delivery_ShippingDateRequestedHeader_input")]/div/div[1]/span[1]'
+        self.xpath_input_fecha_recepcion_solicitada='//input[contains(@id, "SalesTable") and contains(@id, "Delivery_ReceiptDateRequestedHeader_input")]'
+
+        # //*[@id="SalesTable_6_Delivery_ShippingDateRequestedHeader"]/div/div[1]/span[1]
     def iniciar_sesion(self):
         try:
             self.driver.get(self.url)
@@ -122,95 +146,206 @@ class Dynamics_Bot:
                 link_url = link.get_attribute("href")  # Obtener el atributo href del enlace
                 print(f"Texto del enlace: {link_text}, URL del enlace: {link_url}")
             time.sleep(5)
-            # try:
-            #     el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
-            #     print('text_pedidos_de_dev: ', el.text)
-            #     elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
-            #     elemento.click()
-            # except TimeoutError:
-            #     print("TimeoutError, primer intento no encontro xpath_todos_pedidos_de_devolucion")
-            #     self._hacer_clic_xpath(self.xpath_devolucion_ventas)
-            #     el = self.driver.find_element(By.XPATH,  self.xpath_todos_pedidos_de_devolucion)
-            #     print('text_pedidos_de_dev2: ', el.text)
-            #     elemento = self.wait_10.until(EC.element_to_be_clickable((By.XPATH, self.xpath_todos_pedidos_de_devolucion)))
-            #     elemento.click()
 
 
         except Exception as e:
             print(f"Error al clickear en la opción todos los pedidos de devolución: {str(e)}")
+
     def crear_nuevo_pedido(self):
+        # input:
+        data={
+            'num_pedido_origen': 'TRV-02721425',
+            'metodo': 'parcial',
+            'almacen': 'MD03_CRH',
+            'productos': ['108104', '103810', '104835'],
+            'fecha_solicitud': '1/10/2024'
+        }
+
+        codigo_motivo_devolucion={
+            "parcial": "07",
+            "total": "06"
+        }
+
         try:
+            # # # start TEST esta parte es temporal para no crear cada rato pedidos
+            # # print('Continuar 1')
+            # # self.xpath_input_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl_Input_input")]'
+            # # self._ingresar_valor_en_input_xpath(self.xpath_input_buscar_rma, 'TRV-007851') # Solo es para el ejemplo
+            # # print('Click en buscar rma')
+            # # time.sleep(3)
+            # # # end
+
             # Crear nuevo pedido
+            print(">>> Inicia crear nuevo pedido")
             self._hacer_clic_xpath(self.xpath_boton_nuevo_pedido)
             time.sleep(1)
             self._hacer_clic_xpath(self.xpath_combobox_buscar_por)
             self._hacer_clic_xpath(self.xpath_combobox_item_pedido_ventas)
             time.sleep(1)
-            self._ingresar_valor_en_input_xpath(self.xpath_input_num_pedido, 'TRV-02695597')
-            self.driver.find_element(By.XPATH, self.xpath_buscar_cliente).click()
+            self._ingresar_valor_en_input_xpath(self.xpath_input_num_pedido, data["num_pedido_origen"])
+            # self.driver.find_element(By.XPATH, self.xpath_buscar_cliente).click()
+            self._hacer_clic_xpath(self.xpath_buscar_cliente)
             time.sleep(1)
             self._hacer_clic_xpath(self.xpath_boton_seleccionar_cliente)
             time.sleep(1)
-            self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_motivo_devolucion, '07')
-            self._ingresar_valor_en_input_xpath(self.xpath_input_almacen, 'MD01_LUZ')
+            print('before select motivo')
+            self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_motivo_devolucion, codigo_motivo_devolucion[data["metodo"]])
+            print('after select motivo', self.xpath_input_codigo_motivo_devolucion)
+            self._ingresar_valor_en_input_xpath(self.xpath_input_almacen, data["almacen"])
             self._hacer_clic_xpath(self.xpath_input_sitio)
             time.sleep(1)
             self._hacer_clic_xpath(self.xpath_boton_crear_pedido_devolucion)
+            print(">>> Fin crear nuevo pedido")
             time.sleep(2)
-            # Enlazar pedido origen a pedido devolución
-            self._hacer_clic_xpath(self.xpath_boton_buscar_pedido_ventas)
-            self._hacer_clic_xpath(self.xpath_columna_pedido_ventas)
-            self._ingresar_valor_en_input_xpath(self.xpath_input_columna_pedido_ventas, 'TRV-02695597')
-            self._hacer_clic_xpath(self.xpath_boton_aplicar_pedido_ventas)
-            ## seleccionar productos si tiene y  si es metodo parcial
-            # contenedor_articulos=self.driver.find_element(By.XPATH, self.xpath_contenedor_lineas_articulo) # hay un error no reconoce el path
-            # div_lineas = contenedor_articulos.find_elements(By.CLASS_NAME, "fixedDataTableRowLayout_rowWrapper")
-            # print(contenedor_articulos, len(contenedor_articulos))
-            # print('lineas: ', div_lineas, len(div_lineas))
-            time.sleep(10)
+
+            print(">>> Inicia enlazar pedidos")
+            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            print('>>> Fin enlazar pedidos')
+
+            # START Confirmar registro
+            print('>> Confirmar registro')
+            time.sleep(4)
+            div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
+            print('>> Cantidad de articulos a registrar: ', len(div_articulos_registrar))
+            try:
+                for fila in range(len(div_articulos_registrar)):
+                    print("Fila: ", fila, div_articulos_registrar[fila])
+                    #//*[@id="SalesLineGrid_9928_0-row-0"]
+                    xpath_fila=f'//div[contains(@id, "SalesLineGrid") and contains(@id, "row-{fila}")]' #//*[@id="SalesLineGrid_9928_0-row-0"] <- Formato para recorrer filas
+                    input_elements = self.driver.find_elements(By.XPATH, f'{xpath_fila}//input')
+                    # for input_element in input_elements:
+                    #     print("Text input:", input_element.get_attribute("value"))
+                    print("Estado devolución: ", input_elements[8].get_attribute("value"))
+                    if (input_elements[8].get_attribute("value")).lower() == 'previsto':
+                        self._hacer_clic_xpath(xpath_fila)
+                        print('Se hizo click en la fila ', fila)
+                        time.sleep(1)
+                        print('Inicio Registrar Articulo: ', fila)
+                        self.registrar_articulo_para_devolucion()
+                        print('Fin Registrar Articulo: ', fila)
+            except Exception as e:
+                print(f"Error al crear nuevo pedido: {str(e)}")
+            time.sleep(3)
+
+            print("Confirmado")
+
+            # START Poner fecha de solicitud
+            print(">> Poner Fecha de Solicitud")
+            self._hacer_clic_xpath(self.xpath_input_num_pedido_devolucion)
+            time.sleep(2)
+            print('after input numero pedido')
+            self._hacer_clic_xpath(self.xpath_button_vistas_globales)
+            print('after button_vistas_globales')
+            time.sleep(1)
+            self._hacer_clic_xpath(self.xpath_vista_estandar)
+            print('after vista_estandar')
+            time.sleep(1)
+
+            # Falta poder modificar la fecha...
+            # # try:
+            # #     # self._hacer_clic_xpath(self.xpath_input_fecha_envio_solicitada_icon_editar)
+            # #     # print('after edit_icon')
+            # #     time.sleep(3)
+            # #     valor_input_fecha=self.driver.find_element(By.XPATH, self.xpath_input_fecha_envio_solicitada)
+            # #     print('xpath_input_fecha_envio_solicitada', valor_input_fecha.get_attribute("value"))
+            # #     self._hacer_clic_xpath(self.xpath_input_fecha_envio_solicitada)
+
+            # #     self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_envio_solicitada, '2024-02-03')
+            # #     valor_input_fecha=self.driver.find_element(By.XPATH, self.xpath_input_fecha_envio_solicitada)
+            # #     print('xpath_input_fecha_envio_solicitada II', valor_input_fecha.get_attribute("value"))
+            # # except Exception as e:
+            # #     print(f'Error al editar fecha solicitud {e}')
+
+            # # # Encuentra el elemento span oculto por su clase
+            # # span_oculto = self.driver.find_elements(By.CLASS_NAME, 'timeZoneIndicator')
+            # # print('span_oculto', span_oculto[0])
+            # # # Haz clic en el elemento span oculto
+            # # span_oculto[0].click()
+
+            # END Poner fecha de solicitud
+            time.sleep(7)
         except Exception as e:
             print(f"Error al crear nuevo pedido: {str(e)}")
 
-    # def favoritos_diario_factura(self):
-    #     try:
-    #         self._hacer_clic_xpath(self.xpath_favoritos)
-    #         self._hacer_clic_xpath(self.xpath_favoritos_diario_facturas)
-            
-            
-        
-    #     except (WebDriverException, NoSuchElementException) as e:
-    #         print(f"Error al iniciar sesión: {str(e)}")          
-            
-    # def busqueda_diario_factura(self, lista_boletas):
-    #     try:
-    #         # resuñtado de las boletas buscadas
-    #         resultados_boletas = {}
-            
-    #         for boleta in lista_boletas:
-    #             self._hacer_clic_xpath(self.xpath_columna_factura)
-    #             self._ingresar_valor_en_input_xpath(self.xpath_input_busqueda_diario_factura, boleta)
-    #             self._hacer_clic_xpath(self.xpath_boton_buscar_diario_factura)
+    def enlazar_pedido_origen_a_pedido_devolucion(self, data):
+        # START Enlazar pedido origen a pedido devolución
+        self._hacer_clic_xpath(self.xpath_boton_buscar_pedido_ventas)
+        time.sleep(1)
+        self._hacer_clic_xpath(self.xpath_columna_pedido_ventas)
+        self._ingresar_valor_en_input_xpath(self.xpath_input_columna_pedido_ventas, data['num_pedido_origen'])
+        self._hacer_clic_xpath(self.xpath_boton_aplicar_pedido_ventas)
+        time.sleep(2)
+        # Seleccionar productos si tiene y  si es metodo parcial
+        div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
+        print('>> Cantidad de articulos: ', len(div_articulos))
+        try:
+            for fila in range(len(div_articulos)):
+                print("Fila: ", fila, div_articulos[fila])
+                xpath_fila=f'//div[contains(@id, "Invoice_Lines") and contains(@id, "row-{fila}")]' # "Invoice_Lines_3345_0-row-0" <- Formato para recorrer filas
+                input_elements = self.driver.find_elements(By.XPATH, f'{xpath_fila}//input')
+                # for input_element in input_elements:
+                #     print("Text input:", input_element.get_attribute("value"))
+                if data['metodo'].lower() == "total":
+                    # Selecciona todos los productos
+                    self._hacer_clic_xpath(f'{xpath_fila}//div/span')
+                    continue
+                if(input_elements[1].get_attribute("value") in data['productos']):
+                    self._hacer_clic_xpath(f'{xpath_fila}//div/span')
+                    print("Select: ", input_elements[1].get_attribute("value"))
+        except Exception as e:
+            print(f"Error al seleccionar productos a enlazar: {str(e)}")
+        # print("Productos seleccionados")
+        time.sleep(1)
+        self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
+        # self._hacer_clic_xpath(self.xpath_columna_articulo)
+        # self._ingresar_valor_en_input_xpath(self.xpath_input_columna_articulo, '108104')
+        # self._hacer_clic_xpath(self.xpath_boton_aplicar_articulo)
+        # END Enlazar pedido origen a pedido devolución
 
-    #             time.sleep(1)
+    def registrar_articulo_para_devolucion(self):
+        try:
+            self._hacer_clic_xpath(self.xpath_actualizar_linea)
+            print('after click actualizar pedido')
+            self._hacer_clic_xpath(self.xpath_registro_inventario)
+            time.sleep(1)
+            self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_disposicion, 'CD001')
+            self._hacer_clic_xpath(self.xpath_input_codigo_disposicion) # Para obtener datos del codigo ingresado
+            time.sleep(1)
+            self._hacer_clic_xpath(self.xpath_boton_acptar_codigo_disposicion)
+            self._hacer_clic_xpath(self.xpath_agregar_linea_registro)
 
-    #             respusta_busqueda = self.driver.find_elements(By.XPATH, self.path_resultado_diario_factura)
+            # Verificar si esta habilitado el boton para confirmar registro de pedido
+            is_enabled_buton_confirmar_registro=self.driver.find_element(By.XPATH, self.xpath_confirmar_registro).is_enabled()
+            counter=0
+            # print('Boton confirmar registro: ', is_enabled_buton_confirmar_registro)
+            while not is_enabled_buton_confirmar_registro:
+                time.sleep(1)
+                is_enabled_buton_confirmar_registro=self.driver.find_element(By.XPATH, self.xpath_confirmar_registro).is_enabled()
+                counter = counter + 1
+                if is_enabled_buton_confirmar_registro:
+                    self._hacer_clic_xpath(self.xpath_confirmar_registro)
+                    break
+                if counter > 5: # Si es es disabled en 5 intentos sale del bucle
+                    print("No enabled el boton confirmar registro")
+                    break
 
-    #             if respusta_busqueda:
-    #                 # print(f"Elemento {boleta} encontrado")
-    #                 resultados_boletas[boleta] = {'estado': True}
-    #             else:
-    #                 # print(f"Elemento {boleta} no encontrado")
-    #                 resultados_boletas[boleta] = {'estado': False}
+            estado_recepcion=self.driver.find_element(By.XPATH, self.xpath_input_estado_recepcion)
+            atributo_value=estado_recepcion.get_attribute("value")
+            counter=0
+            while atributo_value.lower() == 'pedido':
+                time.sleep(1)
+                estado_recepcion=self.driver.find_element(By.XPATH, self.xpath_input_estado_recepcion)
+                atributo_value=estado_recepcion.get_attribute("value")
+                counter = counter + 1
+                if(atributo_value.lower() == "registrado"):
+                    self._hacer_clic_xpath(self.xpath_boton_salir_registro)
+                    break
+                if counter > 3: # Si es es disabled en 5 intentos sale del bucle
+                    print("Estado recepcion no registrado")
+                    break
+        except Exception as e:
+                    print(f"Error al registrar articulo para devolución: {str(e)}")
 
-    #             # Pausa entre búsquedas
-    #             time.sleep(1)
-
-    #         print(resultados_boletas)
-    #         # Pausa al final de todas las búsquedas
-
-    #     except (WebDriverException, NoSuchElementException) as e:
-    #         print(f"Error al iniciar sesión: {str(e)}")
-            
     def favoritos_transacciones_tienda(self):
         try:
             self._hacer_clic_xpath(self.xpath_favoritos)
