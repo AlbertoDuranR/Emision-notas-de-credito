@@ -129,7 +129,11 @@ class Dynamics_Bot:
         self.xpath_input_tipo_documento_en_factura='//input[contains(@id, "SalesParmTable") and contains(@id, "_DPCodTypeDocPay_PE") and contains(@id, "input")]'
         self.xpath_input_serie_documento_en_factura='//input[contains(@id, "SalesParmTable_DPNumberSequenceGroup_PE") and contains(@id, "input")]'
         self.xpath_input_tipo_de_nota_en_factura='//input[contains(@id, "SalesParmTable") and contains( @id, "DPIdTypeNote_PE") and contains(@id, "input")]'
-        self.xpath_para_tab='//*[contains(@id, "SalesParmTable_ReturnPackingSlipId") and contains(@id, "input")]'
+        self.xpath_input_fecha_de_factura='//input[contains(@id, "SalesEditLines") and  contains(@id, "SalesParmTable_Transdate_input")]'
+        self.xpath_input_fecha_documento_en_factura='//input[contains(@id, "SalesEditLines") and contains(@id, "SalesParmTable_DocumentDate_input")]'
+        self.xpath_button_aceptar_en_factura='//button[contains(@id, "SalesEditLines") and contains(@id, "OK")]'
+        self.xpath_button_confirmar_factura='//button[contains(@id, "SysBoxForm") and contains(@id, "Ok")]'
+        
     def iniciar_sesion(self):
         try:
             self.driver.get(self.url)
@@ -214,10 +218,9 @@ class Dynamics_Bot:
                 .perform()
 
             div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
-            for cod_articulo in  data['productos']:
+            for articulo in  data['productos']:
                 self._hacer_clic_xpath(self.xpath_columna_articulo)
-                self._ingresar_valor_en_input_xpath(self.xpath_input_columna_articulo, cod_articulo)
-                # print('Ingresar Input articulo', cod_articulo)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_columna_articulo, articulo['codigo'])
                 self._esperar_n_segundos(1)
                 self._hacer_clic_xpath(self.xpath_boton_aplicar_articulo)
                 time.sleep(1)
@@ -232,8 +235,15 @@ class Dynamics_Bot:
                         input_elements = self.driver.find_elements(By.XPATH, f'{xpath_fila}//input')
                         # for input_element in input_elements:
                         #     print("Text input:", input_element.get_attribute("value"))
-                        self._hacer_clic_xpath(f'{xpath_fila}//div/span')
+                        self._esperar_n_segundos('1')
                         print("Select articulo: ", input_elements[1].get_attribute("value"))
+
+                        # Artificio para borrar este input. No era posible con .clear()
+                        input_elements[3].click()
+                        input_elements[3].send_keys(Keys.DELETE * len(input_elements[3].get_attribute("value")))
+                        input_elements[3].send_keys(articulo['cantidad'])
+                        self._hacer_clic_xpath(f'{xpath_fila}//div/span')
+                        print("Select cantidad: ", input_elements[3].get_attribute("value"))
                         break
                     if counter > 3:
                         print("No se muestra la fila del articulo")
@@ -241,7 +251,7 @@ class Dynamics_Bot:
 
         except Exception as e:
             print(f"Error al seleccionar producto a enlazar: {str(e)}")
-        time.sleep(1)
+        #time.sleep(10)
         self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
         print('END enlazar pedidos')
         # # # Alternativa Verificar si la cantidad de productos por registrar sean iguales que el data['articulos'] Si no volver a recorrer
@@ -321,38 +331,70 @@ class Dynamics_Bot:
     def crear_nota_de_credito(self):
         # input:
         data={
-            'num_pedido_origen': 'TRV-02721425',
+            "InvoiceNumber": 'BF02-00153614',
+            "PaymentTermsName": 'CONT',
+            # Sale del orden de pedido
+            "SalesOrderNumber": "TRV-02755697",
+            "DefaultShippingWarehouseId": 'MD04_SUC',
+            "CustomerPaymentMethodName": 'FP015',
+
+            'num_pedido_origen': 'TRV-02755697',
             'metodo': 'parcial',
-            'almacen': 'MD03_CRH',
-            'productos': ['108104', '103810', '102914'],
-            'forma_pago':'FP023',
+            'almacen': 'MD04_SUC',
+            'productos': [
+                {'codigo': '101766', 'cantidad': '1'}, # 'codigo : cantidad
+                # {'codigo': '110633', 'cantidad': '2'}
+            ],
+            'forma_pago':'FP015',
             'pago': 'CONT',
-            'fecha_solicitud': '1/10/2024',
-            'monto_total_nota_credito': '56.0'
-            
+            'fecha_solicitud': '1/21/2024',
+            'monto_total_nota_credito': '1.7'
         }
+
+        # data = {
+        #     "InvoiceNumber": "BB03-00080858",
+        #     "PaymentTermsName": "CONT",
+        #     # Sale del orden de pedid
+        #     "SalesOrderNumber": "TRV-02750046",
+        #     "CustomerPaymentMethodName": "FP015",
+        #     "DefaultShippingWarehouseId": "MD02_JRC",
+        #     "InvoiceDate": "2024-01-20T12:00:00Z",
+        #     "TotalInvoiceAmount": 24,
+
+        #     'num_pedido_origen': 'TRV-02750046',
+        #     'metodo': 'total',
+        #     'almacen': 'MD02_JRC',
+        #     'productos': [],
+        #     'forma_pago':'FP015',
+        #     'pago': 'CONT',
+        #     'fecha_solicitud': '1/20/2024',
+        #     'monto_total_nota_credito': 24
+        # }
         codigo_motivo_devolucion={
             "parcial": "07",
             "total": "06"
         }
 
         try:
-            # # # start TEST esta parte es temporal para no crear cada rato pedidos
-            # # print('Continuar 1')
-            # # self.xpath_input_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl_Input_input")]'
-            # # self._ingresar_valor_en_input_xpath(self.xpath_input_buscar_rma, 'TRV-007851') # Solo es para el ejemplo
-            # # print('Click en buscar rma')
-            # # time.sleep(3)
-            # # # end
+            # start TEST esta parte es temporal para no crear cada rato pedidos
+            print('Continuar 1')
+            self.xpath_input_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl_Input_input")]'
+            self._ingresar_valor_en_input_xpath(self.xpath_input_buscar_rma, 'TRV-007938') # Solo es para el ejemplo
+            print('Click en buscar rma')
+            time.sleep(3)
+            # end
 
             # Crear nuevo pedido
-            self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
+            # self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
 
             # Enlazar pedidos
-            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            # self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+
+            # time.sleep(10)
+            # return
 
             # START Confirmar registro
-            print('>> Confirmar registro')
+            print('>> START Confirmar registro')
             time.sleep(1)
             self._esperar_n_segundos(1)
             div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
@@ -366,7 +408,7 @@ class Dynamics_Bot:
                 if count > 3:
                     print('Error, Metodo Parcial: Cantidad de Productos Seleccionados no son iguales a los solicitados')
                     raise ValueError('Metodo Parcial: Cantidad de Productos Seleccionados no son iguales a los solicitados')
-                    break
+                    # break
             print('>> Cantidad de articulos a registrar: ', len(div_articulos_registrar))
 
             try:
@@ -385,26 +427,29 @@ class Dynamics_Bot:
                         print('-- Inicio Registrar Articulo: ', fila)
                         self.registrar_articulo_para_devolucion()
             except Exception as e:
-                print(f"Error al crear nuevo pedido: {str(e)}")
-            print("Confirmado")
+                print(f"Error al recorrer articulos a registrar: {str(e)}")
+            print(">> END Confirmado")
+            # END Confirmar registro
 
             # START Poner fecha de solicitud
-            print(">> Poner Fecha de Solicitud")
+            print(">> START Poner Fecha de Solicitud")
             self._esperar_n_segundos(2)
             self._hacer_clic_xpath(self.xpath_input_num_pedido_devolucion)
 
             ## Activar edición de campos
             try:
-                time.sleep(2)
+                time.sleep(1)
                 self._esperar_n_segundos(2)
                 edit_icon=self.driver.find_element(By.XPATH, self.xpath_edit_icon)
-                print('edit_icon', edit_icon.get_attribute("title"))
+                # print('After edit_icon > ', edit_icon.get_attribute("title"))
+                self._esperar_n_segundos(2)
                 self.driver.execute_script("arguments[0].classList.add('fieldOptionsShowIsFocusedControl')", edit_icon)
-                time.sleep(2)
-                self._esperar_n_segundos(1)
+                self._esperar_n_segundos(2)
                 self._hacer_clic_xpath(self.xpath_edit_icon)
             except Exception as e:
                 print('Error click en icon edit', e)
+                time.sleep(5)
+                raise ValueError("Error al hacer click icon editar pedido", e)
 
             ## ingresar forma  de pago y pago
             try:
@@ -419,12 +464,14 @@ class Dynamics_Bot:
                 input_focus_forma_pago.send_keys(data['forma_pago'])
                 # time.sleep(1)
                 input_focus_forma_pago.send_keys(Keys.TAB)
+                print(f'Forma de Pago: {input_focus_forma_pago.get_attribute('value')}')
 
                 self._esperar_n_segundos(1)
                 input_focus_pago = self.driver.switch_to.active_element
                 input_focus_pago.clear()
                 input_focus_pago.send_keys(data['pago'])
                 input_focus_pago.send_keys(Keys.TAB)
+                print(f'Pago: {input_focus_pago.get_attribute('value')}')
                 # time.sleep(1)
                 self._esperar_n_segundos(1)
                 input_perfil_contabilizacion = self.driver.switch_to.active_element
@@ -434,16 +481,16 @@ class Dynamics_Bot:
                 input_tipo_documento = self.driver.switch_to.active_element
                 input_tipo_documento.clear()
                 input_tipo_documento.send_keys('07') # Nota de Crédito es 07
+                print(f'Codigo nota de crédito: {input_tipo_documento.get_attribute('value')}')
                 time.sleep(3)
             except Exception as e:
                 print('Error al ingresar forma de pago y pago', e)
 
             self._esperar_n_segundos(2)
             self._hacer_clic_xpath(self.xpath_button_vistas_globales)
-            # print('after button_vistas_globales')
             self._esperar_n_segundos(1)
             self._hacer_clic_xpath(self.xpath_vista_estandar)
-            print('after vista_estandar')
+            # print('after vista_estandar')
 
             try:
                 # time.sleep(1)
@@ -457,7 +504,7 @@ class Dynamics_Bot:
             except Exception as e:
                 print('Error cambiar fechas: ', e)
             # END Poner fecha de solicitud
-            
+
             # START Verificar resumen y monto total según solicitud
             try:
                 self._esperar_n_segundos(2)
@@ -465,30 +512,41 @@ class Dynamics_Bot:
                 time.sleep(2)
 
                 # Para verificar si el monto del resumen es igual al solicitado. SI ES IGUAL IR A FACTURAR
-                """
                 importe_total_resumen = self.wait.until(EC.element_to_be_clickable((By.XPATH, self.xpath_importe_total_resumen)))
                 importe_total_resumen_value = float(importe_total_resumen.get_attribute("value"))
-                # print('importe total', abs(float(data['monto_total_nota_credito'])), abs(importe_total_resumen_value))
-                # # if abs(float(data['monto_total_nota_credito'])) != abs(importe_total_resumen_value):
-                # #     # print('Error Importe de nota credito diferente al Importe de resumen')
-                # #     raise ValueError("Importe de Nota credito diferente a Importe de resumen")
-                """
+                print('importe total', abs(float(data['monto_total_nota_credito'])), abs(importe_total_resumen_value))
+                if abs(float(data['monto_total_nota_credito'])) != abs(importe_total_resumen_value):
+                    print('Error Importe de nota credito diferente al Importe de resumen')
+                    # raise ValueError("Importe de Nota credito diferente a Importe de resumen")
+
                 time.sleep(2)
                 self._hacer_clic_xpath(self.xpath_button_factura)
                 self._hacer_clic_xpath(self.xpath_button_generar_factura)
             except Exception as e:
                 print('Error verificar resumen', e)
              # END  Verificar resumen y monto total según solicitud
-            
+
             # START Generar Factura
             print('START Generar Factura')
             try:
                 self._hacer_clic_xpath(self.xpath_open_seleccion_tipo_documento)
                 time.sleep(1)
                 self._hacer_clic_xpath(self.xpath_input_serie_documento_en_factura)
-                self._ingresar_valor_en_input_xpath(self.xpath_input_serie_documento_en_factura, 'T_BC32')
+                self._ingresar_valor_en_input_xpath(self.xpath_input_serie_documento_en_factura, 'T_BC')
+                # serie_documento=self.driver.find_element(By.XPATH, (self.xpath_input_serie_documento_en_factura))
+                # serie_documento.send_keys(Keys.ARROW_DOWN)
+                # time.sleep(1)
+                # serie_documento.send_keys(Keys.ENTER)
                 time.sleep(1)
                 self._ingresar_valor_en_input_xpath(self.xpath_input_tipo_de_nota_en_factura, codigo_motivo_devolucion[data['metodo']])
+                time.sleep(1)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_de_factura,  data["fecha_solicitud"])
+                self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_documento_en_factura,  data["fecha_solicitud"])
+                self._esperar_n_segundos(1)
+                self._hacer_clic_xpath(self.xpath_button_aceptar_en_factura)
+                self._esperar_n_segundos(2)
+                # self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
+                time.sleep(4)
             except Exception as e:
                 print('Error al momento de generar factura', e)
             print('END Generar Factura')
@@ -498,8 +556,6 @@ class Dynamics_Bot:
 
 # Crear instancia de AceptaFunctions
 dynamic_bot = Dynamics_Bot()
-
-lista_a_verificar = ["B040-00047319", "BE01-00131658", "BE01-00131493"]
 
 # Ejecutar acciones
 dynamic_bot.iniciar_sesion()
