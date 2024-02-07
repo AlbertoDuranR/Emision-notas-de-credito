@@ -11,10 +11,13 @@ import pandas as pd
 from dynamics_functions import AuxiliaryFunctions
 from selenium.webdriver.common.keys import Keys
 
+CODIGO_DISPOSICION = 'CD001'
 
 class Dynamics_Bot:
     def __init__(self):
-        
+
+
+
         # Configuración del navegador
         self.driver = webdriver.Chrome()
         self.wait = WebDriverWait(self.driver , 10)
@@ -74,7 +77,7 @@ class Dynamics_Bot:
 
         # Enlazar pedido origen a pedido devolución
         # self.buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl")]/button'
-        
+
         """ Test avances """
         self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]' # correcto
         # self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "returntableforedit") and contains(@id, "ReturnFindSalesOrder")]' # test
@@ -82,8 +85,8 @@ class Dynamics_Bot:
         self.xpath_columna_pedido_ventas='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Heading")]/div/div/div/div/div[2]/div/div/div[2]/div/div[2]'
         self.xpath_input_columna_pedido_ventas= '//input[@id="__FilterField_CustInvoiceJour_SalesNum_SalesId_Input_0_0_input"]'
         self.xpath_boton_aplicar_pedido_ventas='//button[@id="__CustInvoiceJour_SalesNum_ApplyFilters"]'
-        
-        # seleccioanr articulos con busqueda
+
+        # seleccionar articulos con busqueda
         self.xpath_columna_articulo='//div[contains(@id, "Invoice_Lines") and contains(@id, "_0_grid")]/div[1]/div[2]/div/div[1]/div[2]/div/div[2]'
         self.xpath_input_columna_articulo='//input[@id="__FilterField_CustInvoiceTrans_ItemId_ItemId_Input_0_0_input"]'
         self.xpath_boton_aplicar_articulo='//button[@id="__CustInvoiceTrans_ItemId_ApplyFilters"]'
@@ -93,7 +96,11 @@ class Dynamics_Bot:
         self.xpath_checkbox_primera_linea_articulo= '//*[contains(@id, "CustInvoiceTrans_Copy") and contains(@id, "0_0_input")]'
         self.xpath_boton_aceptar_enlazar_ventas='//button[contains(@id, "SalesCopying") and contains(@id, "OK")]'
         self.xpath_contenedor_enlazar_articulos_footer='//*[contains(@id, "SalesCopying") and contains(@id, "TabPageTreeControl")]' # Usado para scroll a este elemento
-        
+
+        # seleccionar articulos si es total
+        self.xpath_div_primer_pedido='//div[contains(@id, "Invoice_Heading") and contains(@id, "row")]'
+        self.xpath_div_primer_pedido='//div[contains(@id, "Invoice_Heading") and contains(@id, "row-0")]'
+
         # Confirmar registro
         self.div_lineas_articulos_para_registro='//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]'
         self.xpath_actualizar_linea='//*[contains(@id, "ReturnTable") and contains(@id, "Update_button")]'
@@ -109,11 +116,11 @@ class Dynamics_Bot:
         self.xpath_input_num_pedido_devolucion='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnOrder_SalesId_input")]'
         self.xpath_edit_icon='//*[contains(@id, "SalesTable") and contains(@id, "SalesTable_DeliveryNameHeaderOverview")]/span[2]' # Para poder editar todo.
         self.xpath_input_numero_cuenta_cliente='//input[contains(@id, "SalesTable") and contains(@id, "CarrierCustomerAccountNumber_input")]' # usamos para luego llgar con tab a la forma de pago
-        
+
         self.xpath_button_vistas_globales='//button[contains(@id, "SalesTable") and contains(@id, "SystemDefinedManageViewFilters")]'
         # //*[@id="SalesTable_6_SystemDefinedManageViewFilters"]
         self.xpath_vista_estandar='//div[contains(@id, "ViewButtons")]/descendant::button[contains(@id, "5637889366")]'
-       
+
         self.xpath_input_fecha_envio_solicitada='//input[contains(@id, "SalesTable") and contains(@id, "Delivery_ShippingDateRequestedHeader_input")]'
         self.xpath_input_fecha_recepcion_solicitada='//input[contains(@id, "SalesTable") and contains(@id, "Delivery_ReceiptDateRequestedHeader_input")]'
         self.xpath_input_tipo_documento='//*[@id="SalesTable_80_DMPCFieldsPeruPE_DMPCCodTypeDocPay_PE_input"]'
@@ -133,7 +140,7 @@ class Dynamics_Bot:
         self.xpath_input_fecha_documento_en_factura='//input[contains(@id, "SalesEditLines") and contains(@id, "SalesParmTable_DocumentDate_input")]'
         self.xpath_button_aceptar_en_factura='//button[contains(@id, "SalesEditLines") and contains(@id, "OK")]'
         self.xpath_button_confirmar_factura='//button[contains(@id, "SysBoxForm") and contains(@id, "Ok")]'
-        
+
     def iniciar_sesion(self):
         try:
             self.driver.get(self.url)
@@ -185,86 +192,94 @@ class Dynamics_Bot:
         self._ingresar_valor_en_input_xpath(self.xpath_input_columna_pedido_ventas, data['num_pedido_origen'])
         self._hacer_clic_xpath(self.xpath_boton_aplicar_pedido_ventas)
         time.sleep(1)
-        # Seleccionar productos y si es metodo parcial
-        """
-        # PRIMER METODO - Problema si hay mas de 8 productos no se muestran todos se tiene que hacer scroll
-        # div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
-        # print('>> Cantidad de articulos: ', len(div_articulos))
-        # # for fila in range(len(div_articulos)):
-        # #     try:
-        # #         # print("Fila: ", fila, div_articulos[fila])
-        # #         xpath_fila=f'//div[contains(@id, "Invoice_Lines") and contains(@id, "row-{fila}")]' # "Invoice_Lines_3345_0-row-0" <- Formato para recorrer filas
-        # #         input_elements = self.driver.find_elements(By.XPATH, f'{xpath_fila}//input')
-        # #         # for input_element in input_elements:
-        # #         #     print("Text input:", input_element.get_attribute("value"))
-        # #         if data['metodo'].lower() == "total":
-        # #             # Selecciona todos los productos
-        # #             self._hacer_clic_xpath(f'{xpath_fila}//div/span')
-        # #             continue
-        # #         if(input_elements[1].get_attribute("value") in data['productos']):
-        # #             self._hacer_clic_xpath(f'{xpath_fila}//div/span') # se tiene un error -> Qu si no se hacer scroll no selecciona el producto
-        # #             print("Select: ", input_elements[1].get_attribute("value"))
-        # #     except Exception as e:
-        # #         print(f"Error al seleccionar producto a enlazar: {str(e)}")
-        """
-        
-        # SEGUNDO METODO: Buscar uno por uno y seleccionar
-        try:
-            self._esperar_n_segundos(2)
-            # Desplazarse a una elemento
-            contenedor_tabla_articulos = self.driver.find_element(By.XPATH, self.xpath_contenedor_enlazar_articulos_footer)
-            ActionChains(self.driver)\
-                .scroll_to_element(contenedor_tabla_articulos)\
-                .perform()
 
-            div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
-            for articulo in  data['productos']:
-                self._hacer_clic_xpath(self.xpath_columna_articulo)
-                self._ingresar_valor_en_input_xpath(self.xpath_input_columna_articulo, articulo['codigo'])
-                self._esperar_n_segundos(1)
-                self._hacer_clic_xpath(self.xpath_boton_aplicar_articulo)
-                time.sleep(1)
-                counter = 0
-                while len(div_articulos) > 0:
-                    counter += 1
+        if data['metodo'] == 'total':
+            try:
+                # input_elements = self.driver.find_elements(By.XPATH, f'{self.xpath_div_primer_pedido}//input')
+                # for input_element in input_elements:
+                #     print("Text input:", input_element.get_attribute("value"))
+                # print("Select articulo: ", input_elements[1].get_attribute("value"))
+                self._esperar_n_segundos('2')
+                self._hacer_clic_xpath(f'{self.xpath_div_primer_pedido}//div/span')
+            except Exception as e:
+                print('Error al momento de seleccionar todos los productos')
+                return
+        else:
+            # Seleccionar productos, si es metodo parcial
+            """
+            # PRIMER METODO - Problema si hay mas de 8 productos no se muestran todos se tiene que hacer scroll
+            # div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
+            # print('>> Cantidad de articulos: ', len(div_articulos))
+            # # for fila in range(len(div_articulos)):
+            # #     try:
+            # #         # print("Fila: ", fila, div_articulos[fila])
+            # #         xpath_fila=f'//div[contains(@id, "Invoice_Lines") and contains(@id, "row-{fila}")]' # "Invoice_Lines_3345_0-row-0" <- Formato para recorrer filas
+            # #         input_elements = self.driver.find_elements(By.XPATH, f'{xpath_fila}//input')
+            # #         # for input_element in input_elements:
+            # #         #     print("Text input:", input_element.get_attribute("value"))
+            # #         if data['metodo'].lower() == "total":
+            # #             # Selecciona todos los productos
+            # #             self._hacer_clic_xpath(f'{xpath_fila}//div/span')
+            # #             continue
+            # #         if(input_elements[1].get_attribute("value") in data['productos']):
+            # #             self._hacer_clic_xpath(f'{xpath_fila}//div/span') # se tiene un error -> Qu si no se hacer scroll no selecciona el producto
+            # #             print("Select: ", input_elements[1].get_attribute("value"))
+            # #     except Exception as e:
+            # #         print(f"Error al seleccionar producto a enlazar: {str(e)}")
+            """
+            # SEGUNDO METODO: Buscar uno por uno y seleccionar
+            try:
+                self._esperar_n_segundos(2)
+                # Desplazarse a una elemento
+                contenedor_tabla_articulos = self.driver.find_element(By.XPATH, self.xpath_contenedor_enlazar_articulos_footer)
+                ActionChains(self.driver)\
+                    .scroll_to_element(contenedor_tabla_articulos)\
+                    .perform()
+                div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
+                for articulo in  data['productos']:
+                    self._hacer_clic_xpath(self.xpath_columna_articulo)
+                    self._ingresar_valor_en_input_xpath(self.xpath_input_columna_articulo, articulo['codigo'])
                     self._esperar_n_segundos(1)
-                    div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
-                    if len(div_articulos) == 1:
+                    self._hacer_clic_xpath(self.xpath_boton_aplicar_articulo)
+                    time.sleep(1)
+                    counter = 0
+                    while len(div_articulos) > 0:
+                        counter += 1
                         self._esperar_n_segundos(1)
-                        xpath_fila=f'//div[contains(@id, "Invoice_Lines") and contains(@id, "row-0")]' # "Invoice_Lines_3345_0-row-0"
-                        input_elements = self.driver.find_elements(By.XPATH, f'{xpath_fila}//input')
-                        # for input_element in input_elements:
-                        #     print("Text input:", input_element.get_attribute("value"))
-                        self._esperar_n_segundos('1')
-                        print("Select articulo: ", input_elements[1].get_attribute("value"))
+                        div_articulos=self.driver.find_elements(By.XPATH, self.xpath_div_lineas_articulos)
+                        if len(div_articulos) == 1:
+                            self._esperar_n_segundos(1)
+                            xpath_fila=f'//div[contains(@id, "Invoice_Lines") and contains(@id, "row-0")]' # "Invoice_Lines_3345_0-row-0"
+                            input_elements = self.driver.find_elements(By.XPATH, f'{xpath_fila}//input')
+                            # for input_element in input_elements:
+                            #     print("Text input:", input_element.get_attribute("value"))
+                            self._esperar_n_segundos('1')
+                            print("Select articulo: ", input_elements[1].get_attribute("value"))
+                            # Artificio para borrar este input. No era posible con .clear()
+                            input_elements[3].click()
+                            input_elements[3].send_keys(Keys.DELETE * len(input_elements[3].get_attribute("value")))
+                            input_elements[3].send_keys(articulo['cantidad'])
+                            self._hacer_clic_xpath(f'{xpath_fila}//div/span')
+                            print("Select cantidad: ", input_elements[3].get_attribute("value"))
+                            break
+                        if counter > 3:
+                            print("No se muestra la fila del articulo")
+                            break
+            except Exception as e:
+                print(f"Error al seleccionar producto a enlazar: {str(e)}")
 
-                        # Artificio para borrar este input. No era posible con .clear()
-                        input_elements[3].click()
-                        input_elements[3].send_keys(Keys.DELETE * len(input_elements[3].get_attribute("value")))
-                        input_elements[3].send_keys(articulo['cantidad'])
-                        self._hacer_clic_xpath(f'{xpath_fila}//div/span')
-                        print("Select cantidad: ", input_elements[3].get_attribute("value"))
-                        break
-                    if counter > 3:
-                        print("No se muestra la fila del articulo")
-                        break
-
-        except Exception as e:
-            print(f"Error al seleccionar producto a enlazar: {str(e)}")
-        #time.sleep(10)
+        time.sleep(1)
         self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
         print('END enlazar pedidos')
-        # # # Alternativa Verificar si la cantidad de productos por registrar sean iguales que el data['articulos'] Si no volver a recorrer
-        
         # END Enlazar pedido origen a pedido devolución
 
     def registrar_articulo_para_devolucion(self):
         try:
             self._hacer_clic_xpath(self.xpath_actualizar_linea)
-            print('after click actualizar pedido')
+            # print('after click actualizar pedido')
             self._hacer_clic_xpath(self.xpath_registro_inventario)
             time.sleep(1)
-            self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_disposicion, 'CD001')
+            self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_disposicion, CODIGO_DISPOSICION)
             self._hacer_clic_xpath(self.xpath_input_codigo_disposicion) # Para obtener datos del codigo ingresado
             time.sleep(1)
             self._hacer_clic_xpath(self.xpath_boton_acptar_codigo_disposicion)
@@ -302,6 +317,26 @@ class Dynamics_Bot:
         except Exception as e:
                     print(f"Error al registrar articulo para devolución: {str(e)}")
 
+    def get_serie_documento(self, invoice_number):
+        # input: "BB01-00080858" | "BF02-00153614"
+        # Verificar si esta bien la tabla de equivalencias. 
+        equivalencias = {
+            "BB01": "T_BC30",
+            "BB02": "T_BC31",
+            "BB03": "T_BC32",
+            "BF01": "T_BC40",
+            "BF02": "T_BC41",
+            "BF03": "T_BC42",
+            # "F02": "T_BC31",
+            # "F03": "T_BC32"
+        }
+        serie = invoice_number.split("-")[0]
+        # codigo_base = serie[0] + serie[-2:]  # Obtener la primera letra y los dos últimos caracteres del código
+        print('Equivale: ', invoice_number, serie)
+        if serie in equivalencias:
+            return equivalencias[serie]
+        else:
+            return None  # Opcional: Manejo para códigos no encontrados
 
     def _ingresar_valor_en_input_id(self, xpath, valor):
         AuxiliaryFunctions.ingresar_valor_en_input_id(self.driver, self.wait, xpath, valor)
@@ -330,46 +365,46 @@ class Dynamics_Bot:
 
     def crear_nota_de_credito(self):
         # input:
-        data={
-            "InvoiceNumber": 'BF02-00153614',
-            "PaymentTermsName": 'CONT',
-            # Sale del orden de pedido
-            "SalesOrderNumber": "TRV-02755697",
-            "DefaultShippingWarehouseId": 'MD04_SUC',
-            "CustomerPaymentMethodName": 'FP015',
+        # data={
+        #     "InvoiceNumber": 'BF02-00153614',
+        #     "PaymentTermsName": 'CONT',
+        #     # Sale del orden de pedido
+        #     "SalesOrderNumber": "TRV-02755697",
+        #     "DefaultShippingWarehouseId": 'MD04_SUC',
+        #     "CustomerPaymentMethodName": 'FP015',
 
-            'num_pedido_origen': 'TRV-02755697',
-            'metodo': 'parcial',
-            'almacen': 'MD04_SUC',
-            'productos': [
-                {'codigo': '101766', 'cantidad': '1'}, # 'codigo : cantidad
-                # {'codigo': '110633', 'cantidad': '2'}
-            ],
-            'forma_pago':'FP015',
-            'pago': 'CONT',
-            'fecha_solicitud': '1/21/2024',
-            'monto_total_nota_credito': '1.7'
-        }
-
-        # data = {
-        #     "InvoiceNumber": "BB03-00080858",
-        #     "PaymentTermsName": "CONT",
-        #     # Sale del orden de pedid
-        #     "SalesOrderNumber": "TRV-02750046",
-        #     "CustomerPaymentMethodName": "FP015",
-        #     "DefaultShippingWarehouseId": "MD02_JRC",
-        #     "InvoiceDate": "2024-01-20T12:00:00Z",
-        #     "TotalInvoiceAmount": 24,
-
-        #     'num_pedido_origen': 'TRV-02750046',
-        #     'metodo': 'total',
-        #     'almacen': 'MD02_JRC',
-        #     'productos': [],
+        #     'num_pedido_origen': 'TRV-02755697',
+        #     'metodo': 'parcial',
+        #     'almacen': 'MD04_SUC',
+        #     'productos': [
+        #         {'codigo': '101766', 'cantidad': '1'}, # 'codigo : cantidad
+        #         # {'codigo': '110633', 'cantidad': '2'}
+        #     ],
         #     'forma_pago':'FP015',
         #     'pago': 'CONT',
-        #     'fecha_solicitud': '1/20/2024',
-        #     'monto_total_nota_credito': 24
+        #     'fecha_solicitud': '1/21/2024',
+        #     'monto_total_nota_credito': '1.7'
         # }
+
+        data = {
+            "InvoiceNumber": "BB03-00080858",
+            "PaymentTermsName": "CONT",
+            # Sale del orden de pedid
+            "SalesOrderNumber": "TRV-02750046",
+            "CustomerPaymentMethodName": "FP015",
+            "DefaultShippingWarehouseId": "MD02_JRC",
+            "InvoiceDate": "2024-01-20T12:00:00Z",
+            "TotalInvoiceAmount": 24,
+
+            'num_pedido_origen': 'TRV-02750046',
+            'metodo': 'total',
+            'almacen': 'MD02_JRC',
+            'productos': [],
+            'forma_pago':'FP015',
+            'pago': 'CONT',
+            'fecha_solicitud': '1/20/2024',
+            'monto_total_nota_credito': 24
+        }
         codigo_motivo_devolucion={
             "parcial": "07",
             "total": "06"
@@ -379,7 +414,7 @@ class Dynamics_Bot:
             # start TEST esta parte es temporal para no crear cada rato pedidos
             print('Continuar 1')
             self.xpath_input_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl_Input_input")]'
-            self._ingresar_valor_en_input_xpath(self.xpath_input_buscar_rma, 'TRV-007938') # Solo es para el ejemplo
+            self._ingresar_valor_en_input_xpath(self.xpath_input_buscar_rma, 'TRV-007937') # Solo es para el ejemplo
             print('Click en buscar rma')
             time.sleep(3)
             # end
@@ -388,7 +423,7 @@ class Dynamics_Bot:
             # self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
 
             # Enlazar pedidos
-            # self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
 
             # time.sleep(10)
             # return
@@ -396,24 +431,58 @@ class Dynamics_Bot:
             # START Confirmar registro
             print('>> START Confirmar registro')
             time.sleep(1)
-            self._esperar_n_segundos(1)
-            div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
-            count = 0
-            while not len(div_articulos_registrar) == len(data['productos']):
-                # print('>> Cantidad de articulos a registrar: ', len(div_articulos_registrar))
-                time.sleep(1)
-                self._esperar_n_segundos(1)
-                div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
-                count += 1
-                if count > 3:
-                    print('Error, Metodo Parcial: Cantidad de Productos Seleccionados no son iguales a los solicitados')
-                    raise ValueError('Metodo Parcial: Cantidad de Productos Seleccionados no son iguales a los solicitados')
-                    # break
-            print('>> Cantidad de articulos a registrar: ', len(div_articulos_registrar))
-
             try:
-                for fila in range(len(div_articulos_registrar)):
-                    print("Fila: ", fila, div_articulos_registrar[fila])
+                self._esperar_n_segundos(4)
+                div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
+                count = 0
+                if data['metodo'] != 'total':
+                    while not len(div_articulos_registrar) == len(data['productos']):
+                        # print('>> Cantidad de articulos a registrar: ', len(div_articulos_registrar))
+                        time.sleep(1)
+                        self._esperar_n_segundos(1)
+                        div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
+                        count += 1
+                        if count > 3:
+                            print('Error, Metodo Parcial: Cantidad de Productos Seleccionados no son iguales a los solicitados')
+                            raise ValueError('Metodo Parcial: Cantidad de Productos Seleccionados no son iguales a los solicitados')
+                            # break
+
+                self._esperar_n_segundos(2)
+                primer_articulo=self.driver.find_elements(By.XPATH, '//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]//input')
+                value_codigo_articulo=primer_articulo[1].get_attribute("value")
+                count = 0
+                while value_codigo_articulo == '':
+                    time.sleep(1)
+                    self._esperar_n_segundos(1)
+                    primer_articulo=self.driver.find_elements(By.XPATH, '//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]//input')
+                    value_codigo_articulo=primer_articulo[1].get_attribute("value")
+                    count += 1
+                    if count > 3:
+                        print('Error, Metodo Total: No hay productos a confirmar')
+                        raise ValueError('Error, Metodo Total: No hay productos a confirmar')
+                div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
+            except Exception as e:
+                print("Error, Verificar articulos antes de registro", e)
+
+            cantidad_articulos_registrar=len(div_articulos_registrar)
+            print('Cantidad de Articulos a Regitrar: ', cantidad_articulos_registrar)
+            try:
+                for fila in range(cantidad_articulos_registrar):
+                    if fila == 3:
+                        """
+                         OJO
+                        """
+                        # Desplazarse a una elemento ----- ERROR SI NO SE MUESTRA EN LA BANDEJA DE PRODUCTOS POR REGISTRAR NO SE PUEDE HACER CLICK.
+                        # Intentamos solucionarlo con el SCROLL, PEro no hace scroll, verificar
+                        xpath_ultima_fila=f'//div[contains(@id, "SalesLineGrid") and contains(@id, "row-{cantidad_articulos_registrar-2}")]'
+                        print('xpath_ultima_fila', xpath_ultima_fila)
+                        xpath_ultima_fila='//div[contains(@id, "SalesLineGrid") and contains(@id, "row-6")]'
+                        contenedor_tabla_articulos = self.driver.find_element(By.XPATH, xpath_ultima_fila)
+                        ActionChains(self.driver)\
+                            .scroll_to_element(contenedor_tabla_articulos)\
+                            .perform()
+                        time.sleep(4)
+                    # print("Fila: ", fila, div_articulos_registrar[fila])
                     #//*[@id="SalesLineGrid_9928_0-row-0"]
                     xpath_fila=f'//div[contains(@id, "SalesLineGrid") and contains(@id, "row-{fila}")]' #//*[@id="SalesLineGrid_9928_0-row-0"] <- Formato para recorrer filas
                     self._esperar_n_segundos(1)
@@ -431,6 +500,9 @@ class Dynamics_Bot:
             print(">> END Confirmado")
             # END Confirmar registro
 
+            time.sleep(10)
+            return
+
             # START Poner fecha de solicitud
             print(">> START Poner Fecha de Solicitud")
             self._esperar_n_segundos(2)
@@ -439,11 +511,12 @@ class Dynamics_Bot:
             ## Activar edición de campos
             try:
                 time.sleep(1)
-                self._esperar_n_segundos(2)
+                self._esperar_n_segundos(4)
                 edit_icon=self.driver.find_element(By.XPATH, self.xpath_edit_icon)
-                # print('After edit_icon > ', edit_icon.get_attribute("title"))
-                self._esperar_n_segundos(2)
+                print('Find edit_icon in: ', edit_icon.get_attribute("title")) # print() Ayuda para despues poder cambiar su class
+                self._esperar_n_segundos(4) # se le da ese tiempo para espera que se vea el icon
                 self.driver.execute_script("arguments[0].classList.add('fieldOptionsShowIsFocusedControl')", edit_icon)
+                # print('After edit_icon > ', edit_icon.get_attribute("class"))
                 self._esperar_n_segundos(2)
                 self._hacer_clic_xpath(self.xpath_edit_icon)
             except Exception as e:
@@ -532,7 +605,7 @@ class Dynamics_Bot:
                 self._hacer_clic_xpath(self.xpath_open_seleccion_tipo_documento)
                 time.sleep(1)
                 self._hacer_clic_xpath(self.xpath_input_serie_documento_en_factura)
-                self._ingresar_valor_en_input_xpath(self.xpath_input_serie_documento_en_factura, 'T_BC')
+                self._ingresar_valor_en_input_xpath(self.xpath_input_serie_documento_en_factura, self.get_serie_documento(invoice_number=data['InvoiceNumber']))
                 # serie_documento=self.driver.find_element(By.XPATH, (self.xpath_input_serie_documento_en_factura))
                 # serie_documento.send_keys(Keys.ARROW_DOWN)
                 # time.sleep(1)
@@ -545,14 +618,15 @@ class Dynamics_Bot:
                 self._esperar_n_segundos(1)
                 self._hacer_clic_xpath(self.xpath_button_aceptar_en_factura)
                 self._esperar_n_segundos(2)
-                # self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
+                self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
                 time.sleep(4)
             except Exception as e:
                 print('Error al momento de generar factura', e)
             print('END Generar Factura')
-            time.sleep(10)
+            time.sleep(15)
         except Exception as e:
             print(f"Error al crear nuevo pedido: {str(e)}")
+
 
 # Crear instancia de AceptaFunctions
 dynamic_bot = Dynamics_Bot()
