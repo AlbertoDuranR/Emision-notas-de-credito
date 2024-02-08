@@ -25,6 +25,13 @@ class ViewNCPDV:
             '_token':get_token(request)
         })
 
+    def get_sales_invoice(request, nro_comprobante):
+        invoice = serviceDynamics.get_sales_invoice_headers_by_invoice_number(nro_comprobante)
+        print('get_sales_invoices', invoice)
+        if not invoice:
+            return JsonResponse({'error': 'No se encontro el N° Comprobante'}, status=404)
+        return JsonResponse(invoice, safe=False)
+
     def get_sales_invoice_details(request, nro_comprobante):
         invoice_products = serviceDynamics.get_sales_invoice_lines(nro_comprobante)
         # print('get_sales_invoices_details', invoice_products)
@@ -34,21 +41,17 @@ class ViewNCPDV:
 
      ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
-        
         lista_productosEdit = []
         # Lógica para obtener productos y unidades desde el servicio Dynamics
-        products_issues= serviceDynamics.getProductsIssued()
         unidades= serviceDynamics.getUnitsConversion()
-        
         # Lógica para obtener datos de la base de datos local registrados
         lista_solicitudesEdit=servicePDV.lista_solicitudesEdit(id)
-        
-       
-       # si es de tipo parical traer los productos 
-        if 'Parcial' in lista_solicitudesEdit[0]['METODO']:            
+        products_issues=serviceDynamics.get_sales_invoice_lines(lista_solicitudesEdit[0]['NUMERO_COMPROBANTE'])
+        # si es de tipo parcial traer los productos
+        if 'parcial' in lista_solicitudesEdit[0]['METODO']:
             lista_productosEdit=servicePDV.lista_productosEdit(id_product)
-        
-        print("LISTA DE PROPDUCTOS") 
+
+        print("LISTA DE PROPDUCTOS")
         print(id)
         print(id_product)
         print(lista_productosEdit)
@@ -61,7 +64,7 @@ class ViewNCPDV:
             'id': id,
             '_token':get_token(request)
         })
-    
+
     ### Consolidado Punto de Venta
     def cnotaPDV(request):
         #Listar Solicitudes
@@ -110,7 +113,7 @@ class ViewNCPDV:
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print(e)
-                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
+                return JsonResponse({'message': f'{e}'}, status=404)
             #
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
