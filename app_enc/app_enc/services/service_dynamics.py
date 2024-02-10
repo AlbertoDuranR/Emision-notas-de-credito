@@ -9,7 +9,7 @@ load_dotenv()
 #
 class ServiceDynamics:
 
-    url = os.environ.get("url_api_dynamics")
+    url = os.environ.get("url_api_dynamics_master")
 
     def get_Token(self):
         env = {
@@ -24,7 +24,7 @@ class ServiceDynamics:
             req = requests.post(endp,env)
             if req.status_code == 200:
                 token = req.json()['access_token']
-                # print('token' * 20, token)
+                print('token' * 20, token)
                 return 'Bearer {0}'.format(token)
             else:
                 return None
@@ -142,6 +142,46 @@ class ServiceDynamics:
         except:
             return None
 
+    def get_sales_order_headers_by_sales_order_number(self, sales_order_number: str):
+        """
+            :param invoice_number: The invoice number to query.
+                Ex. 'BG02-00052743'
+            :return: A list of dictionaries containing invoice details.
+                Ex.
+                    [{
+                        'SalesOrderNumber': 'TRV-02755697',
+                        'SalesOrderOriginCode': 'PV',
+                        'DefaultShippingWarehouseId': 'MD04_SUC',
+                        'RequestedShippingDate': '2024-01-21T12:00:00Z',
+                        'SalesOrderProcessingStatus': 'Invoiced',
+                        'CustomerPaymentMethodName': 'FP015'
+                    }]
+        """
+        # Definir url
+        path = f"{self.url}/data/SalesOrderHeaders"
+        token = self.get_Token()
+        query = f"?$count=true&$filter=SalesOrderNumber eq '{sales_order_number}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            invoice_data = pd.read_json(json.dumps(data["value"]))
+            result = invoice_data[
+                ["SalesOrderNumber", "SalesOrderOriginCode", "DefaultShippingWarehouseId", "RequestedShippingDate", "SalesOrderProcessingStatus", "CustomerPaymentMethodName"]
+            ]
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_sales_invoice_headers_by_invoice_number: {e}")
+            return None
+
     def get_sales_invoice_headers_by_invoice_number(self, invoice_number: str):
         """
             :param invoice_number: The invoice number to query.
@@ -153,7 +193,8 @@ class ServiceDynamics:
                         'InvoiceDate': '2024-01-10T12:00:00Z',
                         'TotalTaxAmount': 29.07,
                         'SalesOrderNumber': 'TRV-02697594',
-                        'TotalInvoiceAmount': 190.6
+                        'TotalInvoiceAmount': 190.6,
+                        'PaymentTermsName' : 'CONT'
                     }]
         """
         # Definir url
@@ -175,7 +216,7 @@ class ServiceDynamics:
                 return None
             invoice_data = pd.read_json(json.dumps(data["value"]))
             result = invoice_data[
-                ["InvoiceNumber", "InvoiceDate", "TotalTaxAmount", "SalesOrderNumber", "TotalInvoiceAmount"]
+                ["InvoiceNumber", "InvoiceDate", "TotalTaxAmount", "SalesOrderNumber", "TotalInvoiceAmount", "PaymentTermsName"]
             ]
             return result.to_dict(orient='records')
         except Exception as e:
