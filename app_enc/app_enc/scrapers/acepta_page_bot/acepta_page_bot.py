@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from .acepta_functions import AuxiliaryFunctions
+# from acepta_functions import AuxiliaryFunctions # No Django
 
 load_dotenv()
 
@@ -174,7 +175,8 @@ nro_comprobantes = ['BC11-00000329', 'BC11-00000329X', 'BA01-00249590', 'BA01-00
 # acepta_bot.seleccionar_busqueda_avanzada()
 # # acepta_bot.seleccionar_opciones(fecha_ayer, fecha_hoy)
 # # acepta_bot.buscar_comprobante(serie, correlativo_desde)
-# # estado_comprobante = acepta_bot.extraer_estado_por_comprobante('BA01-00249590')
+# estado_comprobante = acepta_bot.extraer_estado_por_comprobante('BA01-00249590')
+# print(acepta_bot.get_estado_por_comprobante('BA01-00249590'))
 # for nro_comprobante in nro_comprobantes:
 #     estado_comprobante = acepta_bot.extraer_estado_por_comprobante(nro_comprobante)
 #     print(f'Estado Comprobante: {nro_comprobante} : {estado_comprobante if estado_comprobante else 'No Existe'}')

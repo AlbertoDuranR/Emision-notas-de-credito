@@ -113,4 +113,8 @@ class ServiceNotaCredito:
             print('Data_solicitud: ', data_solicitud)
             dynamics_bot = Dynamics_Bot()
             dynamics_bot.iniciar_sesion()
-            dynamics_bot.crear_nota_de_credito(data=data_solicitud)
+            estado_rpa=dynamics_bot.crear_nota_de_credito(data=data_solicitud)
+            print('Estado RPA: ', estado_rpa)
+            data_pedido_devolucion=serviceDynamics.get_sales_order_headers_by_sales_order_number(estado_rpa['nro_pedido_ventas_devolucion'])
+            # Buscar
+            # /data/ReturnOrderHeaders?$count=true&$filter=ReturnOrderNumber eq 'TRV-02756520'
