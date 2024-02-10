@@ -12,11 +12,10 @@ class ViewNotaCredito:
     def create_nota_credito(request):
         if request.method == "POST":
             # Transform data
-            form_request= str.join("",request.POST)
-            # form_request = json.loads(form_request)
-            print('LLego a view')
+            form_request= str.join("", request.body.decode('utf-8'))
+            form_request = json.loads(form_request)
             try:
-                ServiceNotaCredito.crear_nota_credito(form_request)
+                ServiceNotaCredito.crear_nota_credito(sol_id=form_request['id'])
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print(e)
