@@ -121,9 +121,23 @@
           </td>
           <td class="text-sm text-gray-600 text-center">
             <button
+              class="bg-red-0 text-white px-2 py-1 w-1/3"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="19"
+                width="19"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"
+                />
+              </svg>
+            </button>
+            <button
               v-show="item.ESTADO != 'VALIDADO'"
               @click="validar_item(item.ID_NC, item.NRO_COMPROBANTE)"
-              class="bg-blue-0 text-white px-2 py-1"
+              class="bg-blue-0 text-white px-2 py-1 w-1/3"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +152,7 @@
             </button>
             <button
               @click="observar_item(item.ID_NC)"
-              class="bg-red-0 text-white px-2 py-1"
+              class="bg-red-0 text-white px-2 py-1 w-1/3"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -154,7 +168,7 @@
             <button
               v-show="item.ESTADO == 'VALIDADO'"
               @click="generar_nota_item(item.ID_NC)"
-              class="bg-red-0 text-white px-2 py-1"
+              class="bg-red-0 text-white px-2 py-1 w-1/3"
             >
               <svg xmlns="http://www.w3.org/2000/svg"
                 height="22"
@@ -178,12 +192,14 @@
       </tbody>
     </DataTable>
   </div>
+  <modalReview />
   <!-- -- -->
   <!-- -- -->
 </template>
 <script setup>
 // Importando layouts
 import Header from "../../layouts/Header.vue";
+import modalReview from "../../components/modalReview.vue";
 import DataTable from "datatables.net-vue3";
 import DataTablesCore from "datatables.net";
 import axios from "axios";
