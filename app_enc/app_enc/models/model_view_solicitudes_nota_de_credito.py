@@ -9,6 +9,10 @@ class ViewSolicitudNotaDeCredito(models.Model):
     det_nro_comprobante = models.CharField(max_length=64, null=False)
     det_metodo = models.TextField(null=True)
     det_monto_total_prod = models.FloatField(null=False)
+    det_importe_total = models.FloatField()
+    det_motivo = models.CharField(max_length=255, null=True)
+    det_justificacion = models.TextField(null=True)
+
     class Meta:
         managed = False # Esto indica a Django que no gestione la tabla (ya que es una vista)
         db_table="view_solicitudes_nota_de_credito"
