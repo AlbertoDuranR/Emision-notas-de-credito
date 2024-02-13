@@ -122,6 +122,7 @@
           <td class="text-sm text-gray-600 text-center">
             <button
               class="bg-red-0 text-white px-2 py-1 w-1/3"
+              @click="getDatosSolicitud(item.ID_NC)"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -192,14 +193,18 @@
       </tbody>
     </DataTable>
   </div>
-  <modalReview />
-  <!-- -- -->
+  <ModalReview
+    v-if="isOpen"
+    @show-modal="closeModal"
+    @close="closeModal"
+    :open="isOpen"
+    :detalleSolicitud="datos_detalle_solicitud"
+  />
   <!-- -- -->
 </template>
 <script setup>
-// Importando layouts
+import ModalReview from "../../components/ModalReview";
 import Header from "../../layouts/Header.vue";
-import modalReview from "../../components/modalReview.vue";
 import DataTable from "datatables.net-vue3";
 import DataTablesCore from "datatables.net";
 import axios from "axios";
@@ -214,6 +219,13 @@ export default {
   components: { DataTable },
   props: {
     lista_solicitudes: Array,
+  },
+  data() {
+    return {
+      isOpen: false,
+      datos_detalle_solicitud: {},
+      isLoadingSolicitud: false,
+    };
   },
   mounted() {
     // Imprimir datos en la consola
@@ -397,7 +409,31 @@ export default {
         showConfirmButton: true,
         allowOutsideClick: false,
       });
-    }
+    },
+    openModal(){
+      this.isOpen = true
+    },
+    closeModal(){
+      this.isOpen = false
+    },
+    async getDatosSolicitud(idSol) {
+      try {
+        console.log('entro activador modal')
+        const response = await axios.get(`/solicitud_nota_credito/datos_solicitud/${idSol}`);
+        console.log('response', response)
+        if(response.status == 200) {
+          this.openModal()
+          this.datos_detalle_solicitud = response.data;
+        }
+      } catch (error) {
+        console.log(error)
+        this.$swal.fire({
+          title: 'ERROR',
+          text: `No se tiene datos de esta solicitud: ${idSol}`,
+          icon: 'error',
+        });
+      }
+    },
   },
 };
 </script>

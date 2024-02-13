@@ -30,6 +30,8 @@ urlpatterns = [
     path('solicitud_nota_credito/punto_venta/', ViewNCPDV.notaPDV,name="new_nc_pdv"),
     path('solicitud_nota_credito/financieros/', ViewNCFinanciero.notaFinanciero),
     path('solicitud_nota_credito/servicios/', ViewNCServicios.notaServicios),
+    # Get Datos Solicitud
+    path('solicitud_nota_credito/datos_solicitud/<int:sol_id>', ViewNCPDV.get_datos_solicitud),
     ###
     
     ## Path View Consolidacion

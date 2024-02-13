@@ -6,6 +6,9 @@ from django.middleware.csrf import get_token
 from ..services.service_nc_punto_venta import ServiceNCPDV
 from ..services.service_dynamics import ServiceDynamics
 from ..scrapers.acepta_page_bot.acepta_page_bot import AceptaScraper
+from ..models.model_producto_detalle import ProductoDetalle
+from ..models.model_view_solicitudes_nota_de_credito import ViewSolicitudNotaDeCredito
+
 
 servicePDV = ServiceNCPDV
 serviceDynamics = ServiceDynamics()
@@ -38,6 +41,45 @@ class ViewNCPDV:
         if not invoice_products:
             return JsonResponse({'error': 'No se encontro productos para el N° Comprobante'}, status=404)
         return JsonResponse(invoice_products, safe=False)
+
+    def get_datos_solicitud(request, sol_id):
+        # Get data solicitud
+        solicitud = ViewSolicitudNotaDeCredito.objects.get(sol_id=sol_id)
+        if solicitud:
+            sol_id = solicitud.sol_id
+            det_id = solicitud.det_id
+            sol_fecha_solicitud = solicitud.sol_fecha_solicitud
+            sol_tipo_nc = solicitud.sol_tipo_nc
+            det_nro_comprobante = solicitud.det_nro_comprobante
+            det_metodo = solicitud.det_metodo
+            det_monto_total_prod = solicitud.det_monto_total_prod
+            det_importe_total = solicitud.det_importe_total
+            det_motivo = solicitud.det_motivo
+            det_justificacion = solicitud.det_justificacion
+        # print('solicitud: ', sol_id, det_id, sol_fecha_solicitud,  sol_tipo_nc, det_nro_comprobante, det_metodo, det_monto_total_prod, det_importe_total )
+
+        # Get productos
+        list_productos = []
+        productos = ProductoDetalle.objects.filter(det_id=det_id)
+        if det_metodo == 'parcial':
+            productos = ProductoDetalle.objects.filter(det_id=det_id)
+            if not productos:
+                raise 'Error: Sin productos para el N° Comprobante en el metodo Parcial'
+            for producto in productos:
+                list_productos.append({'codigo': producto.dpro_codigo, 'descripcion': producto.dpro_descripcion, 'cantidad': producto.dpro_cantidad, 'unidad': producto.dpro_unidad, 'monto_total': producto.dpro_monto_total})
+        data_response = {
+            'sol_fecha_solicitud': sol_fecha_solicitud,
+            'sol_tipo_nc': sol_tipo_nc,
+            'det_nro_comprobante': det_nro_comprobante,
+            'det_metodo': det_metodo,
+            'det_importe_total': det_importe_total,
+            'det_motivo': det_motivo,
+            'det_justificacion':  det_justificacion,
+            'productos': list_productos
+        }
+        if not solicitud:
+            return JsonResponse({'error': 'No se encontro la solicitud'}, status=404)
+        return JsonResponse(data_response, safe=False)
 
      ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
