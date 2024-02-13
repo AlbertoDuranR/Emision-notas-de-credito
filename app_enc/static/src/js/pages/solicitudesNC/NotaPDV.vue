@@ -49,7 +49,7 @@
               step="any"
               placeholder="0.00"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-              />
+            />
           </div>
           <div class="pt-4 pb-1">
             <span class="text-sm font-bold text-gray-600 py-5"
@@ -69,7 +69,7 @@
               v-model="detalle_solicitud.motivo"
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
-              />
+            />
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Justificación:</label>
@@ -99,8 +99,7 @@
                 for="draft"
               >
                 Total
-              </label
-              >
+              </label>
               <input
                 id="published"
                 class="sr-only peer/published"
@@ -121,8 +120,7 @@
                 class="hidden flex items-center justify-center peer-checked/draft:block"
               ></div>
               <div class="hidden peer-checked/published:block">
-
-                <div class="space-y-1 py-2 relative" >
+                <div class="space-y-1 py-2 relative">
                   <loading-overlay
                     :active="isLoadingProductos"
                     :can-cancel="true"
@@ -149,7 +147,9 @@
                       </multiselect>
                       <div class="py-2"></div>
                       <div
-                        v-for="(product, index) in metodo_parcial_productos.selected_products"
+                        v-for="(
+                          product, index
+                        ) in metodo_parcial_productos.selected_products"
                         :key="index"
                         class="py-2"
                       >
@@ -181,7 +181,7 @@
                               :close-on-select="true"
                               :show-labels="false"
                               placeholder="Unidad"
-                              >
+                            >
                             </multiselect>
                           </div>
                           <div class="space-y-1 py-2 px-2">
@@ -192,7 +192,7 @@
                               v-model="product.SalesPrice"
                               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
                               @input="handleInputChange(index)"
-                              />
+                            />
                           </div>
                           <div class="space-y-1 py-2 px-2">
                             <label class="text-sm">Monto Total:</label>
@@ -216,14 +216,18 @@
               class="w-60 rounded-full bg-green-600 py-3 text-white font-bold flex justify-center hover:opacity-70"
               type="submit"
             >
-              <svg  class="h-5 w-5 text-white"
+              <svg
+                class="h-5 w-5 text-white"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+                ></path>
                 <polyline points="17 21 17 13 7 13 7 21"></polyline>
                 <polyline points="7 3 7 8 15 8"></polyline>
               </svg>
@@ -237,45 +241,45 @@
   <notifications />
 </template>
 <script setup>
-import { ref, onMounted, onUpdated } from 'vue';
-import axios from 'axios';
+import { ref, onMounted, onUpdated } from "vue";
+import axios from "axios";
 
 import Header from "../../layouts/Header.vue";
-import LoadingOverlay from 'vue3-loading-overlay';
+import LoadingOverlay from "vue3-loading-overlay";
 import Multiselect from "vue-multiselect";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 import VueDatePicker from "@vuepic/vue-datepicker";
 
 import { notify } from "@kyvg/vue3-notification";
 import { useLoading } from "vue3-loading-overlay";
-import convertirFormatoFecha from "../../utils"
+import convertirFormatoFecha from "../../utils";
 
 import "@vuepic/vue-datepicker/dist/main.css";
 import "vue3-loading-overlay/dist/vue3-loading-overlay.css";
 
-const props = defineProps(['unidades', '_token'])
+const props = defineProps(["unidades", "_token"]);
 const isLoadingProductos = ref(false);
 const isLoading = ref(false);
 const formContainer = ref(null);
 const fullPage = ref(true);
-const csrf_token = ref('');
+const csrf_token = ref("");
 const datos_documento = ref({
   fecha_emision: {
     date: null,
   },
-  nro_comprobante: '',
-  importe_total: '',
+  nro_comprobante: "",
+  importe_total: "",
 });
 const detalle_solicitud = ref({
   fecha_solicitud: {
     date: null,
   },
-  motivo: '',
-  justificacion: '',
-  metodo: 'total',
+  motivo: "",
+  justificacion: "",
+  metodo: "total",
 });
 
-const unidades = props.unidades.map( objUnidad => objUnidad.UnitSymbol)// ['U', 'LTR.']
+const unidades = props.unidades.map((objUnidad) => objUnidad.UnitSymbol); // ['U', 'LTR.']
 const productos = ref([]);
 const metodo_parcial_productos = ref({
   products: [],
@@ -294,41 +298,41 @@ const metodo_parcial_productos = ref({
 */
 
 const enviarSolicitud = () => {
-  let metodoParcialProductos = []
-  if (detalle_solicitud.value.metodo == 'parcial') {
-    metodoParcialProductos = metodo_parcial_productos.value.selected_products
+  let metodoParcialProductos = [];
+  if (detalle_solicitud.value.metodo == "parcial") {
+    metodoParcialProductos = metodo_parcial_productos.value.selected_products;
   }
   const send_data = {
-    "datos_documento": datos_documento.value,
-    "detalle_solicitud": detalle_solicitud.value,
-    "metodo_parcial_productos": metodoParcialProductos
-  }
+    datos_documento: datos_documento.value,
+    detalle_solicitud: detalle_solicitud.value,
+    metodo_parcial_productos: metodoParcialProductos,
+  };
   const jsonString = JSON.stringify(send_data);
-  console.log('enviarr Solicitud', jsonString);
+  console.log("enviarr Solicitud", jsonString);
   // return
   isLoading.value = true;
   axios
-    .post('/solicitud_nota_credito/punto_venta/create/', jsonString)
+    .post("/solicitud_nota_credito/punto_venta/create/", jsonString)
     .then((response) => {
       location.reload();
       notify({
-        title: 'Registro Exitoso',
-        text: '' + response.data.message,
+        title: "Registro Exitoso",
+        text: "" + response.data.message,
       });
     })
     .catch((err) => {
       console.log(err);
       notify({
-        title: 'Error de Registro',
-        text: 'Error al guardar datos verificar los campos',
-        type: 'error',
+        title: "Error de Registro",
+        text: "Error al guardar datos verificar los campos",
+        type: "error",
       });
-    })
+    });
 };
 
 const refreshLoading = () => {
   const onCancel = () => {
-    console.log('User cancelled the loader.');
+    console.log("User cancelled the loader.");
   };
   let loader = useLoading();
   loader.show({
@@ -342,56 +346,60 @@ const refreshLoading = () => {
 };
 
 const getDatosDelComprobante = async () => {
-  if (datos_documento.value.nro_comprobante == '') {
+  if (datos_documento.value.nro_comprobante == "") {
     notify({
-        title: 'Verificar Campos',
-        text: 'Ingresar Nro Comprobante',
-        type: 'warn',
-      });
+      title: "Verificar Campos",
+      text: "Ingresar Nro Comprobante",
+      type: "warn",
+    });
     return;
   }
 
   isLoading.value = true;
   try {
-    const response = await axios.get(`/comprobante/get_datos_comprobante/${datos_documento.value.nro_comprobante}`);
-    if(response.status == 200 && response.data[0]) {
-      datos_documento.value.importe_total = response.data[0].TotalInvoiceAmount
-      const fechaEmision = response.data[0].InvoiceDate
-      datos_documento.value.fecha_emision.date = convertirFormatoFecha(fechaEmision)
+    const response = await axios.get(
+      `/comprobante/get_datos_comprobante/${datos_documento.value.nro_comprobante}`
+    );
+    if (response.status == 200 && response.data[0]) {
+      datos_documento.value.importe_total = response.data[0].TotalInvoiceAmount;
+      const fechaEmision = response.data[0].InvoiceDate;
+      datos_documento.value.fecha_emision.date =
+        convertirFormatoFecha(fechaEmision);
     }
-    console.log("fechaFormateada: ",  datos_documento.value.fecha_emision.date);
-
+    console.log("fechaFormateada: ", datos_documento.value.fecha_emision.date);
   } catch (error) {
     Swal.fire({
-      title: 'Verificar Campos',
+      title: "Verificar Campos",
       text: `${error.response.data.error}`,
-      icon: 'error',
+      icon: "error",
     });
-    datos_documento.value.importe_total='';
-    datos_documento.value.fecha_emision.date.importe_total=null;
+    datos_documento.value.importe_total = "";
+    datos_documento.value.fecha_emision.date.importe_total = null;
   } finally {
     isLoading.value = false;
   }
-}
+};
 
 const getProductosDelComprobante = async () => {
-  if (datos_documento.value.nro_comprobante == '') {
+  if (datos_documento.value.nro_comprobante == "") {
     notify({
-        title: 'Verificar Campos',
-        text: 'N° Comprobante no puede estar Vacío',
-        type: 'warn',
-      });
+      title: "Verificar Campos",
+      text: "N° Comprobante no puede estar Vacío",
+      type: "warn",
+    });
     return;
   }
   isLoadingProductos.value = true;
   try {
-    const response = await axios.get(`/comprobante/detalle_comprobante/${datos_documento.value.nro_comprobante}`);
+    const response = await axios.get(
+      `/comprobante/detalle_comprobante/${datos_documento.value.nro_comprobante}`
+    );
     productos.value = response.data;
   } catch (error) {
     Swal.fire({
-      title: 'Verificar Campos',
+      title: "Verificar Campos",
       text: `${error.response.data.error}`,
-      icon: 'error',
+      icon: "error",
     });
     productos.value = [];
   } finally {
@@ -402,25 +410,26 @@ const getProductosDelComprobante = async () => {
 onMounted(() => {
   csrf_token.value = document.querySelector("[name=csrfmiddlewaretoken]").value;
 }),
-
-onUpdated(() => {
-  console.log('onUpdated')
-  console.log('Metodo_parcial_productos: ', metodo_parcial_productos)
-  console.log('datos_documento: ', datos_documento)
-})
+  onUpdated(() => {
+    console.log("onUpdated");
+    console.log("Metodo_parcial_productos: ", metodo_parcial_productos);
+    console.log("datos_documento: ", datos_documento);
+  });
 
 const handleSelectionChange = (value) => {
-  value.forEach((element, index) => metodo_parcial_productos.value.selected_products[index]["Total"] =
-      (element.InvoicedQuantity * element.SalesPrice).toString()
+  value.forEach(
+    (element, index) =>
+      (metodo_parcial_productos.value.selected_products[index]["Total"] = (
+        element.InvoicedQuantity * element.SalesPrice
+      ).toString())
   );
-}
+};
 const handleInputChange = (index) => {
-  metodo_parcial_productos.value.selected_products[index].Total =
-  (
-    metodo_parcial_productos.value.selected_products[index].InvoicedQuantity
-    * metodo_parcial_productos.value.selected_products[index].SalesPrice
-  ).toString()
-}
+  metodo_parcial_productos.value.selected_products[index].Total = (
+    metodo_parcial_productos.value.selected_products[index].InvoicedQuantity *
+    metodo_parcial_productos.value.selected_products[index].SalesPrice
+  ).toString();
+};
 
 refreshLoading();
 </script>

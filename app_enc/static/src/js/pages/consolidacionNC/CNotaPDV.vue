@@ -28,7 +28,13 @@
       &nbsp;Enviar Consolidado
     </button>
   </div>
-  <div class="px-6 mx-auto">
+  <TablaDetalle
+    tipo="consolidado"
+    :listaSolicitudes="lista_solicitudes"
+    @editar-item="editarItem"
+    @eliminar-item="eliminarItem"
+  />
+  <!-- <div class="px-6 mx-auto">
     <DataTable
       class="table-auto"
       :columns="columms"
@@ -115,9 +121,24 @@
           </td>
           <td class="text-sm text-gray-600 text-center">
             <button
+              class="bg-red-0 text-white px-2 py-1 w-1/3"
+              @click="getDatosSolicitud(item.ID_NC)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="19"
+                width="19"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"
+                />
+              </svg>
+            </button>
+            <button
               v-if="item.ESTADO !== 'VALIDADO'"
               @click="editarItem(item.ID_NC, item.ID_DETALLE)"
-              class="bg-blue-0 text-white px-2 py-1 mr-2"
+              class="bg-blue-0 text-white px-2 py-1 mr-2 w-1/3"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -133,7 +154,7 @@
             <button
               v-if="item.ESTADO !== 'VALIDADO'"
               @click="eliminarItem(item.ID_NC)"
-              class="bg-red-0 text-white px-2 py-1"
+              class="bg-red-0 text-white px-2 py-1 w-1/3"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -156,25 +177,19 @@
         </tr>
       </tbody>
     </DataTable>
-  </div>
+  </div> -->
   <!-- -- -->
   <!-- -- -->
 </template>
 <script setup>
-// Importando layouts
-import Header from "../../layouts/Header.vue";
-import DataTable from "datatables.net-vue3";
-import DataTablesCore from "datatables.net";
 import axios from "axios";
-
-DataTable.use(DataTablesCore);
-//
+import Header from "../../layouts/Header.vue";
+import TablaDetalle from "../../components/TablaDetalle.vue";
 </script>
 
 <script>
 export default {
   name: "CNotaPDV",
-  components: { DataTable },
   props: {
     lista_solicitudes: Array,
   },
@@ -193,7 +208,6 @@ export default {
         showConfirmButton: true,
         allowOutsideClick: false,
       });
-
       // Agregar las variables a la URL como parámetros de ruta
       this.$inertia.visit(
         `/solicitud_nota_credito/punto_venta/edit/${item_nota}/${item_producto}`
@@ -201,7 +215,6 @@ export default {
     },
     eliminarItem(item) {
       // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
-      //console.log("Eliminar item:", item);
       this.$swal
         .fire({
           title: "Advertencia!",
@@ -246,17 +259,6 @@ export default {
           }
         });
     },
-    mostrarObservacion(dato){
-    
-      console.log(dato);
-      this.$swal.fire({
-        title: "Detalle de la observacion",
-        text: dato,
-        icon: "info",
-        showConfirmButton: true,
-        allowOutsideClick: false,
-      });
-    }
   },
 };
 </script>
