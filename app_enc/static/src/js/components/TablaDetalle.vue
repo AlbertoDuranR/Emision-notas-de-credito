@@ -23,6 +23,7 @@
             last: `<label class=&quot;text-sm text-gray-600 font-bold py-3&quot;>Último</label>`,
           },
         },
+        order: [[0, 'desc']],
       }"
     >
       <thead>
