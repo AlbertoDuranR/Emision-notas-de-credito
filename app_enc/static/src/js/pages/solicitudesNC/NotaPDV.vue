@@ -421,14 +421,14 @@ const handleSelectionChange = (value) => {
     (element, index) =>
       (metodo_parcial_productos.value.selected_products[index]["Total"] = (
         element.InvoicedQuantity * element.SalesPrice
-      ).toString())
+      ).toFixed(2))
   );
 };
 const handleInputChange = (index) => {
   metodo_parcial_productos.value.selected_products[index].Total = (
     metodo_parcial_productos.value.selected_products[index].InvoicedQuantity *
     metodo_parcial_productos.value.selected_products[index].SalesPrice
-  ).toString();
+  ).toFixed(2);
 };
 
 refreshLoading();

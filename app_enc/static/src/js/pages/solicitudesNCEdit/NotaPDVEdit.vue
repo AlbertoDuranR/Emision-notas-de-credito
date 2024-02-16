@@ -273,7 +273,7 @@
       <tbody>
         <tr v-for="(val, index) in lista_productosEdit" :key="index">
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_CODIGO }}</td>
-          <td class="py-2 px-4 border-b">{{ val.PRODUCTO_DESCCRIPCION }}</td>
+          <td class="py-2 px-4 border-b">{{ val.PRODUCTO_DESCRIPCION }}</td>
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_UNIDAD }}</td>
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_PRECIO }}</td>
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_CANTIDAD }}</td>
