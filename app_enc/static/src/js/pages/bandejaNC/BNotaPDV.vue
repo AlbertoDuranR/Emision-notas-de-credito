@@ -7,7 +7,26 @@
       >
     </div>
   </div>
-  <div class="px-4 flex justify-center">
+  <div class="px-4 flex justify-center gap-2">
+    <button
+      class="text-sm rounded-full bg-cyan-500 p-2 text-white font-bold flex"
+      type="button"
+    >
+      <svg
+        class="h-5 w-5 white"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      &nbsp;Validar Comprobantes de Origen
+    </button>
     <button
       class="text-sm rounded-full bg-green-600 p-2 text-white font-bold flex"
       type="button"
@@ -25,7 +44,7 @@
           d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      &nbsp;Enviar Consolidado
+      &nbsp;Generar Notas de Crédito
     </button>
   </div>
   <TablaDetalle
@@ -34,10 +53,19 @@
     @validar_item="validar_item"
     @observar_item="observar_item"
     @generar_nota_item="generar_nota_item"
+    @reintentar_nota_item="reintentar_nota_item"
   />
+  <loading-overlay
+    :active="isLoading"
+    :can-cancel="true"
+    :is-full-page="true"
+    :color="'#dc2626'"
+  >
+  </loading-overlay>
   <!-- -- -->
 </template>
 <script setup>
+import LoadingOverlay from "vue3-loading-overlay";
 import axios from "axios";
 import Header from "../../layouts/Header.vue";
 import TablaDetalle from "../../components/TablaDetalle.vue";
@@ -53,7 +81,7 @@ export default {
     return {
       isOpen: false,
       datos_detalle_solicitud: {},
-      isLoadingSolicitud: false,
+      isLoading: false,
     };
   },
   mounted() {
@@ -66,9 +94,9 @@ export default {
 
       this.$swal
         .fire({
-          title: "Advertencia!",
+          title: "Validar",
           text: "¿Estás seguro de validar la solicitud?",
-          icon: "warning",
+          icon: "question",
           showCancelButton: true,
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
@@ -77,7 +105,8 @@ export default {
         })
         .then((result) => {
           if (result.isConfirmed) {
-            // Lógica para la confirmación
+            this.isLoading=true
+            // Lógica para validar
             axios
               .post("/solicitud_nota_credito/punto_venta/validar/", {
                 id: itemNota,
@@ -101,6 +130,9 @@ export default {
                   icon: "error",
                 });
                 location.reload();
+              })
+              .finally(() => {
+                this.isLoading=false
               });
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
             // Lógica para la cancelación
@@ -140,6 +172,7 @@ export default {
                 icon: "error",
               });
             } else {
+              this.isLoading=true
               // Lógica para la observación
               axios
                 .post("/solicitud_nota_credito/punto_venta/observacion/", {
@@ -163,6 +196,9 @@ export default {
                     text: "Error al Observar datos",
                     icon: "error",
                   });
+                })
+                .finally(() => {
+                  this.isLoading=false
                 });
             }
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
@@ -178,9 +214,9 @@ export default {
     generar_nota_item(item_nota) {
       this.$swal
         .fire({
-          title: "Advertencia!",
-          text: "¿Estás seguro de Generar la Nota de Crédito?",
-          icon: "warning",
+          title: "Generar",
+          text: "¿Generar Nota de Crédito?",
+          icon: "question",
           showCancelButton: true,
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
@@ -189,9 +225,70 @@ export default {
         })
         .then((result) => {
           if (result.isConfirmed) {
+            this.isLoading=true
             // Lógica para la confirmación
             axios
               .post("/nota_credito/punto_venta/create/", {
+                id: item_nota,
+                estado: "VALIDADO",
+              })
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire("CREADO", "Nota de crédito CREADA", "success");
+              })
+              .catch((err) => {
+                console.log('Error', err);
+                Swal.fire({
+                  title: "Error de Registro",
+                  text: `Error al crear la Nota de Crédito: ${err.response.data.message}`,
+                  icon: "error",
+                });
+              })
+              .finally(() => {
+                this.isLoading=false
+                // Recargar la página completa
+                location.reload();
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
+    reintentar_nota_item(item_nota, obs_rpa_nota_credito) {
+      console.log('obs_rpa: ', obs_rpa_nota_credito)
+      this.$swal
+        .fire({
+          title: "¿Reintentar nota de crédito?",
+          html: `Observación en generar nota de crédito: <br /> <i class='text-red-500'>${obs_rpa_nota_credito}<i />`,
+          iconHtml: `
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"> <path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
+          `,
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, Reintentar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            this.isLoading=true
+            // Lógica para la confirmación
+            axios
+              .post("/nota_credito/punto_venta/retry/", {
                 id: item_nota,
                 estado: "VALIDADO",
               })
@@ -204,10 +301,13 @@ export default {
               .catch((err) => {
                 console.log(err);
                 Swal.fire({
-                  title: "Error de Registro",
+                  title: "Error",
                   text: "Error al crear la Nota de Crédito",
                   icon: "error",
                 });
+              })
+              .finally(() => {
+                this.isLoading=false
               });
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
             // Lógica para la cancelación

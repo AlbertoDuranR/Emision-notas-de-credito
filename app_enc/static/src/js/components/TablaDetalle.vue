@@ -8,7 +8,7 @@
         columnDefs: [
           {
             targets: '_all',
-            className: 'py-5 px-4 border-b text-sm text-left',
+            className: 'py-5 px-2 border-b text-sm text-left',
           },
         ],
         language: {
@@ -76,7 +76,7 @@
               :class="{
                 'bg-gray-400': item.ESTADO === 'PENDIENTE',
                 'bg-yellow-500': item.ESTADO === 'ACTUALIZADO',
-                'bg-red-500': item.ESTADO === 'OBSERVADO',
+                'bg-red-500': item.ESTADO === 'OBSERVADO' || item.ESTADO === 'ERROR' ,
                 'bg-cyan-500': item.ESTADO == 'VALIDADO',
                 'bg-emerald-500': item.ESTADO === 'CREADO',
               }"
@@ -119,7 +119,7 @@
             </button>
             <!-- INIT Bandeja -->
             <button
-              v-show="!(item.ESTADO === 'VALIDADO' || item.ESTADO === 'CREADO') && props.tipo == 'bandeja'"
+              v-show="!(item.ESTADO === 'VALIDADO' || item.ESTADO === 'CREADO' || item.ESTADO === 'ERROR') && props.tipo == 'bandeja'"
               @click="validarItem(item.ID_NC, item.NRO_COMPROBANTE)"
               class="bg-blue-0 text-white px-2 py-1 w-1/3"
             >
@@ -217,28 +217,40 @@
           </td>
           <td class="text-sm text-gray-600 text-center">
             <span
+              v-show="item.ESTADO_NOTA_CREDITO === 'PENDIENTE'"
               :class="{
                 'bg-gray-400': item.ESTADO_NOTA_CREDITO === 'PENDIENTE',
-                'bg-red-500': item.ESTADO_NOTA_CREDITO === 'ERROR',
-                'bg-emerald-500': item.ESTADO === 'CREADO',
+                // 'bg-red-500': item.ESTADO_NOTA_CREDITO === 'ERROR',
+                // 'bg-emerald-500': item.ESTADO === 'CREADO',
               }"
               class="px-2 py-1 text-white rounded"
             >
-              {{ item.NRO_NOTA_CREDITO || item.ESTADO_NOTA_CREDITO}}
+              {{ item.ESTADO_NOTA_CREDITO }}
+            </span>
+            <span
+              v-show="item.ESTADO === 'CREADO'"
+              :class="{
+                'bg-gray-400': item.ESTADO_NOTA_CREDITO === 'PENDIENTE',
+                // 'bg-red-500': item.ESTADO_NOTA_CREDITO === 'ERROR',
+                // 'bg-emerald-500': item.ESTADO === 'CREADO',
+              }"
+              class="px-2 py-1 rounded"
+            >
+              <b>{{ item.NRO_NOTA_CREDITO }}</b>
             </span>
             <button
-                v-if="item.ESTADO_NOTA_CREDITO === 'ERROR'"
-                @click="reintentarNC(item.ID_NC)"
+                v-if="item.ESTADO === 'ERROR' || item.ESTADO_NOTA_CREDITO === 'ERROR' "
+                @click="reintentarNC(item.ID_NC, item.OBS_ESTADO_RPA_NOTA_CREDITO)"
                 class="text-center text-white px-2 py-1"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 25 25"
                   fill="none"
-                  stroke="#000000"
-                  stroke-width="2"
+                  stroke="#ef4444"
+                  stroke-width="2.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"> <path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
               </button>
@@ -316,8 +328,8 @@ const observarItem = (item_nota) => {
 const generarNotaItem = (item_nota) => {
   emit("generar_nota_item", item_nota);
 };
-const reintentarNC = (item_nota) => {
-  emit("reintentar_nota_item", item_nota)
+const reintentarNC = (item_nota, obs_rpa_nota_credito) => {
+  emit("reintentar_nota_item", item_nota, obs_rpa_nota_credito)
 }
 
 const openModal = () => {

@@ -43,7 +43,7 @@ class ServiceNCPDV:
                 'NRO_NOTA_CREDITO': nro_nota_credito,
                 'NRO_PEDIDO_NOTA_CREDITO': nro_pedido_nota_credito,
                 'ESTADO_NOTA_CREDITO': estado_nota_credito,
-                'OBS_ESTADO_RPA_NOTA_CREDITO': estado_nota_credito == 'ERROR' if tupla[13] else '',
+                'OBS_ESTADO_RPA_NOTA_CREDITO':  tupla[13] if estado_nota_credito == 'ERROR' else '',
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -198,6 +198,7 @@ class ServiceNCPDV:
         if metodo=="parcial":
             if metodo_parcial_productos:
                 monto_total_productos = round(sum(float(producto["Total"]) for producto in metodo_parcial_productos), 2)
+                importe_total = monto_total_productos
             else:
                 raise TypeError("Metodo Parcial no tiene productos")
 
