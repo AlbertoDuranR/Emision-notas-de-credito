@@ -16,6 +16,15 @@ class ServiceNCPDV:
         lista_diccionarios = []
         for tupla in results:
             #print(tupla)
+            nro_nota_credito = tupla[14]
+            nro_pedido_nota_credito = tupla[15]
+            estado_nota_credito = 'PENDIENTE'
+            if nro_pedido_nota_credito:
+                if nro_nota_credito:
+                    estado_nota_credito = 'CREADO'
+                else:
+                    estado_nota_credito = 'ERROR'
+
             diccionario = {
                 'ID_NC': tupla[0],
                 'ID_DETALLE': tupla[1],
@@ -31,6 +40,10 @@ class ServiceNCPDV:
                 'MONTO_TOTAL': tupla[11],
                 'ACEPTA': tupla[12],
                 'OBSERVACION': tupla[13],
+                'NRO_NOTA_CREDITO': nro_nota_credito,
+                'NRO_PEDIDO_NOTA_CREDITO': nro_pedido_nota_credito,
+                'ESTADO_NOTA_CREDITO': estado_nota_credito,
+                'OBS_ESTADO_RPA_NOTA_CREDITO': estado_nota_credito == 'ERROR' if tupla[13] else '',
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -66,7 +79,7 @@ class ServiceNCPDV:
             #print(tupla)
             diccionario = {
                 'PRODUCTO_CODIGO': tupla[0],
-                'PRODUCTO_DESCCRIPCION': tupla[1],
+                'PRODUCTO_DESCRIPCION': tupla[1],
                 'PRODUCTO_UNIDAD': tupla[2],
                 'PRODUCTO_PRECIO': tupla[3],
                 'PRODUCTO_CANTIDAD': tupla[4],
@@ -100,6 +113,7 @@ class ServiceNCPDV:
         if metodo=="parcial":
             if metodo_parcial_productos:
                 monto_total_productos = round(sum(float(producto["Total"]) for producto in metodo_parcial_productos), 2)
+                importe_total = monto_total_productos
             else:
                 raise TypeError("Metodo Parcial no tiene productos")
 

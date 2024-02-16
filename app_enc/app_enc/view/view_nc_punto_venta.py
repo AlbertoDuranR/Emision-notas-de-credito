@@ -56,6 +56,8 @@ class ViewNCPDV:
             det_importe_total = solicitud.det_importe_total
             det_motivo = solicitud.det_motivo
             det_justificacion = solicitud.det_justificacion
+            det_nro_nota_credito = solicitud.det_nro_nota_credito
+            det_nro_pedido_nota_credito = solicitud.det_nro_pedido_nota_credito
         # print('solicitud: ', sol_id, det_id, sol_fecha_solicitud,  sol_tipo_nc, det_nro_comprobante, det_metodo, det_monto_total_prod, det_importe_total )
 
         # Get productos
@@ -75,6 +77,8 @@ class ViewNCPDV:
             'det_importe_total': det_importe_total,
             'det_motivo': det_motivo,
             'det_justificacion':  det_justificacion,
+            'det_nro_nota_credito': det_nro_nota_credito,
+            'det_nro_pedido_nota_credito': det_nro_pedido_nota_credito,
             'productos': list_productos
         }
         if not solicitud:

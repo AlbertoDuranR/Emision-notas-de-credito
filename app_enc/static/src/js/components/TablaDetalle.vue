@@ -74,10 +74,11 @@
           <td class="text-sm text-gray-600 text-center">
             <span
               :class="{
-                'bg-emerald-500': item.ESTADO === 'PENDIENTE',
+                'bg-gray-400': item.ESTADO === 'PENDIENTE',
                 'bg-yellow-500': item.ESTADO === 'ACTUALIZADO',
                 'bg-red-500': item.ESTADO === 'OBSERVADO',
                 'bg-cyan-500': item.ESTADO == 'VALIDADO',
+                'bg-emerald-500': item.ESTADO === 'CREADO',
               }"
               class="px-2 py-1 text-white rounded"
             >
@@ -118,7 +119,7 @@
             </button>
             <!-- INIT Bandeja -->
             <button
-              v-show="item.ESTADO != 'VALIDADO' && props.tipo == 'bandeja'"
+              v-show="!(item.ESTADO === 'VALIDADO' || item.ESTADO === 'CREADO') && props.tipo == 'bandeja'"
               @click="validarItem(item.ID_NC, item.NRO_COMPROBANTE)"
               class="bg-blue-0 text-white px-2 py-1 w-1/3"
             >
@@ -134,7 +135,7 @@
               </svg>
             </button>
             <button
-              v-show="props.tipo == 'bandeja'"
+              v-show=" item.ESTADO !== 'CREADO' && props.tipo == 'bandeja'"
               @click="observarItem(item.ID_NC)"
               class="bg-red-0 text-white px-2 py-1 w-1/3"
             >
@@ -214,8 +215,47 @@
           <td class="text-sm text-gray-600 text-center">
             {{ item.MONTO_TOTAL }}
           </td>
-          <td class="text-sm text-gray-600 text-center">{{ item.ACEPTA }}</td>
-          <td class="text-sm text-gray-600 text-center">{{ item.ACEPTA }}</td>
+          <td class="text-sm text-gray-600 text-center">
+            <span
+              :class="{
+                'bg-gray-400': item.ESTADO_NOTA_CREDITO === 'PENDIENTE',
+                'bg-red-500': item.ESTADO_NOTA_CREDITO === 'ERROR',
+                'bg-emerald-500': item.ESTADO === 'CREADO',
+              }"
+              class="px-2 py-1 text-white rounded"
+            >
+              {{ item.NRO_NOTA_CREDITO || item.ESTADO_NOTA_CREDITO}}
+            </span>
+            <button
+                v-if="item.ESTADO_NOTA_CREDITO === 'ERROR'"
+                @click="reintentarNC(item.ID_NC)"
+                class="text-center text-white px-2 py-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#000000"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"> <path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
+              </button>
+          </td>
+          <td class="text-sm text-gray-600 text-center">
+            <span
+              :class="{
+                'bg-gray-400': item.ACEPTA === 'PENDIENTE',
+                'bg-red-500': item.ACEPTA === 'OBSERVADO',
+                'bg-cyan-500': item.ACEPTA == 'ACEPTADO',
+              }"
+              class="px-2 py-1 text-white rounded"
+            >
+              {{ item.ACEPTA }}
+            </span>
+
+          </td>
         </tr>
       </tbody>
     </DataTable>
@@ -240,13 +280,13 @@ import ModalReview from "../components/ModalReview";
 DataTable.use(DataTablesCore);
 
 const props = defineProps(["tipo", "listaSolicitudes"]);
-console.log("props", props.tipo);
 const emit = defineEmits([
   "editar-item",
   "eliminar-item",
   "validar_item",
   "observar_item",
   "generar_nota_item",
+  "reintentar_nota_item"
 ]);
 const isOpen = ref(false);
 const datos_detalle_solicitud = ref({});
@@ -276,6 +316,10 @@ const observarItem = (item_nota) => {
 const generarNotaItem = (item_nota) => {
   emit("generar_nota_item", item_nota);
 };
+const reintentarNC = (item_nota) => {
+  emit("reintentar_nota_item", item_nota)
+}
+
 const openModal = () => {
   isOpen.value = true;
 };
@@ -289,7 +333,6 @@ const getDatosSolicitud = async (idSol) => {
     const response = await axios.get(
       `/solicitud_nota_credito/datos_solicitud/${idSol}`
     );
-    console.log("response", response);
     if (response.status == 200) {
       openModal();
       datos_detalle_solicitud.value = response.data;

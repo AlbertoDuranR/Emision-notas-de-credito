@@ -46,7 +46,7 @@
                         >
                           <div class="mt-2">
                             <div class="columns-2 text-sm text-gray-500">
-                              <b>Nro Comprobante:</b>
+                              <b>Nro Comprobante Origen:</b>
                               <p>
                                 {{ props.detalleSolicitud.det_nro_comprobante }}
                               </p>
@@ -74,6 +74,10 @@
                             <div class="columns-2 text-sm text-gray-500">
                               <b>Metodo Punto de Venta:</b>
                               <p>{{ props.detalleSolicitud.det_metodo }}</p>
+                            </div>
+                            <div class="columns-2 text-sm text-gray-500">
+                              <b>Número de pedido devolución:</b>
+                              <p>{{ props.detalleSolicitud.det_nro_pedido_nota_credito }}</p>
                             </div>
                           </div>
                         </div>
