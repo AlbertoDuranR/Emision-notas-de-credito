@@ -20,7 +20,7 @@ class Dynamics_Bot:
         self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente a devoluciones
         self.usuario = "robert.tolentino@terranovatrading.com.pe"
         self.contrasena = "huaraz2023.."
-        self.nro_pedido_ventas_devolucion=''
+        self.nro_pedido_venta_devolucion=''
 
         # XPaths
         self.xpath_siguiente = "/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div[1]/div[3]/div/div/div/div[4]/div/div/div/div/input"
@@ -121,6 +121,9 @@ class Dynamics_Bot:
         self.xpath_button_aceptar_en_factura='//button[contains(@id, "SalesEditLines") and contains(@id, "OK")]'
         self.xpath_button_confirmar_factura='//button[contains(@id, "SysBoxForm") and contains(@id, "Ok")]'
 
+        # Reintentar
+        self.xpath_button_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl")]/button'
+
     def config_navigator(self):
         options = webdriver.ChromeOptions()
         # options.add_argument("--headless")
@@ -170,12 +173,11 @@ class Dynamics_Bot:
             print(">>> Fin crear nuevo pedido")
             self._esperar_n_segundos(1)
             input_num_pedido_devolucion = self.wait.until(EC.element_to_be_clickable((By.XPATH,  self.xpath_input_num_pedido_devolucion)))
-            self.nro_pedido_ventas_devolucion=input_num_pedido_devolucion.get_attribute('value')
-            print('num_pedido_devolucion: ', self.nro_pedido_ventas_devolucion)
+            self.nro_pedido_venta_devolucion=input_num_pedido_devolucion.get_attribute('value')
             time.sleep(1)
         except Exception as e:
                 print('Error: Al momento de crear el nuevo pedido', e)
-                raise
+                return 
 
     def enlazar_pedido_origen_a_pedido_devolucion(self, data):
         # START Enlazar pedido origen a pedido devolución
@@ -525,7 +527,7 @@ class Dynamics_Bot:
         }
         resultado = {
             "estado": "CREADO",
-            "nro_pedido_ventas_devolucion": None,
+            "nro_pedido_venta_devolucion": None,
             "error": None
         }
         # # # start TEST esta parte es temporal para no crear cada rato pedidos - Si falla podriamos renovar al pedido de esta forma
@@ -535,47 +537,109 @@ class Dynamics_Bot:
         # # print('Click en buscar rma')
         # # time.sleep(3)
         # # # end
-
-        # Crear nuevo pedido
-        self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
-        # Enlazar pedidos
-        self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-        # registrar articulos para devolución
-        self.registrar_articulos_para_devolucion(data=data)
-        # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
-        self.set_data_pedido_devolucion(data=data)
-        # Validar Si importe resumen es igual a importe solicitud continuar
-        self.validar_importe_resumen_con_importe_solicitud(data=data)
-        # START Generar Factura
-        print('START Generar Factura - Nota de crédito')
         try:
-            self._hacer_clic_xpath(self.xpath_open_seleccion_tipo_documento)
-            time.sleep(1)
-            self._hacer_clic_xpath(self.xpath_input_serie_documento_en_factura)
-            self._ingresar_valor_en_input_xpath(self.xpath_input_serie_documento_en_factura, self.get_serie_documento(invoice_number=data['num_comprobante_origen']))
-            time.sleep(1)
-            self._ingresar_valor_en_input_xpath(self.xpath_input_tipo_de_nota_en_factura, codigo_motivo_devolucion[data['metodo']])
-            time.sleep(1)
-            self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_de_factura,  data["fecha_solicitud"])
-            self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_documento_en_factura,  data["fecha_solicitud"])
-            self._esperar_n_segundos(1)
-            self._hacer_clic_xpath(self.xpath_button_aceptar_en_factura)
-            time.sleep(1)
-            self._esperar_n_segundos(2)
-            self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
-            time.sleep(2)
-            resultado["nro_pedido_ventas_devolucion"] = self.nro_pedido_ventas_devolucion
+            # Crear nuevo pedido
+            self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
+            resultado["nro_pedido_venta_devolucion"] = self.nro_pedido_venta_devolucion
+            print('num_pedido_devolucion: ',  resultado["nro_pedido_venta_devolucion"])
+            # Enlazar pedidos
+            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            # registrar articulos para devolución
+            self.registrar_articulos_para_devolucion(data=data)
+            # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
+            self.set_data_pedido_devolucion(data=data)
+            # Validar Si importe resumen es igual a importe solicitud continuar
+            self.validar_importe_resumen_con_importe_solicitud(data=data)
+            # START Generar Factura
+            print('START Generar Factura - Nota de crédito')
+            try:
+                self._hacer_clic_xpath(self.xpath_open_seleccion_tipo_documento)
+                time.sleep(1)
+                self._hacer_clic_xpath(self.xpath_input_serie_documento_en_factura)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_serie_documento_en_factura, self.get_serie_documento(invoice_number=data['num_comprobante_origen']))
+                time.sleep(1)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_tipo_de_nota_en_factura, codigo_motivo_devolucion[data['metodo']])
+                time.sleep(1)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_de_factura,  data["fecha_solicitud"])
+                self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_documento_en_factura,  data["fecha_solicitud"])
+                self._esperar_n_segundos(1)
+                self._hacer_clic_xpath(self.xpath_button_aceptar_en_factura)
+                time.sleep(1)
+                self._esperar_n_segundos(2)
+                self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
+                time.sleep(2)
+            except Exception as e:
+                print('Exception crear nota de credito: ', e)
+                raise ('Error al crear la factura')
+            print('END Generar Factura')
         except Exception as e:
+            print('Exception crear nota de credito: ', e)
             resultado["estado"] = "ERROR"
             resultado["error"] = {
                 "mensaje": str(e),
                 "donde": "Crear factura para la nota de crédito"
             }
-            # raise ValueError(f"Error: Al crear la Factura para la nota de credito: {str(e)}")
-        print('END Generar Factura')
-        time.sleep(30)
+            return  resultado
+        time.sleep(20)
         return resultado
 
+    def reintentar_crear_nota_de_credito(self, data: dict, nro_rma: str):
+        print('reintentar_crear_nota_de_credito', data, nro_rma )
+        resultado = {
+            "estado": "CREADO",
+            "nro_pedido_venta_devolucion": None,
+            "error": None
+        }
+
+        try:
+            # start Reintentar - Si falla podriamos renovar al pedido de esta forma
+            print('Reintentar Continuar')
+            self.xpath_input_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl_Input_input")]'
+            self._ingresar_valor_en_input_xpath(self.xpath_input_buscar_rma, nro_rma) # Solo es para el ejemplo
+            print('Click en buscar rma')
+            self._hacer_clic_xpath(self.xpath_button_buscar_rma)
+            time.sleep(3)
+            # end
+            # Enlazar pedidos
+            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            # registrar articulos para devolución
+            self.registrar_articulos_para_devolucion(data=data)
+            # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
+            self.set_data_pedido_devolucion(data=data)
+            # Validar Si importe resumen es igual a importe solicitud continuar
+            self.validar_importe_resumen_con_importe_solicitud(data=data)
+            # START Generar Factura
+            print('START Generar Factura - Nota de crédito')
+            try:
+                self._hacer_clic_xpath(self.xpath_open_seleccion_tipo_documento)
+                time.sleep(1)
+                self._hacer_clic_xpath(self.xpath_input_serie_documento_en_factura)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_serie_documento_en_factura, self.get_serie_documento(invoice_number=data['num_comprobante_origen']))
+                time.sleep(1)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_tipo_de_nota_en_factura, codigo_motivo_devolucion[data['metodo']])
+                time.sleep(1)
+                self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_de_factura,  data["fecha_solicitud"])
+                self._ingresar_valor_en_input_xpath(self.xpath_input_fecha_documento_en_factura,  data["fecha_solicitud"])
+                self._esperar_n_segundos(1)
+                self._hacer_clic_xpath(self.xpath_button_aceptar_en_factura)
+                time.sleep(1)
+                self._esperar_n_segundos(2)
+                self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
+                time.sleep(2)
+            except Exception as e:
+                print('Exception crear nota de credito: ', e)
+                raise ('Error al crear la factura')
+            print('END Generar Factura')
+        except Exception as e:
+            print('Exception crear nota de credito: ', e)
+            resultado["estado"] = "ERROR"
+            resultado["error"] = {
+                "mensaje": str(e),
+                "donde": "Crear factura para la nota de crédito"
+            }
+            return  resultado
+        time.sleep(20)
+        return resultado
 
 # ---------------------------------------------------------------------------------
 # ---- data Ejemplos ---
