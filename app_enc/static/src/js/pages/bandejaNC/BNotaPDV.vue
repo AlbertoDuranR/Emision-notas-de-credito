@@ -315,7 +315,7 @@ export default {
       this.$swal
         .fire({
           title: "¿Reintentar nota de crédito?",
-          html: `Observación en generar nota de crédito: <br /> <i class='text-red-500'>${obs_rpa_nota_credito}<i />`,
+          html: `Observación en generar nota de crédito: <br /> <p class='text-red-500 max-h-32'><i>${obs_rpa_nota_credito}</i></p>`,
           iconHtml: `
             <svg
             xmlns="http://www.w3.org/2000/svg"

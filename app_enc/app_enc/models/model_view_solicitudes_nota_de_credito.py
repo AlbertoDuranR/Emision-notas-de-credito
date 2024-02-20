@@ -6,6 +6,7 @@ class ViewSolicitudNotaDeCredito(models.Model):
     sol_fecha_solicitud = models.DateField()
     sol_tipo_nc = models.CharField(max_length=64, null=False)
     sol_estado = models.CharField(max_length=64, null=True)
+    sol_step_rpa = models.CharField(max_length=45)
     det_nro_comprobante = models.CharField(max_length=64, null=False)
     det_metodo = models.TextField(null=True)
     det_monto_total_prod = models.FloatField(null=False)

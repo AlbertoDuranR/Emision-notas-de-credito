@@ -126,6 +126,7 @@ class Dynamics_Bot:
 
     def config_navigator(self):
         options = webdriver.ChromeOptions()
+        options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
         # options.add_argument("--headless")
         # options.add_argument("--window-size=1600,1024")
         self.driver = webdriver.Chrome(options=options)
@@ -505,6 +506,7 @@ class Dynamics_Bot:
         resultado = {
             "estado": "CREADO",
             "nro_pedido_venta_devolucion": None,
+            "step_rpa": None,
             "error": None
         }
         # # # start TEST esta parte es temporal para no crear cada rato pedidos - Si falla podriamos renovar al pedido de esta forma
@@ -518,11 +520,12 @@ class Dynamics_Bot:
             # Crear nuevo pedido
             self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
             resultado["nro_pedido_venta_devolucion"] = self.nro_pedido_venta_devolucion
+            resultado["step_rpa"] = 'PEDIDO'
             # print('num_pedido_devolucion: ',  resultado["nro_pedido_venta_devolucion"])
-            # Enlazar pedidos
             self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-            # registrar articulos para devolución
+            resultado["step_rpa"] = 'ENLAZAR'
             self.registrar_articulos_para_devolucion(data=data)
+            resultado["step_rpa"] = 'REGISTRAR'
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
             # Validar Si importe resumen es igual a importe solicitud continuar
@@ -545,6 +548,7 @@ class Dynamics_Bot:
                 self._esperar_n_segundos(2)
                 self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
                 time.sleep(2)
+                resultado["step_rpa"] = 'FACTURAR'
             except Exception as e:
                 # print('Exception crear nota de credito: ', e)
                 raise 'Error al crear la factura'
@@ -561,6 +565,9 @@ class Dynamics_Bot:
         return resultado
 
     def reintentar_crear_nota_de_credito(self, data: dict, nro_rma: str):
+        """
+        @params: {'num_comprobante_origen': 'BB01-00095300', 'num_pedido_origen': 'TRV-02756273', 'metodo': 'parcial', 'almacen': 'MD02_JRC', 'productos': [{'codigo': '109023', 'cantidad': 1}, {'codigo': '106239', 'cantidad': 2}], 'forma_pago': 'FP015', 'pago': 'CONT', 'fecha_solicitud': '01/30/2024', 'monto_total_nota_credito': 11.2, 'sol_tipo_nc': 'PDV', 'sol_estado': 'ERROR', 'step_rpa': 'REGISTRAR'}
+        """
         print('reintentar_crear_nota_de_credito', data, nro_rma )
         codigo_motivo_devolucion={
             "parcial": "07",
@@ -569,7 +576,8 @@ class Dynamics_Bot:
         resultado = {
             "estado": "CREADO",
             "nro_pedido_venta_devolucion": None,
-            "error": None
+            "error": None,
+            "step_rpa": None,
         }
 
         try:
@@ -587,14 +595,18 @@ class Dynamics_Bot:
             self._esperar_n_segundos(1)
             pedido_devolucion_rma = self.driver.switch_to.active_element
             pedido_devolucion_rma.send_keys(Keys.ENTER)
+            step_rpa = data['step_rpa']
+            print('step_rpa', step_rpa)
             # end
-            # Enlazar pedidos
-            # self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-            # registrar articulos para devolución
+            if step_rpa == 'PEDIDO':
+                self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+                resultado["step_rpa"] = 'ENLAZAR'
+            # if step_rpa == 'ENLAZAR':
             self.registrar_articulos_para_devolucion(data=data)
+            resultado["step_rpa"] = 'REGISTRAR'
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
-            # Validar Si importe resumen es igual a importe solicitud continuar
+            # Validar Si importe resumen es igual al importe solicitud continuar
             self.validar_importe_resumen_con_importe_solicitud(data=data)
             # START Generar Factura
             print('START Generar Factura - Nota de crédito')
@@ -614,6 +626,7 @@ class Dynamics_Bot:
                 self._esperar_n_segundos(2)
                 self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
                 time.sleep(2)
+                resultado["step_rpa"] = 'FACTURAR'
             except Exception as e:
                 print('Exception crear nota de credito: ', e)
                 raise 'Error al crear la factura'

@@ -45,7 +45,7 @@ class ServiceNotaCredito:
             nro_pedido_nota_credito = estado_rpa['nro_pedido_venta_devolucion']
             if not nro_pedido_nota_credito:
                 error_msg = 'No se encontro el Nro de pedido para la nota de crédito con en el RPA'
-                self.save_error_in_solicitudNC(sol_id, error_msg=error_msg)
+                self.save_error_in_solicitudNC(sol_id, error_msg=error_msg, step_rpa=estado_rpa['step_rpa'])
                 raise ErrorNotaDeCredito(error_msg)
             # Verificar existencia de nro de pedido
             return_order_headers = serviceDynamics.get_return_order_headers_by_return_order_number(nro_pedido_nota_credito)
@@ -108,7 +108,7 @@ class ServiceNotaCredito:
 
     def save_nota_de_credito(self, sol_id, estado_rpa, nro_pedido_nota_credito):
         if estado_rpa['estado'] == 'ERROR':
-            self.save_error_in_solicitudNC(sol_id, error_msg=estado_rpa['error']['mensaje'])
+            self.save_error_in_solicitudNC(sol_id, error_msg=estado_rpa['error']['mensaje'], step_rpa=estado_rpa['step_rpa'])
             raise ErrorNotaDeCredito(estado_rpa['error']['mensaje'], ubicacion=estado_rpa['error']['donde'])
         # Verificar si se llego a facturar
         nro_nota_credito=''
@@ -157,6 +157,7 @@ class ServiceNotaCredito:
             sol_fecha_solicitud = solicitud.sol_fecha_solicitud
             sol_tipo_nc = solicitud.sol_tipo_nc
             sol_estado = solicitud.sol_estado
+            sol_step_rpa = solicitud.sol_step_rpa
             det_nro_comprobante = solicitud.det_nro_comprobante
             det_metodo = solicitud.det_metodo
             det_monto_total_prod = solicitud.det_monto_total_prod
@@ -205,15 +206,17 @@ class ServiceNotaCredito:
             'fecha_solicitud': sol_fecha_solicitud.strftime("%m/%d/%Y"), # 1/21/2024
             'monto_total_nota_credito': det_monto_total_prod, # Parcial: Monto del producto | Total: Monto total de comprobante
             'sol_tipo_nc': sol_tipo_nc,
-            'sol_estado': sol_estado
+            'sol_estado': sol_estado,
+            'step_rpa': sol_step_rpa
         }
 
-    def save_error_in_solicitudNC(self, sol_id, error_msg):
+    def save_error_in_solicitudNC(self, sol_id, error_msg, step_rpa = ''):
         solicitud_existente = SolicitudNC.objects.get(sol_id=sol_id)
         if solicitud_existente:
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()
             solicitud_existente.sol_estado = 'ERROR'
             solicitud_existente.sol_observacion = error_msg
+            solicitud_existente.sol_step_rpa = step_rpa
             solicitud_existente.save()
 
 
