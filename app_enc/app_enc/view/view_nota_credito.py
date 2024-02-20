@@ -18,7 +18,7 @@ class ViewNotaCredito:
                 ServiceNotaCredito.crear_nota_credito(sol_id=form_request['id'])
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
-                print('Expection create_nota_credito: ', e)
+                print('Expection create_nota_credito:', e)
                 return JsonResponse({'message': e.message, 'ubicacion': e.ubicacion}, status=404)
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
@@ -33,7 +33,7 @@ class ViewNotaCredito:
                 ServiceNotaCredito.reintentar_crear_nota_credito(sol_id=form_request['id'])
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
-                print(e)
-                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
+                print('Expection retry_create_nota_credito:', e)
+                return JsonResponse({'message': e.message, 'ubicacion': e.ubicacion}, status=404)
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
