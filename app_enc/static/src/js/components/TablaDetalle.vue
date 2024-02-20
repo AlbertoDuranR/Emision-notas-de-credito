@@ -119,7 +119,7 @@
             </button>
             <!-- INIT Bandeja -->
             <button
-              v-show="!(item.ESTADO === 'VALIDADO' || item.ESTADO === 'CREADO' || item.ESTADO === 'ERROR') && props.tipo == 'bandeja'"
+              v-show="!['VALIDADO', 'CREADO', 'ERROR'].includes(item.ESTADO) && props.tipo == 'bandeja'"
               @click="validarItem(item.ID_NC, item.NRO_COMPROBANTE)"
               class="bg-blue-0 text-white px-2 py-1 w-1/3"
             >
@@ -191,7 +191,7 @@
               </svg>
             </button>
             <button
-              v-if="item.ESTADO !== 'VALIDADO' && props.tipo == 'consolidado'"
+              v-if="!['VALIDADO', 'CREADO'].includes(item.ESTADO) && props.tipo == 'consolidado'"
               @click="eliminarItem(item.ID_NC)"
               class="bg-red-0 text-white px-2 py-1 w-1/3"
             >
