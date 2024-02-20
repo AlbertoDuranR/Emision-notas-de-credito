@@ -1,6 +1,7 @@
 # acepta_functions.py
 from dotenv import load_dotenv
 import os
+import logging
 import pandas as pd
 import time
 
@@ -14,6 +15,9 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from .acepta_functions import AuxiliaryFunctions
 # from acepta_functions import AuxiliaryFunctions # No Django
+
+# logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -38,15 +42,26 @@ class AceptaScraper:
         self.xpath_nota_credito = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table/tbody/tr[4]/td[10]/a"
         self.xpath_paginacion = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li"
 
+    # Capturar los registros del navegador
+    def capture_logs(self):
+        browser_logs = self.driver.get_log('browser')
+        for log in browser_logs:
+            print('log', log)
+            logger.debug(log)
+
     def config_navigator(self):
         options = webdriver.ChromeOptions()
+        options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
         # options.add_argument("--headless")
+        # options.add_argument("--disable-gpu")
+        # options.add_argument("--window-size=800,600")
         self.driver = webdriver.Chrome(options=options)
         self.wait_10 = WebDriverWait(self.driver , 10)
         self.wait_20 = WebDriverWait(self.driver , 20)
         self.driver.maximize_window()
 
     def iniciar_sesion(self):
+        self.config_navigator()
         try:
             self.driver.get(self.url)
             self._ingresar_valor_en_input_id("loginrut", self.usuario)
@@ -87,6 +102,7 @@ class AceptaScraper:
             # Esperar a que la tabla esté presente
             self.wait_10.until(EC.presence_of_element_located((By.XPATH, self.xpath_tabla_resultados)))
             # Extraer datos de la tabla
+            self._esperar_n_segundos(1)
             tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
         except TimeoutException:
             print("No se encontro la tabla de estados")
@@ -110,20 +126,34 @@ class AceptaScraper:
         except Exception as e:
             print(f"Error al imprimir datos de la tabla: {str(e)}")
 
-    def get_estado_por_comprobante(self, nro_comprobante: str):
-        self.config_navigator()
+    def cerrar_sesion(self):
+        time.sleep(5)
+        self.driver.quit()
+        print("Sesión cerrada")
+
+    def get_estado_por_comprobante(self, nro_comprobante: str) -> str:
+        ''' @param: 'BG02-00052743' '''
         # Ejecutar acciones
         self.iniciar_sesion()
         self.seleccionar_opcion_emitidos()
         self.seleccionar_busqueda_avanzada()
         estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+        # self.capture_logs()
         self.cerrar_sesion()
         return estado_comprobante
 
-    def cerrar_sesion(self):
-        time.sleep(10)
-        self.driver.quit()
-        print("Sesión cerrada")
+    def get_estados_de_comprobantes(self, nro_comprobantes: list) -> dict:
+        ''' @param: ['BG02-00052743', 'BG02-00052741'] '''
+        print(nro_comprobantes)
+        respuesta = {}
+        self.iniciar_sesion()
+        self.seleccionar_opcion_emitidos()
+        self.seleccionar_busqueda_avanzada()
+        for nro_comprobante in nro_comprobantes:
+            estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+            respuesta[nro_comprobante] = estado_comprobante
+        self.cerrar_sesion()
+        return respuesta
 
     # Funciones auxiliares
     def _ingresar_valor_en_input_id(self, xpath, valor):
@@ -140,6 +170,15 @@ class AceptaScraper:
 
     def _hacer_clic_xpath(self, xpath):
         AuxiliaryFunctions.hacer_clic_xpath(self.driver, self.wait_10, xpath)
+
+    def _esperar_n_segundos(self, seg):
+        """
+         Tiempo de espera implícito de forma inteligente y dinámica,
+         Selenium verificará periódicamente si el elemento está disponible
+         durante el tiempo de espera especificado antes de continuar con la siguiente instrucción
+        """
+        self.driver.implicitly_wait(seg) # Espera n segundos
+        # Ojo: time.sleep(1) es un pausa estática que detiene el script sin ninguna verificación.
 
 """
     Para Obtener el rango de tiempo de busqueda

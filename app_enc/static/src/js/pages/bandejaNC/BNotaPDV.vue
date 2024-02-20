@@ -11,6 +11,7 @@
     <button
       class="text-sm rounded-full bg-cyan-500 p-2 text-white font-bold flex"
       type="button"
+      @click="validar_comprobantes"
     >
       <svg
         class="h-5 w-5 white"
@@ -132,6 +133,56 @@ export default {
                 location.reload();
               })
               .finally(() => {
+                this.isLoading=false
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
+    validar_comprobantes() {
+      console.log("Validar");
+
+      this.$swal
+        .fire({
+          title: "Validar",
+          text: "¿Estás seguro de validar todos los comprobantes?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, validar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            this.isLoading=true
+            // Lógica para validar
+            axios
+              .post("/solicitud_nota_credito/punto_venta/validar_todos/", {})
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "Validados",
+                  "Elementos Validados",
+                  "success"
+                );
+              })
+              .catch((err) => {
+                const msg_error = err.response.data.message;
+                this.$swal.fire({
+                  title: "Error de Validación",
+                  text: `${msg_error}`,
+                  icon: "error",
+                });
+              })
+              .finally(() => {
+                location.reload();
                 this.isLoading=false
               });
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
