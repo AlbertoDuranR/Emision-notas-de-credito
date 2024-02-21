@@ -92,7 +92,6 @@ export default {
   methods: {
     validar_item(itemNota, nroComprobante) {
       console.log("Editar:", itemNota);
-
       this.$swal
         .fire({
           title: "Validar",
@@ -119,9 +118,10 @@ export default {
                   "Validado",
                   "El elemento ha sido validado.",
                   "success"
-                );
-                // Recargar la página completa después de eliminar
-                location.reload();
+                ).then(() => {
+                  // Recargar la página completa
+                  location.reload();
+                });
               })
               .catch((err) => {
                 const msg_error = err.response.data.message;
@@ -129,8 +129,10 @@ export default {
                   title: "Error de Validación",
                   text: `${msg_error}`,
                   icon: "error",
+                }).then(() => {
+                  // Recargar la página completa
+                  location.reload();
                 });
-                location.reload();
               })
               .finally(() => {
                 this.isLoading=false
@@ -146,8 +148,6 @@ export default {
         });
     },
     validar_comprobantes() {
-      console.log("Validar");
-
       this.$swal
         .fire({
           title: "Validar",
@@ -171,7 +171,9 @@ export default {
                   "Validados",
                   "Elementos Validados",
                   "success"
-                );
+                ).then(() => {
+                  location.reload();
+                });
               })
               .catch((err) => {
                 const msg_error = err.response.data.message;
@@ -179,10 +181,11 @@ export default {
                   title: "Error de Validación",
                   text: `${msg_error}`,
                   icon: "error",
+                }).then(() => {
+                  location.reload();
                 });
               })
               .finally(() => {
-                location.reload();
                 this.isLoading=false
               });
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
@@ -285,20 +288,24 @@ export default {
               })
               .then((response) => {
                 console.log(response);
-                this.$swal.fire("CREADO", "Nota de crédito CREADA", "success");
+                this.$swal.fire("CREADO", "Nota de crédito CREADA", "success").then(() => {
+                  // Recargar la página completa
+                  location.reload();
+                });
               })
               .catch((err) => {
                 console.log('Error', err);
-                Swal.fire({
+                this.$swal.fire({
                   title: "Error de Registro",
                   text: `Error al crear la Nota de Crédito: ${err.response.data.message}`,
                   icon: "error",
+                }).then(() => {
+                  // Recargar la página completa
+                  location.reload();
                 });
               })
               .finally(() => {
                 this.isLoading=false
-                // Recargar la página completa
-                location.reload();
               });
           } else if (result.dismiss === this.$swal.DismissReason.cancel) {
             // Lógica para la cancelación

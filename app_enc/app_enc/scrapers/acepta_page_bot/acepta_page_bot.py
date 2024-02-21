@@ -52,13 +52,14 @@ class AceptaScraper:
     def config_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        # options.add_argument("--headless")
+        options.add_argument("--headless=new") # =new Despues de la versión 109
         # options.add_argument("--disable-gpu")
-        # options.add_argument("--window-size=800,600")
+        # options.add_argument("--window-size=1440, 1050")
         self.driver = webdriver.Chrome(options=options)
+        self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
+        # self.driver.maximize_window()
         self.wait_10 = WebDriverWait(self.driver , 10)
         self.wait_20 = WebDriverWait(self.driver , 20)
-        self.driver.maximize_window()
 
     def iniciar_sesion(self):
         self.config_navigator()
