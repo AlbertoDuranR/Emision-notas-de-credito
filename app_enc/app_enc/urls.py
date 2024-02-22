@@ -85,6 +85,7 @@ urlpatterns = [
 
     ## Create Nota de Credito
     path('nota_credito/punto_venta/create/', ViewNotaCredito.create_nota_credito),
+    path('nota_credito/punto_venta/create_all/', ViewNotaCredito.create_all_notas_credito),
     path('nota_credito/punto_venta/retry/', ViewNotaCredito.retry_create_nota_credito),
 
     ## Get Datos Comprobante

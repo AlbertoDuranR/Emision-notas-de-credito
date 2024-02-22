@@ -31,6 +31,7 @@
     <button
       class="text-sm rounded-full bg-green-600 p-2 text-white font-bold flex"
       type="button"
+      @click="generar_notas"
     >
       <svg
         class="h-5 w-5 white"
@@ -298,6 +299,55 @@ export default {
                 this.$swal.fire({
                   title: "Error de Registro",
                   text: `Error al crear la Nota de Crédito: ${err.response.data.message}`,
+                  icon: "error",
+                }).then(() => {
+                  // Recargar la página completa
+                  location.reload();
+                });
+              })
+              .finally(() => {
+                this.isLoading=false
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
+    generar_notas() {
+      this.$swal
+        .fire({
+          title: "Generar",
+          text: "¿Generar Todas las Notas de Crédito?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, Generar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            this.isLoading=true
+            // Lógica para la confirmación
+            axios
+              .post("/nota_credito/punto_venta/create_all/", {})
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire("CREADO", "Notas de crédito CREADAS", "success").then(() => {
+                  // Recargar la página completa
+                  location.reload();
+                });
+              })
+              .catch((err) => {
+                console.log('Error', err);
+                this.$swal.fire({
+                  title: "Error de Registro",
+                  text: `Error al crear las Notas de Crédito: ${err.response.data.message}`,
                   icon: "error",
                 }).then(() => {
                   // Recargar la página completa

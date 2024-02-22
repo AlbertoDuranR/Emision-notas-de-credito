@@ -14,6 +14,13 @@ serviceDynamics = ServiceDynamics()
 
 class ServiceNotaCredito:
 
+    def crear_notas_de_credito(self, sol_ids):
+        print('crear_notas_de_credito', sol_ids)
+        data_solicitudes = [] # [{} , {}, {}]
+        for sol_id in sol_ids:
+            data_solicitud = self.get_data_solicitud(sol_id=sol_id)
+            data_solicitudes.append(data_solicitud)
+        print(data_solicitudes)
     def crear_nota_credito(self, sol_id):
         # ---- data Ejemplos ---
         # data_parcial={
