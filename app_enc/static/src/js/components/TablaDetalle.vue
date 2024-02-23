@@ -31,7 +31,7 @@
           <th class="text-sm text-gray-600 text-center">ID</th>
           <!-- <th class="text-sm text-gray-600 text-center">ID_DETALLE</th> -->
           <th class="text-sm text-gray-600 text-center">FECHA SOLICITUD</th>
-          <th class="text-sm text-gray-600 text-center">USUARIO CREADOR</th>
+          <th class="text-sm text-gray-600 text-center">SOLICITANTE</th>
           <th class="text-sm text-gray-600 text-center">SUCURSAL</th>
           <th class="text-sm text-gray-600 text-center">FECHA COMPROBANTE</th>
           <th class="text-sm text-gray-600 text-center">TIPO COMPROBANTE</th>
@@ -58,8 +58,8 @@
           <td class="text-sm text-gray-600 text-center">
             {{ item.FECHA_SOLICITUD }}
           </td>
-          <td class="text-sm text-gray-600 text-center">
-            {{ item.USUARIO_CREADOR }}
+          <td class="text-xs text-gray-600 text-center">
+            {{ item.SOLICITANTE }}
           </td>
           <td class="text-sm text-gray-600 text-center">
             {{ item.ESTABLECIMIENTO }}

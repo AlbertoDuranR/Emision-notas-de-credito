@@ -57,6 +57,21 @@
             >
           </div>
           <div class="space-y-1 py-2">
+              <label class="text-sm">Solicitante DNI:</label>
+              <input
+                type="text"
+                class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+                v-model="detalle_solicitud.dni"
+                @input="handleDniInput"
+                maxlength="8"
+              />
+              <p v-show="(detalle_solicitud.dni).length == 8" class="mt-2 text-xs text-green-600 dark:text-green-400">
+                <span class="font-medium">
+                  {{detalle_solicitud.ap_paterno}} {{detalle_solicitud.ap_materno}} {{detalle_solicitud.nombres}}
+                </span>
+            </p>
+            </div>
+          <div class="space-y-1 py-2">
             <label class="text-sm">Fecha emisión de la nota de crédito:</label>
             <VueDatePicker
               v-model="detalle_solicitud.fecha_solicitud.date"
@@ -277,6 +292,10 @@ const detalle_solicitud = ref({
   motivo: "",
   justificacion: "",
   metodo: "total",
+  dni: "",
+  ap_paterno: "",
+  ap_materno: "",
+  nombres: ""
 });
 
 const unidades = props.unidades.map((objUnidad) => objUnidad.UnitSymbol); // ['U', 'LTR.']
@@ -430,6 +449,36 @@ const handleInputChange = (index) => {
     metodo_parcial_productos.value.selected_products[index].SalesPrice
   ).toFixed(2);
 };
+const handleDniInput = () => {
+      if (detalle_solicitud.value.dni.length === 8) {
+        // Execute the query to RENIEC
+        queryReniec();
+        //console.log("CUMPLIO 8");
+      }else{
+          detalle_solicitud.value.ap_materno = ""
+          detalle_solicitud.value.ap_paterno = ""
+          detalle_solicitud.value.nombres = ""
+      }
+};
+const queryReniec = () => {
+      let jsonString = {
+        dni : detalle_solicitud.value.dni
+      }
+
+      axios.post("/solicitud_nota_credito/financieros/reniec/", jsonString)
+        .then(data => {
+          // Handle the RENIEC response
+          console.log(data);
+          //this.reniecData.dni = data.nombres || "";
+          detalle_solicitud.value.ap_materno = data["data"]["ap_materno"]
+          detalle_solicitud.value.ap_paterno = data["data"]["ap_paterno"]
+          detalle_solicitud.value.nombres = data["data"]["nombres"]
+        })
+        .catch(error => {
+          console.error(error);
+          // Handle the error if needed
+        })
+    };
 
 refreshLoading();
 </script>

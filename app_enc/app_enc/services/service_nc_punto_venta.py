@@ -6,6 +6,8 @@ from datetime import datetime
 from ..models.model_solicitud_nc import SolicitudNC
 from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_detalle_solicitud import DetalleSolicitud
+from ..models.model_solicitante_detalle import SolicitanteDet
+
 
 class ServiceNCPDV:
     # vista
@@ -24,12 +26,13 @@ class ServiceNCPDV:
                     estado_nota_credito = 'CREADO'
                 else:
                     estado_nota_credito = 'ERROR'
-
+            solicitante = f'{tupla[16]} - {tupla[17]}' if tupla[16] else ''
             diccionario = {
                 'ID_NC': tupla[0],
                 'ID_DETALLE': tupla[1],
                 'FECHA_SOLICITUD': tupla[2],
                 'USUARIO_CREADOR': tupla[3],
+                'SOLICITANTE': solicitante,
                 'ESTABLECIMIENTO': tupla[4],
                 'FECHA_EMISION': tupla[5],
                 'TIPO': tupla[6],
@@ -106,6 +109,11 @@ class ServiceNCPDV:
         # Productos
         metodo_parcial_productos=data["metodo_parcial_productos"]
         monto_total_productos=importe_total
+        #Solicitante
+        dni = data["detalle_solicitud"]["dni"]
+        ap_materno = data["detalle_solicitud"]["ap_materno"]
+        ap_paterno = data["detalle_solicitud"]["ap_paterno"]
+        nombre = data["detalle_solicitud"]["nombres"]
 
         if not motivo or not justificacion:
             raise TypeError("Motivo y Jutificación son necesarios")
@@ -116,6 +124,17 @@ class ServiceNCPDV:
                 importe_total = monto_total_productos
             else:
                 raise TypeError("Metodo Parcial no tiene productos")
+
+        # Obtener solicitante
+        detalle_solicitante = SolicitanteDet.objects.filter(sdet_dni=dni).first()
+        if not detalle_solicitante:
+            detalle_solicitante = SolicitanteDet(
+                sdet_dni=dni,
+                sdet_materno=ap_materno,
+                sdet_paterno=ap_paterno,
+                sdet_nombres=nombre
+            )
+            detalle_solicitante.save()
 
         # Guardar Solicitud de Nota de Crédito
         solicitud_nc = SolicitudNC(
@@ -137,7 +156,8 @@ class ServiceNCPDV:
             det_metodo=metodo,
             det_monto_total_prod=monto_total_productos,
             det_establecimiento=1, ## Lugar de solicitud
-            sol_id=solicitud_nc.sol_id
+            sol_id=solicitud_nc.sol_id,
+            sdet_id=detalle_solicitante.sdet_id,
         )
         detalle.save()
 
