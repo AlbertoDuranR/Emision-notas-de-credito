@@ -132,7 +132,7 @@ class Dynamics_Bot:
     def config_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        # options.add_argument("--headless=new") # =new Despues de la versión 109
+        options.add_argument("--headless=new") # =new Despues de la versión 109
         self.driver = webdriver.Chrome(options=options)
         self.driver.set_window_position(0, 0)
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
@@ -323,7 +323,7 @@ class Dynamics_Bot:
                     raise
 
     def registrar_articulos_para_devolucion(self, data):
-        print('>> START Confirmar registro')
+        print('>> START Registrar Confirmar Articulos')
         time.sleep(2)
         # Verificar que cantidad de articulos seleccionados se igual a los solicitados a devolución
         try:
@@ -333,7 +333,6 @@ class Dynamics_Bot:
             cantidad_articulos_registrar=len(self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro))
         except Exception as e:
             raise ValueError('Error: Al obtener cantidad de articulos a registrar', e)
-
         print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
         count = 0
         while not cantidad_articulos_registrar == len(data['productos']):
@@ -341,18 +340,18 @@ class Dynamics_Bot:
             time.sleep(1)
             self._esperar_n_segundos(1)
             cantidad_articulos_registrar=len(self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro))
-            if count > 3:
-                raise ValueError('Error: Cantidad de articulos Seleccionados no son iguales a los solicitados')
+            print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
             count += 1
-        print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
+            if count > 4:
+                raise ValueError('Error: Cantidad de articulos Seleccionados no son iguales a los solicitados')
 
         ## Registrar Articulos
         try:
-            self._wait_hide_div_bloking(10)
+            self._wait_hide_div_bloking(20)
             print('Scroll al contenedor de articulos')
             xpath_contenedor_articulos_para_confirmar='//div[contains(@id, "ReturnTable") and contains(@id, "SalesLineGrid")]'
             self._scroll_a_elemento_xpath(xpath_contenedor_articulos_para_confirmar)
-            self._wait_hide_div_bloking(10)
+            self._wait_hide_div_bloking(20)
             for articulo in  data['productos']:
                 self._hacer_clic_xpath(self.xpath_columna_articulo_confirmar)
                 self._ingresar_valor_en_input_xpath(self.xpath_input_columna_articulo_confirmar, articulo['codigo'])
@@ -374,8 +373,7 @@ class Dynamics_Bot:
                     self._esperar_n_segundos(1)
                     self.registrar_articulo_para_devolucion()
         except Exception as e:
-            print(f"Error al recorrer articulos a registrar: {str(e)}")
-            raise
+            raise ValueError (f"Error al recorrer articulos a registrar: {str(e)}")
         print(">> END Confirmado")
 
     def set_data_pedido_devolucion(self, data):
@@ -597,7 +595,8 @@ class Dynamics_Bot:
             "estado": "CREADO",
             "nro_pedido_venta_devolucion": None,
             "step_rpa": None,
-            "error": None
+            "error": None,
+            "sol_id": data['sol_id']
         }
 
         try:
@@ -695,6 +694,22 @@ class Dynamics_Bot:
         time.sleep(5)
         print('END Proceso Crear Nota de Credito')
         return resultado
+
+    def crear_individual_nota_de_credito(self, data):
+        self.iniciar_sesion()
+        result_rpa= self.crear_nota_de_credito(data)
+        self.driver.quit()
+        return result_rpa
+
+    def crear_masivo_nota_de_credito(self, data_solicitudes: list):
+        estados_rpa = [] # [{}, {}, {}]
+        for data in data_solicitudes:
+            self.iniciar_sesion()
+            print(f'Crear Data {data}, {data['sol_id']}')
+            estado_rpa = self.crear_nota_de_credito(data)
+            estados_rpa.append(estado_rpa)
+            self.driver.quit()
+        return estados_rpa
 
     def _ingresar_valor_en_input_id(self, xpath, valor):
         AuxiliaryFunctions.ingresar_valor_en_input_id(self.driver, self.wait, xpath, valor)
