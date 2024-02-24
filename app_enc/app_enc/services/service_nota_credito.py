@@ -1,3 +1,5 @@
+import os
+import time
 from django.shortcuts import render, redirect
 from django.db import connection
 from datetime import datetime
@@ -20,7 +22,27 @@ class ServiceNotaCredito:
         for sol_id in sol_ids:
             data_solicitud = self.get_data_solicitud(sol_id=sol_id)
             data_solicitudes.append(data_solicitud)
-        print(data_solicitudes)
+            print(data_solicitudes)
+            dynamics_bot = Dynamics_Bot()
+            dynamics_bot.iniciar_sesion()
+            estado_rpa = dynamics_bot.crear_nota_de_credito(data=data_solicitud)
+            print(f'Estado sol_id {sol_id} RPA:  {estado_rpa}')
+            nro_pedido_nota_credito = estado_rpa['nro_pedido_venta_devolucion']
+            if not nro_pedido_nota_credito:
+                error_msg = 'No se encontro el Nro de pedido con el RPA'
+                self.save_error_in_solicitudNC(sol_id, error_msg=error_msg, step_rpa=estado_rpa['step_rpa'])
+                raise ErrorNotaDeCredito(error_msg)
+            # Verificar existencia de nro de pedido
+            return_order_headers = serviceDynamics.get_return_order_headers_by_return_order_number(nro_pedido_nota_credito)
+            if not return_order_headers:
+                error_msg='No se encontro el Nro de pedido para la nota de crédito en Dynamics'
+                self.save_error_in_solicitudNC(sol_id, error_msg=error_msg)
+                raise ErrorNotaDeCredito(error_msg)
+            detalle_existente = DetalleSolicitud.objects.get(sol_id=sol_id)
+            detalle_existente.det_nro_pedido_nota_credito = nro_pedido_nota_credito
+            detalle_existente.save()
+            self.save_nota_de_credito(sol_id, estado_rpa, nro_pedido_nota_credito)
+
     def crear_nota_credito(self, sol_id):
         # ---- data Ejemplos ---
         # data_parcial={
@@ -50,19 +72,22 @@ class ServiceNotaCredito:
             estado_rpa = dynamics_bot.crear_nota_de_credito(data=data_solicitud)
             print('Estado RPA: ', estado_rpa)
             nro_pedido_nota_credito = estado_rpa['nro_pedido_venta_devolucion']
-            if not nro_pedido_nota_credito:
-                error_msg = 'No se encontro el Nro de pedido para la nota de crédito con en el RPA'
-                self.save_error_in_solicitudNC(sol_id, error_msg=error_msg, step_rpa=estado_rpa['step_rpa'])
-                raise ErrorNotaDeCredito(error_msg)
-            # Verificar existencia de nro de pedido
-            return_order_headers = serviceDynamics.get_return_order_headers_by_return_order_number(nro_pedido_nota_credito)
-            if not return_order_headers:
-                error_msg='No se encontro el Nro de pedido para la nota de crédito en Dynamics'
-                self.save_error_in_solicitudNC(sol_id, error_msg=error_msg)
-                raise ErrorNotaDeCredito(error_msg)
-            detalle_existente = DetalleSolicitud.objects.get(sol_id=sol_id)
-            detalle_existente.det_nro_pedido_nota_credito = nro_pedido_nota_credito
-            detalle_existente.save()
+            if not estado_rpa['step_rpa']:
+                raise ErrorNotaDeCredito('No se llego a crear el pedido. Reintentar')
+            if nro_pedido_nota_credito:
+                # Si existe gardar el nro de pedido
+                return_order_headers = serviceDynamics.get_return_order_headers_by_return_order_number(nro_pedido_nota_credito)
+                if not return_order_headers:
+                    error_msg='No se encontro el Nro de pedido para la nota de crédito en Dynamics'
+                    self.save_error_in_solicitudNC(sol_id, error_msg=error_msg)
+                    raise ErrorNotaDeCredito(error_msg)
+                detalle_existente = DetalleSolicitud.objects.get(sol_id=sol_id)
+                detalle_existente.det_nro_pedido_nota_credito = nro_pedido_nota_credito
+                detalle_existente.save()
+            if estado_rpa['estado'] == 'ERROR':
+                self.save_error_in_solicitudNC(sol_id, error_msg=estado_rpa['error']['mensaje'], step_rpa=estado_rpa['step_rpa'])
+                raise ErrorNotaDeCredito(error_msg=estado_rpa['error']['mensaje'], ubicacion=estado_rpa['error']['step_rpa']) # return si son masivo
+
             self.save_nota_de_credito(sol_id, estado_rpa, nro_pedido_nota_credito)
 
     def reintentar_crear_nota_credito(self, sol_id):
@@ -114,14 +139,20 @@ class ServiceNotaCredito:
         self.save_nota_de_credito(sol_id, estado_rpa, nro_pedido_nota_credito)
 
     def save_nota_de_credito(self, sol_id, estado_rpa, nro_pedido_nota_credito):
-        if estado_rpa['estado'] == 'ERROR':
-            self.save_error_in_solicitudNC(sol_id, error_msg=estado_rpa['error']['mensaje'], step_rpa=estado_rpa['step_rpa'])
-            raise ErrorNotaDeCredito(estado_rpa['error']['mensaje'], ubicacion=estado_rpa['error']['donde'])
         # Verificar si se llego a facturar
         nro_nota_credito=''
         sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
-        if not sales_invoice_headers:
-            raise ErrorNotaDeCredito('No se encontro la factura para la nota de crédito en Dynamics')
+        count = 0
+        while sales_invoice_headers:
+            time.sleep(6)
+            sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
+            if sales_invoice_headers:
+                break
+            if count > 4:
+                msg_error = f'No se encontro la factura para la nota de crédito en Dynamics. Para el pedido : {nro_pedido_nota_credito}'
+                self.save_error_in_solicitudNC(sol_id, error_msg=msg_error)
+                raise ErrorNotaDeCredito(msg_error)
+
         nro_nota_credito = sales_invoice_headers[0]['InvoiceNumber']
         if estado_rpa['estado'] == 'CREADO' and nro_nota_credito:
             # 1. ACTUALIZAMOS solicitud_nc
@@ -175,29 +206,29 @@ class ServiceNotaCredito:
         if det_metodo == 'parcial':
             productos = ProductoDetalle.objects.filter(det_id=det_id)
             if not productos:
-                raise 'Error: Sin productos para el N° Comprobante en el metodo Parcial'
+                raise ErrorNotaDeCredito('Error: Sin productos para el N° Comprobante en el metodo Parcial')
             for producto in productos:
                 list_productos.append({'codigo': producto.dpro_codigo, 'cantidad': producto.dpro_cantidad})
         elif det_metodo == 'total':
             invoice_products = serviceDynamics.get_sales_invoice_lines(invoice_number=det_nro_comprobante)
             if not invoice_products:
-                raise 'Error: Sin productos para el N° Comprobante en el metodo Total'
+                raise ErrorNotaDeCredito('Error: Sin productos para el N° Comprobante en el metodo Total')
             for product in invoice_products:
                 list_productos.append({'codigo': product['ProductNumber'], 'cantidad':  product['InvoicedQuantity']})
         else:
-            raise 'Error: metodo de solicitud no encontrado'
+            raise ErrorNotaDeCredito('Error: metodo de solicitud no encontrado')
 
         # Get data de Dynamic
         invoice_headers = serviceDynamics.get_sales_invoice_headers_by_invoice_number(invoice_number=det_nro_comprobante)
         if not invoice_headers:
-            raise 'Error: Sin datos para el comprobante de origen en Dynamics'
+            raise ErrorNotaDeCredito('Error: Sin datos para el comprobante de origen en Dynamics')
         num_pedido_origen=invoice_headers[0]['SalesOrderNumber']
         temino_pago=invoice_headers[0]['PaymentTermsName']
         print("num_pedido_origen: ", num_pedido_origen)
         # Get data de Dynamics
         sales_order_headers = serviceDynamics.get_sales_order_headers_by_sales_order_number(sales_order_number=num_pedido_origen)
         if not sales_order_headers:
-            raise 'Error: sin datos para el pedido de origen en Dynamics'
+            raise ErrorNotaDeCredito('Error: sin datos para el pedido de origen en Dynamics')
         cod_almacen=sales_order_headers[0]['DefaultShippingWarehouseId']
         cod_forma_pago=sales_order_headers[0]['CustomerPaymentMethodName']
 
@@ -225,6 +256,32 @@ class ServiceNotaCredito:
             solicitud_existente.sol_observacion = error_msg
             solicitud_existente.sol_step_rpa = step_rpa
             solicitud_existente.save()
+
+    def existe_txt_factura(self, nom_archivo: str) -> bool:
+        # Not Used
+        ruta_archivo = f'C:/Users/roberttm/Downloads/{nom_archivo}.txt' # COLOCAR EL USUARIO ADMIN : Joven Danni
+        print(ruta_archivo)
+        if os.path.isfile(ruta_archivo):
+            # El archivo se descargó correctamente
+            print("Archivo TXT descargado")
+            return True
+        else:
+            # El archivo no se descargó
+            print("Error al descargar el archivo TXT")
+            return False
+                # print('VERIFICANDO TXT')
+        # USARLO DE ESTA FORMAR DONDE SE LLAME
+        # existe_txt = self.existe_txt_factura()
+        # count = 0
+        # while existe_txt:
+        #     time.sleep(1)
+        #     existe_txt = self.existe_txt_factura()
+        #     if existe_txt:
+        #         break
+        #     print(f'Esperando {count} Seg para descarga de TXT')
+        #     count += 1
+        #     if count > 30:
+        #         raise ValueError('Alcanzó tiempo estimado para decargar txt: 30 Segundos')
 
 
 class ErrorNotaDeCredito(Exception):
