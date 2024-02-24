@@ -36,7 +36,7 @@ class ViewNotaCredito:
             try:
                 print('create_all_notas_credito')
                 # ServiceNotaCredito.crear_nota_credito(sol_id=form_request['id'])
-                ServiceNotaCredito.crear_notas_de_credito(sol_ids=sol_ids)
+                ServiceNotaCredito.crear_masivo_notas_de_credito(sol_ids=sol_ids)
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print('Expection create_nota_credito:', e)
