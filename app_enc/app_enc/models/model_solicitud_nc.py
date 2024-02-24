@@ -5,6 +5,7 @@ class SolicitudNC(models.Model):
         'PENDIENTE',
         'VALIDADO',
         'OBSERVADO',
+        'ERROR',
         'ELIMINADO',
     ]
     ESTADO_RPA_CHOICES = [

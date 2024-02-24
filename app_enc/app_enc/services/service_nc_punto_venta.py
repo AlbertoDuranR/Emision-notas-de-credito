@@ -7,6 +7,7 @@ from ..models.model_solicitud_nc import SolicitudNC
 from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_detalle_solicitud import DetalleSolicitud
 from ..models.model_solicitante_detalle import SolicitanteDet
+from ..services.service_dynamics import ServiceDynamics
 
 
 class ServiceNCPDV:
@@ -18,14 +19,23 @@ class ServiceNCPDV:
         lista_diccionarios = []
         for tupla in results:
             #print(tupla)
+            estado_solicitud = tupla[8]
             nro_nota_credito = tupla[14]
             nro_pedido_nota_credito = tupla[15]
             estado_nota_credito = 'PENDIENTE'
             if nro_pedido_nota_credito:
-                if nro_nota_credito:
+                if estado_solicitud == 'CREADO':
                     estado_nota_credito = 'CREADO'
-                else:
+                    if not nro_nota_credito:
+                        serviceDynamics = ServiceDynamics()
+                        sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
+                        if sales_invoice_headers:
+                            nro_nota_credito = sales_invoice_headers[0]['InvoiceNumber']
+                        else:
+                            nro_nota_credito = 'NO EXISTE'
+                if estado_solicitud == 'ERROR':
                     estado_nota_credito = 'ERROR'
+
             solicitante = f'{tupla[16]} - {tupla[17]}' if tupla[16] else ''
             diccionario = {
                 'ID_NC': tupla[0],
@@ -37,7 +47,7 @@ class ServiceNCPDV:
                 'FECHA_EMISION': tupla[5],
                 'TIPO': tupla[6],
                 'NRO_COMPROBANTE': tupla[7],
-                'ESTADO': tupla[8],
+                'ESTADO': estado_solicitud,
                 'FECHA_CREACION': tupla[9],
                 'METODO': tupla[10],
                 'MONTO_TOTAL': tupla[11],
