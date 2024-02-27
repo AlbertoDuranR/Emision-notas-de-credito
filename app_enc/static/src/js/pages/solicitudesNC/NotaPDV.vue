@@ -1,5 +1,5 @@
 <template>
-  <Header />
+  <Header :selectMarket="selectMarket"/>
   <div class="container px-6 mx-auto block">
     <div class="flex items-center justify-center py-5">
       <span class="font-bold text-gray-600"
@@ -272,7 +272,7 @@ import convertirFormatoFecha from "../../utils";
 import "@vuepic/vue-datepicker/dist/main.css";
 import "vue3-loading-overlay/dist/vue3-loading-overlay.css";
 
-const props = defineProps(["unidades", "_token"]);
+const props = defineProps(["unidades", "_token", "selectMarket"]);
 const isLoadingProductos = ref(false);
 const isLoading = ref(false);
 const formContainer = ref(null);

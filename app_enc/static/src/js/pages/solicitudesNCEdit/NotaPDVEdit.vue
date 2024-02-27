@@ -1,5 +1,5 @@
 <template>
-  <Header />
+  <Header :selectMarket="selectMarket"/>
   <div class="container px-6 mx-auto block">
     <div class="flex items-center justify-center py-5">
       <span class="font-bold text-gray-600"
@@ -323,6 +323,7 @@ export default {
     lista_productosEdit: Array,
     id: Number,
     _token: String,
+    selectMarket: String
   },
   data() {
     return {

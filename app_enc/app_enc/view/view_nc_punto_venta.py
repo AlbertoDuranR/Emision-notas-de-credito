@@ -22,9 +22,12 @@ logger = logging.getLogger(__name__)
 class ViewNCPDV:
     ## Formulario Punto de Venta
     def notaPDV(request):
+        selectMarket = request.GET.get('selectMarket')
+        print('selectMarket', selectMarket)
         unidades= serviceDynamics.getUnitsConversion()
         return render(request,'NotaPDV',props={
             'unidades':unidades,
+            'selectMarket':selectMarket,
             '_token':get_token(request)
         })
 
@@ -87,6 +90,7 @@ class ViewNCPDV:
 
      ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
+        selectMarket = request.GET.get('selectMarket')
         lista_productosEdit = []
         # Lógica para obtener productos y unidades desde el servicio Dynamics
         unidades= serviceDynamics.getUnitsConversion()
@@ -108,25 +112,30 @@ class ViewNCPDV:
             'lista_solicitudesEdit': lista_solicitudesEdit,
             'lista_productosEdit': lista_productosEdit,
             'id': id,
-            '_token':get_token(request)
+            '_token':get_token(request),
+            'selectMarket':selectMarket
         })
 
     ### Consolidado Punto de Venta
     def cnotaPDV(request):
+        selectMarket = request.GET.get('selectMarket')
         #Listar Solicitudes
         lista_solicitudes= servicePDV.lista_solicitudes()
         #
         return render(request,'CNotaPDV',props={
-            'lista_solicitudes':lista_solicitudes
+            'lista_solicitudes':lista_solicitudes,
+            'selectMarket':selectMarket,
         })
     
     ### Bandeja Punto de Venta
     def bnotaPDV(request):
+        selectMarket = request.GET.get('selectMarket')
         #lista = []
         #lista.append(12)
         lista_solicitudes= servicePDV.lista_solicitudes()
         return render(request,'BNotaPDV',props={
-            'lista_solicitudes':lista_solicitudes
+            'lista_solicitudes':lista_solicitudes,
+            'selectMarket':selectMarket,
         })
     
 

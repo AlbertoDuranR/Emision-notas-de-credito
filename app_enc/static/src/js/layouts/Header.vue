@@ -32,7 +32,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div v-show="showMenu" class="flex items-center space-x-2">
                     <svg class="h-9 w-9 p-2 text-white rounded-full bg-red-600" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -41,16 +41,16 @@
                     <div>
                         <div class="dropdown inline-block relative">
                             <button class="text-gray-700 text-sm font-semibold rounded inline-flex items-center">
-                                <span class="mr-1">Wilfredo Cáceres</span>
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <span class="mr-1">{{selectMarket}}</span>
+                                <!-- <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                </svg>
+                                </svg> -->
                             </button>
-                            <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-2 h-auto drop-shadow-lg">
+                            <!-- <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-2 h-auto drop-shadow-lg">
                                 <li class=""><a
                                         class="rounded bg-white hover:bg-gray-200 py-2 px-4 block whitespace-no-wrap"
                                         href="#">Cerrar Sesión</a></li>
-                            </ul>
+                            </ul> -->
                         </div>
 
                     </div>
@@ -64,7 +64,7 @@
           py-4
           mx-auto
           md:flex md:justify-center md:items-center">
-                <ul :class="showMenu ? 'flex' : 'hidden'" class="
+                <ul v-show="showMenu" class="
             flex-col
             mt-2
             space-y-4
@@ -89,7 +89,7 @@
                             <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-3 h-auto drop-shadow-md">
                                 <li class=""><a
                                         class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
-                                        @click="navigateTo('/solicitud_nota_credito/punto_venta')">Punto de Venta</a></li>
+                                        @click="navigateTo('/solicitud_nota_credito/punto_venta', { selectMarket: selectMarket })">Punto de Venta</a></li>
                                 <li class=""><a class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
                                     @click="navigateTo('/solicitud_nota_credito/financieros')">Financiero</a></li>
                                 <li class=""><a
@@ -109,7 +109,7 @@
                             <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-3 h-auto drop-shadow-md">
                                 <li class=""><a
                                         class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
-                                        @click="navigateTo('/consolidacion_nota_credito/punto_venta')">Punto de Venta</a></li>
+                                        @click="navigateTo('/consolidacion_nota_credito/punto_venta', { selectMarket: selectMarket })">Punto de Venta</a></li>
                                 <li class=""><a class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
                                     @click="navigateTo('/consolidacion_nota_credito/financieros')">Financiero</a></li>
                                 <li class=""><a
@@ -130,7 +130,7 @@
                             <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-3 h-auto drop-shadow-md">
                                 <li class=""><a
                                         class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
-                                        @click="navigateTo('/bandeja_nota_credito/punto_venta')">Punto de Venta</a></li>
+                                        @click="navigateTo('/bandeja_nota_credito/punto_venta', { selectMarket: selectMarket })">Punto de Venta</a></li>
                                 <li class=""><a class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
                                     @click="navigateTo('/bandeja_nota_credito/financieros')">Financiero</a></li>
                                 <li class=""><a
@@ -154,18 +154,37 @@
 import image from "../../../dist/Logo3.png"
 export default {
     name: "Header",
+    props: ['selectMarket'],
     data: function () {
         return {
             image: image,
-            showMenu: false
+            showMenu: false,
+        }
+    },
+    mounted() {
+        console.log(this.selectMarket)
+        if (this.selectMarket) {
+            this.showMenu = true;
+        } else {
+            this.showMenu = false;
+        }
+    },
+    updated() {
+        console.log(this.selectMarket)
+        if (this.selectMarket) {
+            this.showMenu = true;
+        } else {
+            this.showMenu = false;
         }
     },
     methods: {
         toggleNav: function () {
             this.showMenu = !this.showMenu;
         },
-        navigateTo(route) {
-            this.$inertia.visit(route);
+        navigateTo(route, params) {
+            this.$inertia.visit(route, {
+                data: params // Pasar los parámetros como parte del objeto de datos
+            });
         }
     }
 }
