@@ -83,6 +83,7 @@ class Dynamics_Bot:
         self.xpath_div_primer_pedido='//div[contains(@id, "Invoice_Heading") and contains(@id, "row-0")]'
 
         # Confirmar registro
+        self.xpath_cantidad_filas='//*[contains(@id, "SalesLineGrid")]/div[1]/div[4]/div/div[1]/div[2]/div/div[1]/div/div/div/div/div/span' # 1 filas
         self.div_lineas_articulos_para_registro='//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]'
         self.xpath_actualizar_linea='//*[contains(@id, "ReturnTable") and contains(@id, "Update_button")]'
         self.xpath_registro_inventario='//button[contains(@id, "ReturnTable") and contains(@id, "InventTransRegister")]'
@@ -134,7 +135,7 @@ class Dynamics_Bot:
     def config_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        # options.add_argument("--headless=new") # =new Despues de la versión 109
+        options.add_argument("--headless=new") # =new Despues de la versión 109
         self.driver = webdriver.Chrome(options=options)
         self.driver.set_window_position(0, 0)
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
@@ -329,23 +330,37 @@ class Dynamics_Bot:
         time.sleep(2)
         # Verificar que cantidad de articulos seleccionados se igual a los solicitados a devolución
         try:
-            # div_articulos_registrar=self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro)
-            # cantidad_articulos_registrar=len(div_articulos_registrar)
             self._esperar_n_segundos(4)
-            cantidad_articulos_registrar=len(self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro))
+            cantidad_text = (self.driver.find_element(By.XPATH, self.xpath_cantidad_filas)).text
+            cantidad_articulos_registrar = int(cantidad_text.strip().split(' ')[0])
+            print('cantidad_text', cantidad_text, cantidad_articulos_registrar)
         except Exception as e:
-            raise ValueError('Error: Al obtener cantidad de articulos a registrar', e)
+            # Segunda validación siempre y cuando no sean mas de 7 productos. Ya que en este metodo no se muestran mas productos en la tabla. Los demas estan ocultos
+            if len(data['productos']) < 7:
+                cantidad_articulos_registrar=len(self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro))
+                count = 0
+                while not cantidad_articulos_registrar == len(data['productos']):
+                    # print('>> Cantidad de articulos a registrar: ', len(div_articulos_registrar))
+                    time.sleep(1)
+                    self._esperar_n_segundos(1)
+                    cantidad_articulos_registrar=len(self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro))
+                    print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
+                    count += 1
+                    if count > 4:
+                        raise ValueError('Error: Cantidad de articulos Seleccionados no son iguales a los solicitados')
+            else:
+                print('Error: Al obtener cantidad de articulos a registrar', e)
+                # raise ValueError('Error: Al obtener cantidad de articulos a registrar', e)
         print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
         count = 0
         while not cantidad_articulos_registrar == len(data['productos']):
-            # print('>> Cantidad de articulos a registrar: ', len(div_articulos_registrar))
             time.sleep(1)
-            self._esperar_n_segundos(1)
-            cantidad_articulos_registrar=len(self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro))
-            print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
+            cantidad_text = (self.driver.find_element(By.XPATH, self.xpath_cantidad_filas)).text
+            cantidad_articulos_registrar = int(cantidad_text.strip().split(' ')[0])
             count += 1
             if count > 4:
                 raise ValueError('Error: Cantidad de articulos Seleccionados no son iguales a los solicitados')
+
 
         ## Registrar Articulos
         try:
