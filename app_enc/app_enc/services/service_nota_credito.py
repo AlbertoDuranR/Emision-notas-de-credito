@@ -261,7 +261,7 @@ class ServiceNotaCredito:
             'productos': list_productos,
             'forma_pago': cod_forma_pago,
             'pago': temino_pago,
-            'fecha_solicitud': sol_fecha_solicitud.strftime("%m/%d/%Y"), # 1/21/2024
+            'fecha_solicitud': sol_fecha_solicitud.strftime("%d/%m/%Y"), # 27/02/2024
             'monto_total_nota_credito': det_monto_total_prod, # Parcial: Monto del producto | Total: Monto total de comprobante
             'sol_tipo_nc': sol_tipo_nc,
             'sol_estado': sol_estado,
