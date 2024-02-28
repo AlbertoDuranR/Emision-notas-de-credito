@@ -78,7 +78,7 @@ export default {
   name: "BNotaPDV",
   props: {
     lista_solicitudes: Array,
-    selectMarket: String
+    selectMarket: Object
   },
   data() {
     return {
@@ -89,7 +89,8 @@ export default {
   },
   mounted() {
     // Imprimir datos en la consola
-    //console.log(this.lista_solicitudes);
+    // console.log(this.lista_solicitudes);
+    // console.log('this.selectMarket', this.selectMarket)
   },
   methods: {
     validar_item(itemNota, nroComprobante) {

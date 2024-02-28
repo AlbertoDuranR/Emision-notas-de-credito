@@ -26,7 +26,7 @@ export default {
   name: "CNotaPDV",
   props: {
     lista_solicitudes: Array,
-    selectMarket: String
+    selectMarket: Object
   },
   mounted() {
     // Imprimir datos en la consola
@@ -43,9 +43,13 @@ export default {
         showConfirmButton: true,
         allowOutsideClick: false,
       });
+
       // Agregar las variables a la URL como parámetros de ruta
       this.$inertia.visit(
-        `/solicitud_nota_credito/punto_venta/edit/${item_nota}/${item_producto}`
+        `/solicitud_nota_credito/punto_venta/edit/${item_nota}/${item_producto}`,
+        {
+          data: {selectMarket: this.selectMarket.department_number}// Pasar los parámetros como parte del objeto de datos
+        }
       );
     },
     eliminarItem(item) {

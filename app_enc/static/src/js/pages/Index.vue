@@ -1,5 +1,5 @@
 <template>
-    <Header :selectMarket="selectMarket?.mar_descripcion"/>
+    <Header :selectMarket="selectMarket"/>
     <div class="container mx-auto px-30 pt-30">
         <div class="flex items-center justify-center pt-10"><span class="text-2xl font-bold text-gray-500">Bienvenido a la página de Gestion de Notas
                 de Crédito</span></div>
@@ -37,7 +37,7 @@ export default {
     data() {
         return {
         showUser: false,
-        selectMarket: null,
+        selectMarket: {},
         establecimiento: {
           options: this.lista_markets,
           // options: ['a', 'b'],

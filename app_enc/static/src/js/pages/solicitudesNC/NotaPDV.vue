@@ -39,6 +39,7 @@
             <VueDatePicker
               v-model="datos_documento.fecha_emision.date"
               required
+              placeholder="Seleccionar Fecha"
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
@@ -60,22 +61,26 @@
               <label class="text-sm">Solicitante DNI:</label>
               <input
                 type="text"
-                class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+                class="mt-1 mb-0 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
                 v-model="detalle_solicitud.dni"
                 @input="handleDniInput"
                 maxlength="8"
               />
-              <p v-show="(detalle_solicitud.dni).length == 8" class="mt-2 text-xs text-green-600 dark:text-green-400">
-                <span class="font-medium">
+              <p v-show="(detalle_solicitud.dni).length == 8" class="pl-1 mt-0">
+                <span class="text-xs font-medium text-green-500 dark:text-green-300">
                   {{detalle_solicitud.ap_paterno}} {{detalle_solicitud.ap_materno}} {{detalle_solicitud.nombres}}
                 </span>
-            </p>
+                <span class="text-xs text-red-500">
+                    {{errorInput.dniError}}
+                </span>
+              </p>
             </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Fecha emisión de la nota de crédito:</label>
             <VueDatePicker
               v-model="detalle_solicitud.fecha_solicitud.date"
               required
+              placeholder="Seleccionar Fecha"
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
@@ -295,8 +300,11 @@ const detalle_solicitud = ref({
   dni: "",
   ap_paterno: "",
   ap_materno: "",
-  nombres: ""
+  nombres: "",
 });
+const errorInput = ref({
+  dniError: ""
+})
 
 const unidades = props.unidades.map((objUnidad) => objUnidad.UnitSymbol); // ['U', 'LTR.']
 const productos = ref([]);
@@ -317,6 +325,16 @@ const metodo_parcial_productos = ref({
 */
 
 const enviarSolicitud = () => {
+  const tieneErrores = Object.values(errorInput).every(value => value === '');
+  if (!tieneErrores) {
+    notify({
+        title: "Error de Registro",
+        text: "Verificar Datos Ingresados",
+        type: "error",
+      });
+      return
+  };
+
   let metodoParcialProductos = [];
   if (detalle_solicitud.value.metodo == "parcial") {
     metodoParcialProductos = metodo_parcial_productos.value.selected_products;
@@ -451,15 +469,16 @@ const handleInputChange = (index) => {
 };
 const handleDniInput = () => {
       if (detalle_solicitud.value.dni.length === 8) {
-        // Execute the query to RENIEC
-        queryReniec();
-        //console.log("CUMPLIO 8");
+        getNameByDni();
       }else{
           detalle_solicitud.value.ap_materno = ""
           detalle_solicitud.value.ap_paterno = ""
           detalle_solicitud.value.nombres = ""
       }
+      errorInput.value.dniError = ""
 };
+
+/*
 const queryReniec = () => {
       let jsonString = {
         dni : detalle_solicitud.value.dni
@@ -479,6 +498,23 @@ const queryReniec = () => {
           // Handle the error if needed
         })
     };
+*/
+
+const getNameByDni = () => {
+  const dni = detalle_solicitud.value.dni;
+  // const department_number = 'D012';
+  axios.post(`/solicitud_nota_credito/empleado/${dni}/${props.selectMarket.department_number}`)
+    .then(data => {
+      detalle_solicitud.value.ap_materno = data["data"]["ap_materno"]
+      detalle_solicitud.value.ap_paterno = data["data"]["ap_paterno"]
+      detalle_solicitud.value.nombres = data["data"]["nombres"]
+    })
+    .catch(error => {
+      console.error(error);
+      // Handle the error if needed
+      errorInput.value.dniError = error.response.data.error
+    })
+};
 
 refreshLoading();
 </script>

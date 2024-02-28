@@ -8,6 +8,7 @@ from ..services.service_dynamics import ServiceDynamics
 from ..scrapers.acepta_page_bot.acepta_page_bot import AceptaScraper
 from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_view_solicitudes_nota_de_credito import ViewSolicitudNotaDeCredito
+from ..models.model_market import Market
 
 
 servicePDV = ServiceNCPDV
@@ -23,11 +24,11 @@ class ViewNCPDV:
     ## Formulario Punto de Venta
     def notaPDV(request):
         selectMarket = request.GET.get('selectMarket')
-        print('selectMarket', selectMarket)
+        market = Market.get_market_by_department_number(selectMarket)
         unidades= serviceDynamics.getUnitsConversion()
         return render(request,'NotaPDV',props={
             'unidades':unidades,
-            'selectMarket':selectMarket,
+            'selectMarket':market,
             '_token':get_token(request)
         })
 
@@ -89,6 +90,7 @@ class ViewNCPDV:
         return JsonResponse(data_response, safe=False)
 
     def get_name_by_dni_and_department(request, dni, department_number):
+        print('dni', dni, department_number)
         name_employee=''
         employees = serviceDynamics.get_positionsv2_by_personnel_number(dni)
         print('employee', employees)
@@ -99,11 +101,16 @@ class ViewNCPDV:
                 name_employee = employee['WorkerName']
             else:
                 return JsonResponse({'error': 'El empleado no pertenece al departamento'}, status=404)
-        return JsonResponse(name_employee, safe=False)
+        name_employee_list = name_employee.split()
+        ap_paterno = name_employee_list[0]
+        ap_materno = name_employee_list[1]
+        nombres = ' '.join(name_employee_list[2:])
+        return JsonResponse({ 'nombres': nombres, 'ap_paterno': ap_paterno, 'ap_materno': ap_materno }, safe=False)
 
      ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
         selectMarket = request.GET.get('selectMarket')
+        market = Market.get_market_by_department_number(selectMarket)
         lista_productosEdit = []
         # Lógica para obtener productos y unidades desde el servicio Dynamics
         unidades= serviceDynamics.getUnitsConversion()
@@ -121,36 +128,35 @@ class ViewNCPDV:
         #
         return render(request,'NotaPDVEdit',props={
             'productos': products_issues,
-            'unidades':unidades,
+            'unidades': unidades,
             'lista_solicitudesEdit': lista_solicitudesEdit,
             'lista_productosEdit': lista_productosEdit,
             'id': id,
-            '_token':get_token(request),
-            'selectMarket':selectMarket
+            '_token': get_token(request),
+            'selectMarket': market
         })
 
     ### Consolidado Punto de Venta
     def cnotaPDV(request):
         selectMarket = request.GET.get('selectMarket')
+        market = Market.get_market_by_department_number(selectMarket)
         #Listar Solicitudes
         lista_solicitudes= servicePDV.lista_solicitudes()
         #
         return render(request,'CNotaPDV',props={
-            'lista_solicitudes':lista_solicitudes,
-            'selectMarket':selectMarket,
+            'lista_solicitudes': lista_solicitudes,
+            'selectMarket': market,
         })
-    
+
     ### Bandeja Punto de Venta
     def bnotaPDV(request):
         selectMarket = request.GET.get('selectMarket')
-        #lista = []
-        #lista.append(12)
+        market = Market.get_market_by_department_number(selectMarket)
         lista_solicitudes= servicePDV.lista_solicitudes()
         return render(request,'BNotaPDV',props={
             'lista_solicitudes':lista_solicitudes,
-            'selectMarket':selectMarket,
+            'selectMarket': market,
         })
-    
 
     ### Crear solicitud PDV
     def create_solicitud_pdv(request):

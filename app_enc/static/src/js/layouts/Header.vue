@@ -8,7 +8,7 @@
           mx-auto
           md:flex md:justify-between md:items-center
         ">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between"  @click="navigateTo('/')">
                     <router-link to="/" class="
               text-xl
               font-bold
@@ -41,7 +41,7 @@
                     <div>
                         <div class="dropdown inline-block relative">
                             <button class="text-gray-700 text-sm font-semibold rounded inline-flex items-center">
-                                <span class="mr-1">{{selectMarket}}</span>
+                                <span class="mr-1">{{selectMarket.mar_descripcion}}</span>
                                 <!-- <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                                 </svg> -->
@@ -89,7 +89,7 @@
                             <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-3 h-auto drop-shadow-md">
                                 <li class=""><a
                                         class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
-                                        @click="navigateTo('/solicitud_nota_credito/punto_venta', { selectMarket: selectMarket })">Punto de Venta</a></li>
+                                        @click="navigateTo('/solicitud_nota_credito/punto_venta', { selectMarket: selectMarket.department_number })">Punto de Venta</a></li>
                                 <li class=""><a class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
                                     @click="navigateTo('/solicitud_nota_credito/financieros')">Financiero</a></li>
                                 <li class=""><a
@@ -109,7 +109,7 @@
                             <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-3 h-auto drop-shadow-md">
                                 <li class=""><a
                                         class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
-                                        @click="navigateTo('/consolidacion_nota_credito/punto_venta', { selectMarket: selectMarket })">Punto de Venta</a></li>
+                                        @click="navigateTo('/consolidacion_nota_credito/punto_venta', { selectMarket: selectMarket.department_number })">Punto de Venta</a></li>
                                 <li class=""><a class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
                                     @click="navigateTo('/consolidacion_nota_credito/financieros')">Financiero</a></li>
                                 <li class=""><a
@@ -130,7 +130,7 @@
                             <ul class="dropdown-menu absolute hidden text-gray-500 font-semibold text-sm pt-3 h-auto drop-shadow-md">
                                 <li class=""><a
                                         class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
-                                        @click="navigateTo('/bandeja_nota_credito/punto_venta', { selectMarket: selectMarket })">Punto de Venta</a></li>
+                                        @click="navigateTo('/bandeja_nota_credito/punto_venta', { selectMarket: selectMarket.department_number })">Punto de Venta</a></li>
                                 <li class=""><a class="rounded bg-white hover:bg-gray-100 py-2 px-4 block whitespace-no-wrap"
                                     @click="navigateTo('/bandeja_nota_credito/financieros')">Financiero</a></li>
                                 <li class=""><a
@@ -162,7 +162,7 @@ export default {
         }
     },
     mounted() {
-        console.log(this.selectMarket)
+        console.log('selectMarket', this.selectMarket.mar_descripcion)
         if (this.selectMarket) {
             this.showMenu = true;
         } else {
@@ -170,7 +170,7 @@ export default {
         }
     },
     updated() {
-        console.log(this.selectMarket)
+        console.log('selectMarket Update', this.selectMarket.mar_descripcion)
         if (this.selectMarket) {
             this.showMenu = true;
         } else {
