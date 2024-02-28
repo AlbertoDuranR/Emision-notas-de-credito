@@ -88,6 +88,19 @@ class ViewNCPDV:
             return JsonResponse({'error': 'No se encontro la solicitud'}, status=404)
         return JsonResponse(data_response, safe=False)
 
+    def get_name_by_dni_and_department(request, dni, department_number):
+        name_employee=''
+        employees = serviceDynamics.get_positionsv2_by_personnel_number(dni)
+        print('employee', employees)
+        if not employees:
+            return JsonResponse({'error': 'No se encontro el empleado'}, status=404)
+        for employee in employees:
+            if employee['DepartmentNumber'] == department_number:
+                name_employee = employee['WorkerName']
+            else:
+                return JsonResponse({'error': 'El empleado no pertenece al departamento'}, status=404)
+        return JsonResponse(name_employee, safe=False)
+
      ## Formulario Punto de ventas edit
     def notaPDVEdit(request, id, id_product):
         selectMarket = request.GET.get('selectMarket')

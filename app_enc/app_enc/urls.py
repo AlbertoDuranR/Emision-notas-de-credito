@@ -94,7 +94,9 @@ urlpatterns = [
 
     ## Get datos de reniec
     path('solicitud_nota_credito/financieros/reniec/', ViewNCFinanciero.obtener_datos_personales),
-    
+
+    ## Get datos empleado
+    path('solicitud_nota_credito/empleado/<str:dni>/<str:department_number>', ViewNCPDV.get_name_by_dni_and_department),
     ###
     path('admin/', admin.site.urls),
     path('oauth2/', include('django_auth_adfs.urls')),

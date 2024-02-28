@@ -333,3 +333,71 @@ class ServiceDynamics:
         except Exception as e:
             print(f"An exception occurred in get_sales_invoice_lines_by_invoice_number: {e}")
             return None
+
+    def get_employeesv2_by_personnel_number(self, personnel_number: str):
+        '''
+            :param personnel_number: DNI
+            :return: [{"PersonnelNumber": "" , "Name": ""}]
+        '''
+        # https://mistr.operations.dynamics.com/data/EmployeesV2?$count=true&$select=PersonnelNumber, Name&$filter=PersonnelNumber eq '47518569'
+        # Definir url
+        path = f"{self.url}/data/EmployeesV2"
+        token = self.get_Token()
+        query = f"?$count=true&$select=PersonnelNumber, Name&$filter=PersonnelNumber eq '{personnel_number}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            data = pd.read_json(json.dumps(data["value"]))
+            result = data[
+                ["PersonnelNumber", "Name"]
+            ]
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_employeesv2_by_personnel_number: {e}")
+            return None
+
+    def get_positionsv2_by_personnel_number(self, worker_personnel_number: str):
+        '''
+            :param personnel_number: DNI
+            :return: [{
+                "PositionId": "P0070",
+                "Description": "Auxiliar de Almacén",
+                "WorkerName": "ELVIS CRISTHIAN CHAUCA CORAL",
+                "DepartmentNumber": "D012",
+                "WorkerPersonnelNumber": "75650740"
+                }]
+        '''
+        # https://mistr.operations.dynamics.com/data/PositionsV2?$count=true&$select=PositionId, Description, WorkerName, DepartmentNumber, WorkerPersonnelNumber&$filter=WorkerPersonnelNumber eq '75650740'
+        # Definir url
+        path = f"{self.url}/data/PositionsV2"
+        token = self.get_Token()
+        query = f"?$count=true&$select=PositionId, Description, WorkerName, DepartmentNumber, WorkerPersonnelNumber&$filter=WorkerPersonnelNumber eq '{worker_personnel_number}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            data = pd.read_json(json.dumps(data["value"]))
+            result = data[
+                ["PositionId", "Description", "WorkerName", "DepartmentNumber", "WorkerPersonnelNumber"]
+            ]
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_positionsv2_by_personnel_numberr: {e}")
+            return None
