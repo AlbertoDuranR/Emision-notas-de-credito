@@ -5,31 +5,8 @@
     <!-- Radio Buttons -->
     <!-- Fechas - calendario -->
     <!-- List of filters for status -->
-    <DataTable
+    <table
       class="table-auto"
-      :columns="columms"
-      :data="data_table"
-      :options="{
-        columnDefs: [
-          {
-            targets: '_all',
-            className: 'py-5 px-2 border-b text-sm text-left',
-          },
-        ],
-        language: {
-          lengthMenu: `<div class=&quot;text-sm py-3&quot;>Mostrar _MENU_ registros</div>`,
-          search: `<label class=&quot;text-sm&quot;>Buscar: &nbsp;&nbsp;</label><input type=&quot;text&quot; class=&quot;border border-gray-300 rounded px-2 py-1&quot; placeholder=&quot;Buscar&quot; />`,
-          zeroRecords: `No hay registros que mostrar`,
-          info: `<label class=&quot;text-sm py-3&quot;>Mostrando del <span class=&quot;font-bold text-gray-600&quot;>_START_</span> a <span class=&quot;font-bold text-gray-600&quot;>_END_</span> de <span class=&quot;font-bold text-gray-600&quot;>_TOTAL_</span> registros</label>`,
-          paginate: {
-            first: `<label class=&quot;text-sm text-gray-600 font-bold py-3&quot;>Primero</label>`,
-            previous: `<label class=&quot;text-sm text-gray-600 font-bold py-3&quot;>Anterior</label>`,
-            next: `<label class=&quot;text-sm text-gray-600 font-bold py-3&quot;>Siguiente</label>`,
-            last: `<label class=&quot;text-sm text-gray-600 font-bold py-3&quot;>Último</label>`,
-          },
-        },
-        order: [[0, 'desc']],
-      }"
     >
       <thead>
         <tr>
@@ -275,19 +252,8 @@
           </td>
         </tr>
       </tbody>
-    </DataTable>
+    </table>
   </div>
-  <!-- <div>
-    <DataTable :columns="columns" :data="data">
-      <thead>
-        <tr>
-          <th class="text-sm text-gray-600 text-center">ID</th>
-          <th class="text-sm text-gray-600 text-center">FECHA SOLICITUD</th>
-          <th class="text-sm text-gray-600 text-center">SOLICITANTE</th>
-        </tr>
-      </thead>
-    </DataTable>
-  </div> -->
   <ModalReview
     v-if="isOpen"
     @show-modal="closeModal"
@@ -329,20 +295,6 @@ const emit = defineEmits([
 const isOpen = ref(false);
 const datos_detalle_solicitud = ref({});
 const searchFilter = ref('');
-// const columns= ref([
-//         // Definición de columnas
-//         { title: "Nombre", data: "name" },
-//         { title: "Edad", data: "age" },
-//         { title: "País", data: "country" }
-//       ])
-// const data = ref(
-//   [
-//         // Datos de ejemplo
-//         { name: "Juan", age: 30, country: "España" },
-//         { name: "Maria", age: 25, country: "México" },
-//         { name: "Luis", age: 40, country: "Argentina" }
-//       ]
-// )
 
 const mostrarObservacion = (dato) => {
   Swal.fire({
@@ -401,7 +353,6 @@ const getDatosSolicitud = async (idSol) => {
 };
 
 const filteredItems = computed(() => {
-  console.log('searchFilter.value 22', searchFilter.value)
   if(searchFilter.value !== '') {
     const filter = props.listaSolicitudes.filter(item =>
       item.ESTADO.includes(searchFilter.value) ||
@@ -421,9 +372,5 @@ watchEffect(() => {
 const handleSearch = (search) => {
   searchFilter.value = search;
   console.log('ssearchFilter.value :', searchFilter.value)
-  data.value=  [
-        // Datos de ejemplo
-        { name: "Juan", age: 30, country: "España" },
-      ]
 };
 </script>
