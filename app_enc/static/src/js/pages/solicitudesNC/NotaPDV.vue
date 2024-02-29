@@ -62,6 +62,7 @@
               <input
                 type="text"
                 class="mt-1 mb-0 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+                :class="{'border-red-500': errorInput.dniError}"
                 v-model="detalle_solicitud.dni"
                 @input="handleDniInput"
                 maxlength="8"
@@ -272,7 +273,7 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 
 import { notify } from "@kyvg/vue3-notification";
 import { useLoading } from "vue3-loading-overlay";
-import convertirFormatoFecha from "../../utils";
+import { convertirFormatoFecha, isSomeValueEmpty } from "../../utils";
 
 import "@vuepic/vue-datepicker/dist/main.css";
 import "vue3-loading-overlay/dist/vue3-loading-overlay.css";
@@ -325,11 +326,11 @@ const metodo_parcial_productos = ref({
 */
 
 const enviarSolicitud = () => {
-  const tieneErrores = Object.values(errorInput).every(value => value === '');
-  if (!tieneErrores) {
+  const hasErrors = Object.values(errorInput.value).every(value => value !== '');
+  if (hasErrors || isSomeValueEmpty(detalle_solicitud.value)) {
     notify({
         title: "Error de Registro",
-        text: "Verificar Datos Ingresados",
+        text: "Ingresar los datos adecuadamente",
         type: "error",
       });
       return

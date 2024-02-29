@@ -14,4 +14,24 @@ function convertirFormatoFecha(fechaString) {
     return formatoFinal;
 };
 
-export default convertirFormatoFecha;
+const isObjectEmpty = (objectName) => {
+    /**
+     * @params objectName {} objeto de primer nivel
+     */
+    return (
+      objectName &&
+      Object.keys(objectName).length === 0 &&
+      objectName.constructor === Object
+    );
+  };
+
+const isSomeValueEmpty = (obj) => {
+    /**
+     * @param obj {} objeto de primer nivel
+     */
+    return Object.values(obj).some(value => {
+      return value === ''
+    });
+  };
+
+export {convertirFormatoFecha, isObjectEmpty, isSomeValueEmpty};

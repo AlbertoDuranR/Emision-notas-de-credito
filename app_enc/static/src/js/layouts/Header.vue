@@ -8,7 +8,7 @@
           mx-auto
           md:flex md:justify-between md:items-center
         ">
-                <div class="flex items-center justify-between"  @click="navigateTo('/')">
+                <div class="flex items-center justify-between cursor-pointer"  @click="navigateTo('/')">
                     <router-link to="/" class="
               text-xl
               font-bold
@@ -152,6 +152,7 @@
 </script>
 <script>
 import image from "../../../dist/Logo3.png"
+import { isObjectEmpty } from "../utils"
 export default {
     name: "Header",
     props: ['selectMarket'],
@@ -162,16 +163,12 @@ export default {
         }
     },
     mounted() {
-        console.log('selectMarket', this.selectMarket.mar_descripcion)
-        if (this.selectMarket) {
+        if (!isObjectEmpty(this.selectMarket)) {
             this.showMenu = true;
-        } else {
-            this.showMenu = false;
         }
     },
     updated() {
-        console.log('selectMarket Update', this.selectMarket.mar_descripcion)
-        if (this.selectMarket) {
+        if (this.selectMarket?.mar_descripcion) {
             this.showMenu = true;
         } else {
             this.showMenu = false;

@@ -105,7 +105,7 @@ import LoadingOverlay from 'vue3-loading-overlay';
 import axios from "axios";
 //
 import { notify } from "@kyvg/vue3-notification";
-import convertirFormatoFecha from "../../utils"
+import { convertirFormatoFecha } from "../../utils"
 </script>
 <script>
 export default {
