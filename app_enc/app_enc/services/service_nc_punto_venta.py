@@ -6,6 +6,10 @@ from datetime import datetime
 from ..models.model_solicitud_nc import SolicitudNC
 from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_detalle_solicitud import DetalleSolicitud
+from ..models.model_solicitante_detalle import SolicitanteDet
+from ..models.model_market import Market
+from ..services.service_dynamics import ServiceDynamics
+
 
 class ServiceNCPDV:
     # vista
@@ -16,21 +20,51 @@ class ServiceNCPDV:
         lista_diccionarios = []
         for tupla in results:
             #print(tupla)
+            det_id=tupla[1]
+            estado_solicitud = tupla[8]
+            nro_nota_credito = tupla[14]
+            nro_pedido_nota_credito = tupla[15]
+            estado_nota_credito = 'PENDIENTE'
+            if nro_pedido_nota_credito:
+                # print('nro_pedido_nota_credito: ', nro_pedido_nota_credito)
+                if estado_solicitud == 'CREADO':
+                    estado_nota_credito = 'CREADO'
+                    if not nro_nota_credito:
+                        serviceDynamics = ServiceDynamics()
+                        sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
+                        # print('lista_solicitudes: ', sales_invoice_headers)
+                        if sales_invoice_headers:
+                            nro_nota_credito = sales_invoice_headers[0]['InvoiceNumber']
+                            detalle_existente = DetalleSolicitud.objects.filter(det_id=det_id).first()
+                            if detalle_existente:
+                                detalle_existente.det_nro_nota_credito = nro_nota_credito
+                                detalle_existente.save()
+                        else:
+                            nro_nota_credito = 'NO EXISTE'
+                if estado_solicitud == 'ERROR':
+                    estado_nota_credito = 'ERROR'
+
+            solicitante = f'{tupla[16]} - {tupla[17]}' if tupla[16] else ''
             diccionario = {
                 'ID_NC': tupla[0],
-                'ID_DETALLE': tupla[1],
+                'ID_DETALLE': det_id,
                 'FECHA_SOLICITUD': tupla[2],
                 'USUARIO_CREADOR': tupla[3],
+                'SOLICITANTE': solicitante,
                 'ESTABLECIMIENTO': tupla[4],
                 'FECHA_EMISION': tupla[5],
                 'TIPO': tupla[6],
                 'NRO_COMPROBANTE': tupla[7],
-                'ESTADO': tupla[8],
+                'ESTADO': estado_solicitud,
                 'FECHA_CREACION': tupla[9],
                 'METODO': tupla[10],
                 'MONTO_TOTAL': tupla[11],
                 'ACEPTA': tupla[12],
                 'OBSERVACION': tupla[13],
+                'NRO_NOTA_CREDITO': nro_nota_credito,
+                'NRO_PEDIDO_NOTA_CREDITO': nro_pedido_nota_credito,
+                'ESTADO_NOTA_CREDITO': estado_nota_credito,
+                'OBS_ESTADO_RPA_NOTA_CREDITO':  tupla[13] if estado_nota_credito == 'ERROR' else '',
             }
             lista_diccionarios.append(diccionario)
         return lista_diccionarios
@@ -66,7 +100,7 @@ class ServiceNCPDV:
             #print(tupla)
             diccionario = {
                 'PRODUCTO_CODIGO': tupla[0],
-                'PRODUCTO_DESCCRIPCION': tupla[1],
+                'PRODUCTO_DESCRIPCION': tupla[1],
                 'PRODUCTO_UNIDAD': tupla[2],
                 'PRODUCTO_PRECIO': tupla[3],
                 'PRODUCTO_CANTIDAD': tupla[4],
@@ -93,15 +127,33 @@ class ServiceNCPDV:
         # Productos
         metodo_parcial_productos=data["metodo_parcial_productos"]
         monto_total_productos=importe_total
+        #Solicitante
+        dni = data["detalle_solicitud"]["dni"]
+        ap_materno = data["detalle_solicitud"]["ap_materno"]
+        ap_paterno = data["detalle_solicitud"]["ap_paterno"]
+        nombre = data["detalle_solicitud"]["nombres"]
+        department_number=data["detalle_solicitud"]["department_number"]
 
-        if not motivo or not justificacion:
-            raise TypeError("Motivo y Jutificación son necesarios")
+        if not motivo or not justificacion or not department_number:
+            raise TypeError("Motivo, Jutificación y Establecimiento son necesarios")
 
         if metodo=="parcial":
             if metodo_parcial_productos:
                 monto_total_productos = round(sum(float(producto["Total"]) for producto in metodo_parcial_productos), 2)
+                importe_total = monto_total_productos
             else:
                 raise TypeError("Metodo Parcial no tiene productos")
+
+        # Obtener solicitante
+        detalle_solicitante = SolicitanteDet.objects.filter(sdet_dni=dni).first()
+        if not detalle_solicitante:
+            detalle_solicitante = SolicitanteDet(
+                sdet_dni=dni,
+                sdet_materno=ap_materno,
+                sdet_paterno=ap_paterno,
+                sdet_nombres=nombre
+            )
+            detalle_solicitante.save()
 
         # Guardar Solicitud de Nota de Crédito
         solicitud_nc = SolicitudNC(
@@ -114,6 +166,9 @@ class ServiceNCPDV:
         solicitud_nc.save()
 
         # Guardar Detalle de la Solicitud de Nota de Crédito
+        market = Market.get_market_by_department_number(department_number)
+        id_market = market.mar_id
+        print('id_market', id_market)
         detalle = DetalleSolicitud(
             det_fecha_emision=fecha_emision.date(),
             det_nro_comprobante=nro_comprobante,
@@ -122,8 +177,9 @@ class ServiceNCPDV:
             det_justificacion=justificacion,
             det_metodo=metodo,
             det_monto_total_prod=monto_total_productos,
-            det_establecimiento=1, ## Lugar de solicitud
-            sol_id=solicitud_nc.sol_id
+            det_establecimiento=id_market, ## Lugar de solicitud
+            sol_id=solicitud_nc.sol_id,
+            sdet_id=detalle_solicitante.sdet_id,
         )
         detalle.save()
 
@@ -177,6 +233,7 @@ class ServiceNCPDV:
         # Producto
         metodo_parcial_productos=data["metodo_parcial_productos"]
         monto_total_productos=importe_total
+        department_number=data["detalle_solicitud"]["department_number"]
 
         if not motivo or not justificacion:
             raise TypeError("Motivo y Jutificación son necesarios")
@@ -184,6 +241,7 @@ class ServiceNCPDV:
         if metodo=="parcial":
             if metodo_parcial_productos:
                 monto_total_productos = round(sum(float(producto["Total"]) for producto in metodo_parcial_productos), 2)
+                importe_total = monto_total_productos
             else:
                 raise TypeError("Metodo Parcial no tiene productos")
 
@@ -205,6 +263,9 @@ class ServiceNCPDV:
             solicitud_existente.save()
 
         # 3. actualizamos detalle_solicitud
+        market = Market.get_market_by_department_number(department_number)
+        id_market = market.mar_id
+        print('id_market', id_market)
         detalle_existente = DetalleSolicitud.objects.filter(det_id=det_id).first()
         if detalle_existente:
             # Actualizar DetalleSolicitud
@@ -215,7 +276,7 @@ class ServiceNCPDV:
             detalle_existente.det_justificacion = justificacion
             detalle_existente.det_metodo = metodo
             detalle_existente.det_monto_total_prod = monto_total_productos
-            detalle_existente.det_establecimiento = 1
+            detalle_existente.det_establecimiento = id_market
             detalle_existente.save()
 
          # 4. creamos los nuevos productos

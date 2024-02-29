@@ -30,6 +30,8 @@ urlpatterns = [
     path('solicitud_nota_credito/punto_venta/', ViewNCPDV.notaPDV,name="new_nc_pdv"),
     path('solicitud_nota_credito/financieros/', ViewNCFinanciero.notaFinanciero),
     path('solicitud_nota_credito/servicios/', ViewNCServicios.notaServicios),
+    # Get Datos Solicitud
+    path('solicitud_nota_credito/datos_solicitud/<int:sol_id>', ViewNCPDV.get_datos_solicitud),
     ###
     
     ## Path View Consolidacion
@@ -59,6 +61,7 @@ urlpatterns = [
     
     ## Path View validacion Consolidacion
     path('solicitud_nota_credito/punto_venta/validar/', ViewNCPDV.validar_solicitud,name="new_nc_pdv"),
+    path('solicitud_nota_credito/punto_venta/validar_todos/', ViewNCPDV.validar_solicitudes),
     path('solicitud_nota_credito/financieros/validar/', ViewNCFinanciero.validar_solicitud),
     path('solicitud_nota_credito/servicios/validar/', ViewNCServicios.notaServiciosEdit),
     ##
@@ -82,6 +85,8 @@ urlpatterns = [
 
     ## Create Nota de Credito
     path('nota_credito/punto_venta/create/', ViewNotaCredito.create_nota_credito),
+    path('nota_credito/punto_venta/create_all/', ViewNotaCredito.create_all_notas_credito),
+    path('nota_credito/punto_venta/retry/', ViewNotaCredito.retry_create_nota_credito),
 
     ## Get Datos Comprobante
     path('comprobante/get_datos_comprobante/<str:nro_comprobante>', ViewNCPDV.get_sales_invoice),
@@ -89,7 +94,9 @@ urlpatterns = [
 
     ## Get datos de reniec
     path('solicitud_nota_credito/financieros/reniec/', ViewNCFinanciero.obtener_datos_personales),
-    
+
+    ## Get datos empleado
+    path('solicitud_nota_credito/empleado/<str:dni>/<str:department_number>', ViewNCPDV.get_name_by_dni_and_department),
     ###
     path('admin/', admin.site.urls),
     path('oauth2/', include('django_auth_adfs.urls')),

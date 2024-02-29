@@ -1,5 +1,5 @@
 <template>
-  <Header />
+  <!-- <Header /> -->
   <div class="container px-6 mx-auto block">
     <div class="flex items-center justify-center py-5">
       <span class="font-bold text-gray-600"
@@ -204,7 +204,7 @@ import Multiselect from "vue-multiselect";
 import axios from "axios";
 //
 import { notify } from "@kyvg/vue3-notification";
-import convertirFormatoFecha from "../../utils"
+import { convertirFormatoFecha } from "../../utils"
 </script>
 <script>
 export default {

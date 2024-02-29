@@ -4,3 +4,6 @@ app_enc/app_enc/__pycache__
 app_enc/app_enc/models/__pycache__
 app_enc/app_enc/services/__pycache__
 app_enc/app_enc/view/__pycache__
+app_enc/app_enc/bot/__pycache__
+app_enc/app_enc/bot/dynamics_bot/__pycache__
+app_enc/app_enc/scrapers/acepta_page_bot/__pycache__

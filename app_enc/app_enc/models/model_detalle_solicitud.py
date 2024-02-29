@@ -16,6 +16,9 @@ class DetalleSolicitud(models.Model):
     sdet_id = models.IntegerField(null=True)
     det_labora_en = models.CharField(max_length=64, null=True)
     sol_id = models.IntegerField(null=True)
+    det_nro_nota_credito = models.CharField(max_length=13)
+    det_nro_pedido_nota_credito = models.CharField(max_length=12)
+
     class Meta:
         db_table="detalle_solicitud"
         app_label="app_enc"

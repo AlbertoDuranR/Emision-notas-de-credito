@@ -1,5 +1,5 @@
 <template>
-  <Header />
+  <Header :selectMarket="selectMarket"/>
   <div class="container px-6 mx-auto block">
     <div class="flex items-center justify-center py-5">
       <span class="font-bold text-gray-600"
@@ -273,7 +273,7 @@
       <tbody>
         <tr v-for="(val, index) in lista_productosEdit" :key="index">
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_CODIGO }}</td>
-          <td class="py-2 px-4 border-b">{{ val.PRODUCTO_DESCCRIPCION }}</td>
+          <td class="py-2 px-4 border-b">{{ val.PRODUCTO_DESCRIPCION }}</td>
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_UNIDAD }}</td>
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_PRECIO }}</td>
           <td class="py-2 px-4 border-b">{{ val.PRODUCTO_CANTIDAD }}</td>
@@ -323,6 +323,7 @@ export default {
     lista_productosEdit: Array,
     id: Number,
     _token: String,
+    selectMarket: String
   },
   data() {
     return {
@@ -350,6 +351,7 @@ export default {
         motivo: this.lista_solicitudesEdit[0].MOTIVO,
         justificacion: this.lista_solicitudesEdit[0].JUSTIFICACION,
         metodo: this.lista_solicitudesEdit[0].METODO,
+        department_number: this.selectMarket?.department_number,
       },
       productos_del_comprobante: [],
       metodo_parcial_productos: {
@@ -395,7 +397,12 @@ export default {
           .then(() => {
             // Después de que se complete la animación de SweetAlert 2
             // Ejecutar la visita a la ruta de Inertia
-            this.$inertia.visit(`/consolidacion_nota_credito/punto_venta/`);
+            this.$inertia.visit(
+              `/consolidacion_nota_credito/punto_venta/`,
+              {
+                data: {selectMarket: this.selectMarket.department_number}// Pasar los parámetros como parte del objeto de datos
+              }
+            );
           });
         })
         .catch((err) => {
