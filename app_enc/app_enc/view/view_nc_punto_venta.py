@@ -102,9 +102,9 @@ class ViewNCPDV:
             else:
                 return JsonResponse({'error': 'El empleado no pertenece al departamento'}, status=404)
         name_employee_list = name_employee.split()
-        ap_paterno = name_employee_list[0]
-        ap_materno = name_employee_list[1]
-        nombres = ' '.join(name_employee_list[2:])
+        ap_paterno = name_employee_list[-2]
+        ap_materno = name_employee_list[-1]
+        nombres = ' '.join(name_employee_list[:-2])
         return JsonResponse({ 'nombres': nombres, 'ap_paterno': ap_paterno, 'ap_materno': ap_materno }, safe=False)
 
      ## Formulario Punto de ventas edit
