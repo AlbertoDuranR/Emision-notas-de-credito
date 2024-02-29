@@ -772,11 +772,10 @@ class Dynamics_Bot:
         is_visible_blocking_div=div_blocking.is_displayed()
         counter = 0
         while is_visible_blocking_div:
-            print('is_visible_blocking_div', div_blocking.is_displayed())
             time.sleep(1) # Pausa explicita
             div_blocking=self.driver.find_element(By.XPATH, '//*[@id="ShellBlockingDiv"]')
             is_visible_blocking_div=div_blocking.is_displayed()
-            print(f'is_visible_blocking_div {div_blocking.is_displayed()}. {counter} Seg')
+            print(f'is_visible_blocking_div {div_blocking.is_displayed()} {counter} Seg')
             if not is_visible_blocking_div:
                 break
             counter += 1

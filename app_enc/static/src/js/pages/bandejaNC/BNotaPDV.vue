@@ -340,7 +340,7 @@ export default {
               .post("/nota_credito/punto_venta/create_all/", {})
               .then((response) => {
                 console.log(response);
-                this.$swal.fire("CREADO", "Notas de crédito CREADAS", "success").then(() => {
+                this.$swal.fire("PROCESADOS", "Solicitudes Procesadas", "info").then(() => {
                   // Recargar la página completa
                   location.reload();
                 });
@@ -349,7 +349,7 @@ export default {
                 console.log('Error', err);
                 this.$swal.fire({
                   title: "Error de Registro",
-                  text: `Error al crear las Notas de Crédito: ${err.response.data.message}`,
+                  text: `Error al crear Masivamente las Notas de Crédito: ${err.response.data.message}`,
                   icon: "error",
                 }).then(() => {
                   // Recargar la página completa
