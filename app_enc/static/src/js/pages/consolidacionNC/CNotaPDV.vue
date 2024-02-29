@@ -9,7 +9,7 @@
   </div>
   <TablaDetalle
     tipo="consolidado"
-    :listaSolicitudes="lista_solicitudes"
+    :listaSolicitudes="listaSolicitudesPorMarket"
     @editar-item="editarItem"
     @eliminar-item="eliminarItem"
   />
@@ -17,7 +17,7 @@
 </template>
 <script setup>
 import axios from "axios";
-import Header from "../../layouts/Header.vue";
+import Header from "../../layouts/Header";
 import TablaDetalle from "../../components/TablaDetalle.vue";
 </script>
 
@@ -99,6 +99,11 @@ export default {
         });
     },
   },
+  computed: {
+    listaSolicitudesPorMarket() {
+      return this.lista_solicitudes.filter(item => item.ESTABLECIMIENTO == this.selectMarket.mar_descripcion )
+    }
+  }
 };
 </script>
 <style scope></style>
