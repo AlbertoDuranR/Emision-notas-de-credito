@@ -351,6 +351,7 @@ export default {
         motivo: this.lista_solicitudesEdit[0].MOTIVO,
         justificacion: this.lista_solicitudesEdit[0].JUSTIFICACION,
         metodo: this.lista_solicitudesEdit[0].METODO,
+        department_number: this.selectMarket?.department_number,
       },
       productos_del_comprobante: [],
       metodo_parcial_productos: {
@@ -396,7 +397,12 @@ export default {
           .then(() => {
             // Después de que se complete la animación de SweetAlert 2
             // Ejecutar la visita a la ruta de Inertia
-            this.$inertia.visit(`/consolidacion_nota_credito/punto_venta/`);
+            this.$inertia.visit(
+              `/consolidacion_nota_credito/punto_venta/`,
+              {
+                data: {selectMarket: this.selectMarket.department_number}// Pasar los parámetros como parte del objeto de datos
+              }
+            );
           });
         })
         .catch((err) => {

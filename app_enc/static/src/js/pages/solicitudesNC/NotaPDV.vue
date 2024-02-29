@@ -302,6 +302,7 @@ const detalle_solicitud = ref({
   ap_paterno: "",
   ap_materno: "",
   nombres: "",
+  department_number: props.selectMarket?.department_number,
 });
 const errorInput = ref({
   dniError: ""

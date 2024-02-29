@@ -13,4 +13,8 @@ class Market(models.Model):
         return list(Market.objects.all())
 
     def get_market_by_department_number(department_number: str):
+        ''' :return Obj
+            Ejemplo Uso:
+            market.department_number
+        '''
         return Market.objects.get(department_number=department_number)

@@ -7,6 +7,7 @@ from ..models.model_solicitud_nc import SolicitudNC
 from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_detalle_solicitud import DetalleSolicitud
 from ..models.model_solicitante_detalle import SolicitanteDet
+from ..models.model_market import Market
 from ..services.service_dynamics import ServiceDynamics
 
 
@@ -131,9 +132,10 @@ class ServiceNCPDV:
         ap_materno = data["detalle_solicitud"]["ap_materno"]
         ap_paterno = data["detalle_solicitud"]["ap_paterno"]
         nombre = data["detalle_solicitud"]["nombres"]
+        department_number=data["detalle_solicitud"]["department_number"]
 
-        if not motivo or not justificacion:
-            raise TypeError("Motivo y Jutificación son necesarios")
+        if not motivo or not justificacion or not department_number:
+            raise TypeError("Motivo, Jutificación y Establecimiento son necesarios")
 
         if metodo=="parcial":
             if metodo_parcial_productos:
@@ -164,6 +166,9 @@ class ServiceNCPDV:
         solicitud_nc.save()
 
         # Guardar Detalle de la Solicitud de Nota de Crédito
+        market = Market.get_market_by_department_number(department_number)
+        id_market = market.mar_id
+        print('id_market', id_market)
         detalle = DetalleSolicitud(
             det_fecha_emision=fecha_emision.date(),
             det_nro_comprobante=nro_comprobante,
@@ -172,7 +177,7 @@ class ServiceNCPDV:
             det_justificacion=justificacion,
             det_metodo=metodo,
             det_monto_total_prod=monto_total_productos,
-            det_establecimiento=1, ## Lugar de solicitud
+            det_establecimiento=id_market, ## Lugar de solicitud
             sol_id=solicitud_nc.sol_id,
             sdet_id=detalle_solicitante.sdet_id,
         )
@@ -228,6 +233,7 @@ class ServiceNCPDV:
         # Producto
         metodo_parcial_productos=data["metodo_parcial_productos"]
         monto_total_productos=importe_total
+        department_number=data["detalle_solicitud"]["department_number"]
 
         if not motivo or not justificacion:
             raise TypeError("Motivo y Jutificación son necesarios")
@@ -257,6 +263,9 @@ class ServiceNCPDV:
             solicitud_existente.save()
 
         # 3. actualizamos detalle_solicitud
+        market = Market.get_market_by_department_number(department_number)
+        id_market = market.mar_id
+        print('id_market', id_market)
         detalle_existente = DetalleSolicitud.objects.filter(det_id=det_id).first()
         if detalle_existente:
             # Actualizar DetalleSolicitud
@@ -267,7 +276,7 @@ class ServiceNCPDV:
             detalle_existente.det_justificacion = justificacion
             detalle_existente.det_metodo = metodo
             detalle_existente.det_monto_total_prod = monto_total_productos
-            detalle_existente.det_establecimiento = 1
+            detalle_existente.det_establecimiento = id_market
             detalle_existente.save()
 
          # 4. creamos los nuevos productos
