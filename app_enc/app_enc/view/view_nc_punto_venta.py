@@ -93,14 +93,14 @@ class ViewNCPDV:
         print('dni', dni, department_number)
         name_employee=''
         employees = serviceDynamics.get_positionsv2_by_personnel_number(dni)
-        print('employee', employees)
         if not employees:
             return JsonResponse({'error': 'No se encontro el empleado'}, status=404)
         for employee in employees:
             if employee['DepartmentNumber'] == department_number:
                 name_employee = employee['WorkerName']
-            else:
-                return JsonResponse({'error': 'El empleado no pertenece al departamento'}, status=404)
+        if not name_employee:
+            return JsonResponse({'error': 'El empleado no pertenece al departamento'}, status=404)
+        print('name_employee', name_employee)
         name_employee_list = name_employee.split()
         ap_paterno = name_employee_list[-2]
         ap_materno = name_employee_list[-1]
@@ -224,7 +224,10 @@ class ViewNCPDV:
             estado_acepta = aceptaScraper.get_estado_por_comprobante(nro_comprobante)
             if not estado_acepta == 'ACEPTADO':
                 logger.warning(f'Estado Portal Acepta: {estado_acepta}')
-                return JsonResponse({'message': 'Comprobante de origen no se encontra Aceptado en el Portal ACEPTA'}, status=404)
+                obs = f'Comprobante de origen no se encontra Aceptado en el Portal ACEPTA, Estado: {estado_acepta}'
+                data["observacion"] = obs
+                servicePDV.save_observacion(data)
+                return JsonResponse({'message': obs}, status=404)
             logger.info(f'Estado Dynamics 365: {estado_acepta}')
 
             try:
