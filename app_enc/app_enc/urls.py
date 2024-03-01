@@ -98,7 +98,8 @@ urlpatterns = [
     ## Get datos empleado
     path('solicitud_nota_credito/empleado/<str:dni>/<str:department_number>', ViewNCPDV.get_name_by_dni_and_department),
     ###
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    path('admin/',  ViewNCPDV.bnotaPDV),
     path('oauth2/', include('django_auth_adfs.urls')),
     path('login/',views.login_successful,name='login-view')
     ####

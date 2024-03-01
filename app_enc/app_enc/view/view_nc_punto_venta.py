@@ -150,8 +150,9 @@ class ViewNCPDV:
 
     ### Bandeja Punto de Venta
     def bnotaPDV(request):
-        selectMarket = request.GET.get('selectMarket')
-        market = Market.get_market_by_department_number(selectMarket)
+        # selectMarket = request.GET.get('selectMarket')
+        # market = Market.get_market_by_department_number(selectMarket)
+        market = None
         lista_solicitudes= servicePDV.lista_solicitudes()
         return render(request,'BNotaPDV',props={
             'lista_solicitudes':lista_solicitudes,
