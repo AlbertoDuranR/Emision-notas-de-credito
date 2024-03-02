@@ -20,7 +20,7 @@ class ViewNotaCredito:
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print('Expection create_nota_credito:', e)
-                return JsonResponse({'message': e.message, 'ubicacion': e.ubicacion}, status=404)
+                return JsonResponse({'message': e.message, 'estado': e.estado, 'step_rpa': e.step}, status=404)
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
 
@@ -55,6 +55,6 @@ class ViewNotaCredito:
                 return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
             except Exception as e:
                 print('Expection retry_create_nota_credito:', e)
-                return JsonResponse({'message': e.message, 'ubicacion': e.ubicacion}, status=404)
+                return JsonResponse({'message': e.message, 'estado': e.estado, 'step_rpa': e.step}, status=404)
         else:
             return JsonResponse({'message': 'Error al procesar los datos'}, status=404)

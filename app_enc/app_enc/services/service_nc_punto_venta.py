@@ -20,6 +20,7 @@ class ServiceNCPDV:
         lista_diccionarios = []
         for tupla in results:
             #print(tupla)
+            sol_id=tupla[0]
             det_id=tupla[1]
             estado_solicitud = tupla[8]
             nro_nota_credito = tupla[14]
@@ -27,9 +28,11 @@ class ServiceNCPDV:
             estado_nota_credito = 'PENDIENTE'
             if nro_pedido_nota_credito:
                 # print('nro_pedido_nota_credito: ', nro_pedido_nota_credito)
-                if estado_solicitud == 'CREADO':
-                    estado_nota_credito = 'CREADO'
+                if estado_solicitud == 'CREADO' or estado_solicitud == 'ERROR':
+                    estado_nota_credito = estado_solicitud # CREADO | ERROR
+                    # print('estado_nota_credito', det_id,estado_nota_credito, nro_nota_credito)
                     if not nro_nota_credito:
+                        print('verificar')
                         serviceDynamics = ServiceDynamics()
                         sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
                         # print('lista_solicitudes: ', sales_invoice_headers)
@@ -41,12 +44,15 @@ class ServiceNCPDV:
                                 detalle_existente.save()
                         else:
                             nro_nota_credito = 'NO EXISTE'
-                if estado_solicitud == 'ERROR':
-                    estado_nota_credito = 'ERROR'
+                    elif estado_solicitud == 'ERROR':
+                        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+                        if solicitud_existente:
+                            solicitud_existente.sol_estado = 'CREADO'
+                            solicitud_existente.save()
 
             solicitante = f'{tupla[16]} - {tupla[17]}' if tupla[16] else ''
             diccionario = {
-                'ID_NC': tupla[0],
+                'ID_NC': sol_id,
                 'ID_DETALLE': det_id,
                 'FECHA_SOLICITUD': tupla[2],
                 'USUARIO_CREADOR': tupla[3],

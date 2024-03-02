@@ -409,11 +409,12 @@ export default {
                 location.reload();
               })
               .catch((err) => {
-                console.log(err);
-                Swal.fire({
-                  title: "Error",
-                  text: "Error al crear la Nota de Crédito",
+                this.$swal.fire({
+                  title: "Error de Registro",
+                  text: `Error al crear la Nota de Crédito: ${err.response.data.message}`,
                   icon: "error",
+                }).then(() => {
+                  location.reload();
                 });
               })
               .finally(() => {
