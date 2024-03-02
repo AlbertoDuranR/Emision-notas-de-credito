@@ -155,7 +155,7 @@ class ServiceNotaCredito:
             count += 1
             if count > 4:
                 msg_error = f'No se encontro la factura para la nota de crédito en Dynamics. Para el pedido : {nro_pedido_nota_credito}'
-                self.save_error_in_solicitudNC(sol_id, error_msg=msg_error)
+                self.save_error_in_solicitudNC(sol_id, estado_error='ERROR', error_msg=msg_error, step_rpa=estado_rpa['step_rpa'])
                 raise ErrorNotaDeCredito(message=msg_error)
 
         nro_nota_credito = sales_invoice_headers[0]['InvoiceNumber']
@@ -262,7 +262,6 @@ class ServiceNotaCredito:
             solicitud_existente.sol_estado = 'ERROR' if estado_error == 'ERROR' else solicitud_existente.sol_estado
             solicitud_existente.sol_observacion = error_msg
             solicitud_existente.sol_step_rpa = step_rpa
-            print('Guardando Error de Solicitud: ', sol_id, solicitud_existente)
             solicitud_existente.save()
 
     def existe_txt_factura(self, nom_archivo: str) -> bool:

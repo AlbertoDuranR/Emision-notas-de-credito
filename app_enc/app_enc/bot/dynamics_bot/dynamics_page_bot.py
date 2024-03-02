@@ -1,3 +1,4 @@
+import os
 import time
 
 from selenium import webdriver
@@ -137,7 +138,10 @@ class Dynamics_Bot:
     def config_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        # options.add_argument("--headless=new") # =new Despues de la versión 109
+        options.add_argument("--headless=new") # =new Despues de la versión 109
+        # options.add_argument("--no-sandbox") # Ejecutar en entornos con sandboxing, como Docker Averiguar
+
+        options = self.set_download_folter(options)
         self.driver = webdriver.Chrome(options=options)
         self.driver.set_window_position(0, 0)
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
@@ -146,6 +150,21 @@ class Dynamics_Bot:
         print('get_size', get_size)
         self.wait = WebDriverWait(self.driver , 10)
         self.wait_20 = WebDriverWait(self.driver , 20)
+
+    def set_download_folter(self, options):
+        # Configura la ruta de descarga
+        download_dir = os.path.join(os.getcwd(),  'static\\downloads')
+        if not os.path.exists(download_dir):
+            os.makedirs(download_dir)
+        prefs = {
+            "download.default_directory": download_dir,
+            "download.prompt_for_download": False, # establece si quieres que el navegador solicite confirmación para cada descarga
+            "download.directory_upgrade": True, #  indica si quieres que el navegador permita la descarga en la carpeta especificada
+            # "safebrowsing.enabled": False # habilita o deshabilita la función de navegación segura.
+            }
+        # print('prefs: ', prefs)
+        options.add_experimental_option('prefs', prefs)
+        return options
 
     def iniciar_sesion(self):
         self.config_navigator()
