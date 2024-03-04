@@ -7,7 +7,7 @@
       >
     </div>
   </div>
-  <TablaDetalle
+  <TablaDetallePrime
     tipo="consolidado"
     :listaSolicitudes="listaSolicitudesPorMarket"
     @editar-item="editarItem"
@@ -18,7 +18,8 @@
 <script setup>
 import axios from "axios";
 import Header from "../../layouts/Header";
-import TablaDetalle from "../../components/TablaDetalle.vue";
+// import TablaDetalle from "../../components/TablaDetalle.vue";
+import TablaDetallePrime from "../../components/TablaDetallePrime.vue";
 </script>
 
 <script>

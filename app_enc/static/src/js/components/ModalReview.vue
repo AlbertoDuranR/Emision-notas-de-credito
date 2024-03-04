@@ -54,7 +54,7 @@
                             <div class="columns-2 text-sm text-gray-500">
                               <b>Monto Nota de crédito:</b>
                               <p>
-                                {{ props.detalleSolicitud.det_importe_total }}
+                                {{ formatCurrency(props.detalleSolicitud.det_importe_total) }}
                               </p>
                             </div>
                             <div class="columns-2 text-sm text-gray-500">
@@ -148,7 +148,7 @@
                             <td
                               class="py-2 px-4 border-b text-sm text-gray-600 text-center"
                             >
-                              {{ item.monto_total }}
+                              {{ formatCurrency(item.monto_total) }}
                             </td>
                           </tr>
                         </tbody>
@@ -186,6 +186,7 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
+import { capitalizeFirstLetter, formatCurrency } from '../utils';
 const props = defineProps(["open", "detalleSolicitud"]);
 const isOpen = ref(props.open);
 const emit = defineEmits(["show-modal"]);

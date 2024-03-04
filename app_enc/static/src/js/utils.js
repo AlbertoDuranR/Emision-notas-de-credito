@@ -34,4 +34,12 @@ const isSomeValueEmpty = (obj) => {
     });
   };
 
-export {convertirFormatoFecha, isObjectEmpty, isSomeValueEmpty};
+const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+const formatCurrency = (value) => {
+  return value.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
+};
+
+export {convertirFormatoFecha, isObjectEmpty, isSomeValueEmpty, capitalizeFirstLetter, formatCurrency};

@@ -51,10 +51,6 @@
   </div>
   <br/><br/>
   <TablaDetallePrime
-    :tipo="bandeja"
-    :listaSolicitudes="lista_solicitudes"
-  />
-  <TablaDetalle
     tipo="bandeja"
     :listaSolicitudes="lista_solicitudes"
     @validar_item="validar_item"
@@ -62,6 +58,14 @@
     @generar_nota_item="generar_nota_item"
     @reintentar_nota_item="reintentar_nota_item"
   />
+  <!-- <TablaDetalle
+    tipo="bandeja"
+    :listaSolicitudes="lista_solicitudes"
+    @validar_item="validar_item"
+    @observar_item="observar_item"
+    @generar_nota_item="generar_nota_item"
+    @reintentar_nota_item="reintentar_nota_item"
+  /> -->
   <loading-overlay
     :active="isLoading"
     :can-cancel="true"
@@ -75,7 +79,7 @@
 import LoadingOverlay from "vue3-loading-overlay";
 import axios from "axios";
 import Header from "../../layouts/Header.vue";
-import TablaDetalle from "../../components/TablaDetalle.vue";
+// import TablaDetalle from "../../components/TablaDetalle.vue";
 import TablaDetallePrime from "../../components/TablaDetallePrime.vue";
 
 </script>
@@ -129,7 +133,6 @@ export default {
                   "El elemento ha sido validado.",
                   "success"
                 ).then(() => {
-                  // Recargar la página completa
                   location.reload();
                 });
               })
@@ -140,7 +143,6 @@ export default {
                   text: `${msg_error}`,
                   icon: "error",
                 }).then(() => {
-                  // Recargar la página completa
                   location.reload();
                 });
               })
@@ -440,4 +442,4 @@ export default {
   },
 };
 </script>
-<style scope></style>../../components/TablaDetallePrime.vue
+<style scope></style>
