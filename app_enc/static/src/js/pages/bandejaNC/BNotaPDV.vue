@@ -49,6 +49,11 @@
       &nbsp;Generar Notas de Crédito
     </button>
   </div>
+  <br/><br/>
+  <TablaDetallePrime
+    :tipo="bandeja"
+    :listaSolicitudes="lista_solicitudes"
+  />
   <TablaDetalle
     tipo="bandeja"
     :listaSolicitudes="lista_solicitudes"
@@ -71,6 +76,8 @@ import LoadingOverlay from "vue3-loading-overlay";
 import axios from "axios";
 import Header from "../../layouts/Header.vue";
 import TablaDetalle from "../../components/TablaDetalle.vue";
+import TablaDetallePrime from "../../components/TablaDetallePrime.vue";
+
 </script>
 
 <script>
@@ -433,4 +440,4 @@ export default {
   },
 };
 </script>
-<style scope></style>
+<style scope></style>../../components/TablaDetallePrime.vue
