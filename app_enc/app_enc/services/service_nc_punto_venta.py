@@ -43,7 +43,7 @@ class ServiceNCPDV:
                                 detalle_existente.det_nro_nota_credito = nro_nota_credito
                                 detalle_existente.save()
                         else:
-                            nro_nota_credito = 'NO EXISTE'
+                            nro_nota_credito = ''
                     elif estado_solicitud == 'ERROR':
                         solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
                         if solicitud_existente:

@@ -200,6 +200,7 @@ class Dynamics_Bot:
             self._hacer_clic_xpath(self.xpath_boton_seleccionar_cliente)
             time.sleep(2)
             self._scroll_a_elemento_xpath(self.xpath_input_codigo_motivo_devolucion)
+            self._esperar_n_segundos(2)
             self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_motivo_devolucion, codigo_motivo_devolucion[data["metodo"]])
             time.sleep(1)
             self._ingresar_valor_en_input_xpath(self.xpath_input_almacen, data["almacen"])
