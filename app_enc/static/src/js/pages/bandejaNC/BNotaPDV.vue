@@ -76,6 +76,8 @@
   <!-- -- -->
 </template>
 <script setup>
+import { downloadNotaTxt } from '../../service/downloadFile'
+
 import LoadingOverlay from "vue3-loading-overlay";
 import axios from "axios";
 import Header from "../../layouts/Header.vue";
@@ -348,7 +350,11 @@ export default {
             axios
               .post("/nota_credito/punto_venta/create_all/", {})
               .then((response) => {
-                console.log(response);
+                const listNroNotasCreadas = response.data.notas_creadas
+                console.log('Notas creadas', listNroNotasCreadas);
+                listNroNotasCreadas.forEach(element => {
+                  downloadNotaTxt(element)
+                });
                 this.$swal.fire("PROCESADOS", "Solicitudes Procesadas", "info").then(() => {
                   // Recargar la página completa
                   location.reload();

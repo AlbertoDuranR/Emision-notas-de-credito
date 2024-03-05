@@ -219,7 +219,7 @@
                         // 'bg-red-500': data.ESTADO_NOTA_CREDITO === 'ERROR',
                         // 'bg-emerald-500': data.ESTADO === 'CREADO',
                     }" class="px-2 py-1 rounded">
-                        <b>{{ data.NRO_NOTA_CREDITO }}</b>
+                        <a @click="downloadNota(data.NRO_NOTA_CREDITO)" class="rounded bg-white hover:text-cyan-400 cursor-pointer"><b>{{ data.NRO_NOTA_CREDITO }}</b></a>
                     </span>
                     <button v-if="data.ESTADO === 'ERROR' || data.ESTADO_NOTA_CREDITO === 'ERROR'"
                         @click="reintentarNC(data.ID_NC, data.OBS_ESTADO_RPA_NOTA_CREDITO)"
@@ -264,6 +264,7 @@
 import { ref, onMounted } from 'vue';
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { capitalizeFirstLetter, formatCurrency } from '../utils';
+import { downloadNotaTxt } from '../service/downloadFile'
 
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -273,7 +274,6 @@ import Column from 'primevue/column';
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
-
 
 const props = defineProps({
     "tipo": {
@@ -353,8 +353,8 @@ const getDatosSolicitud = async (idSol) => {
             datos_detalle_solicitud.value = response.data;
         }
     } catch (error) {
-        console.log(error);
-        this.$swal.fire({
+        console.error(error);
+        Swal.fire({
             title: "ERROR",
             text: `No se tiene datos de esta solicitud: ${idSol}`,
             icon: "error",
@@ -404,5 +404,17 @@ const getCustomers = (data) => {
         return d;
     });
 };
+
+const downloadNota = async (nroNotaCredito) => {
+    try {
+        await downloadNotaTxt(nroNotaCredito);
+    } catch (error) {
+        Swal.fire({
+            title: "Archivo no encontrado",
+            text: `Error al descargar el archivo:${nroNotaCredito}.txt`,
+            icon: "error",
+        });
+    }
+}
 
 </script>
