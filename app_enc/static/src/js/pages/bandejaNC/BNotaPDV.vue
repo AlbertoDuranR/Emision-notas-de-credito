@@ -180,8 +180,8 @@ export default {
               .then((response) => {
                 console.log(response);
                 this.$swal.fire(
-                  "Validados",
-                  "Elementos Validados",
+                  "Validación",
+                  `${response.data.message}`,
                   "success"
                 ).then(() => {
                   location.reload();

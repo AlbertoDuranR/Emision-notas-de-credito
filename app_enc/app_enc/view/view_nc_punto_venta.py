@@ -276,7 +276,7 @@ class ViewNCPDV:
                 comprobantes_validados = [comprobante for comprobante in comprobantes if comprobante['estado'] == 'ACEPTADO']
                 for comprobante_validar in comprobantes_validados:
                     servicePDV.validate_solicitud(comprobante_validar)
-                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
+                return JsonResponse({'message': f'Datos procesados correctamente: Se validaron {len(comprobantes_validados)} / {len(nros_comprobantes)}'}, status=200)
             except Exception as e:
                 logger.error(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
