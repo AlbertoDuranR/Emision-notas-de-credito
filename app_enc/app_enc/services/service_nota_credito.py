@@ -2,8 +2,6 @@ import os
 import time
 from datetime import datetime
 
-from django.http import HttpResponse
-
 from ..bot.dynamics_bot.dynamics_page_bot import Dynamics_Bot
 from ..models.model_solicitud_nc import SolicitudNC
 from ..models.model_producto_detalle import ProductoDetalle
@@ -229,7 +227,7 @@ class ServiceNotaCredito:
         if not invoice_headers:
             raise ErrorNotaDeCredito(message='Error: Sin datos para el comprobante de origen en Dynamics')
         num_pedido_origen=invoice_headers[0]['SalesOrderNumber']
-        temino_pago=invoice_headers[0]['PaymentTermsName']
+        termino_pago=invoice_headers[0]['PaymentTermsName']
         print("num_pedido_origen: ", num_pedido_origen)
         # Get data de Dynamics
         sales_order_headers = serviceDynamics.get_sales_order_headers_by_sales_order_number(sales_order_number=num_pedido_origen)
@@ -246,7 +244,7 @@ class ServiceNotaCredito:
             'almacen': cod_almacen,
             'productos': list_productos,
             'forma_pago': cod_forma_pago,
-            'pago': temino_pago,
+            'pago': termino_pago,
             'fecha_solicitud': sol_fecha_solicitud.strftime("%d/%m/%Y"), # 27/02/2024
             'monto_total_nota_credito': det_monto_total_prod, # Parcial: Monto del producto | Total: Monto total de comprobante
             'sol_tipo_nc': sol_tipo_nc,

@@ -133,7 +133,7 @@ class AceptaScraper:
         print("Sesión cerrada")
 
     def get_estado_por_comprobante(self, nro_comprobante: str) -> str:
-        ''' @param: 'BG02-00052743' '''
+        ''' :param 'BG02-00052743' '''
         # Ejecutar acciones
         self.iniciar_sesion()
         self.seleccionar_opcion_emitidos()
@@ -144,7 +144,7 @@ class AceptaScraper:
         return estado_comprobante
 
     def get_estados_de_comprobantes(self, nro_comprobantes: list) -> dict:
-        ''' @param: ['BG02-00052743', 'BG02-00052741'] '''
+        ''' :param ['BG02-00052743', 'BG02-00052741'] '''
         print(nro_comprobantes)
         respuesta = {}
         self.iniciar_sesion()

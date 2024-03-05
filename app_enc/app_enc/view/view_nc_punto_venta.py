@@ -266,7 +266,7 @@ class ViewNCPDV:
             print('estados_acepta: ', estados_acepta)
             for comprobante in comprobantes:
                 if not estados_acepta[comprobante['nro_comprobante']] == 'ACEPTADO':
-                    comprobante["observacion"] = "Comprobante de origen no se encuentra ACEPTADO en el PORTAL ACEPTA. Verificar Nro de Comprobante"
+                    comprobante["observacion"] = f'Comprobante de origen no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estados_acepta[comprobante['nro_comprobante']]}'
                     servicePDV.save_observacion(comprobante)
                     logger.warning(f'Estado Portal Acepta: {comprobante}')
                 comprobante["estado"] = estados_acepta[comprobante['nro_comprobante']]
