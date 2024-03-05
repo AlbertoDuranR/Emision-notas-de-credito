@@ -40,6 +40,7 @@
               v-model="datos_documento.fecha_emision.date"
               required
               placeholder="Seleccionar Fecha"
+              :format="format"
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
@@ -82,6 +83,7 @@
               v-model="detalle_solicitud.fecha_solicitud.date"
               required
               placeholder="Seleccionar Fecha"
+              :format="format"
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
@@ -273,7 +275,7 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 
 import { notify } from "@kyvg/vue3-notification";
 import { useLoading } from "vue3-loading-overlay";
-import { convertirFormatoFecha, isSomeValueEmpty } from "../../utils";
+import { convertirFormatoFecha, formatDateDDMMYYYY, isSomeValueEmpty } from "../../utils";
 
 import "@vuepic/vue-datepicker/dist/main.css";
 import "vue3-loading-overlay/dist/vue3-loading-overlay.css";
@@ -480,6 +482,24 @@ const handleDniInput = () => {
       errorInput.value.dniError = ""
 };
 
+const getNameByDni = () => {
+  const dni = detalle_solicitud.value.dni;
+  // const department_number = 'D012';
+  axios.post(`/solicitud_nota_credito/empleado/${dni}/${props.selectMarket.department_number}`)
+    .then(data => {
+      detalle_solicitud.value.ap_materno = data["data"]["ap_materno"]
+      detalle_solicitud.value.ap_paterno = data["data"]["ap_paterno"]
+      detalle_solicitud.value.nombres = data["data"]["nombres"]
+    })
+    .catch(error => {
+      console.error(error);
+      // Handle the error if needed
+      errorInput.value.dniError = error.response.data.error
+    })
+};
+
+const format = (date) => formatDateDDMMYYYY(date)
+
 /*
 const queryReniec = () => {
       let jsonString = {
@@ -501,22 +521,6 @@ const queryReniec = () => {
         })
     };
 */
-
-const getNameByDni = () => {
-  const dni = detalle_solicitud.value.dni;
-  // const department_number = 'D012';
-  axios.post(`/solicitud_nota_credito/empleado/${dni}/${props.selectMarket.department_number}`)
-    .then(data => {
-      detalle_solicitud.value.ap_materno = data["data"]["ap_materno"]
-      detalle_solicitud.value.ap_paterno = data["data"]["ap_paterno"]
-      detalle_solicitud.value.nombres = data["data"]["nombres"]
-    })
-    .catch(error => {
-      console.error(error);
-      // Handle the error if needed
-      errorInput.value.dniError = error.response.data.error
-    })
-};
 
 refreshLoading();
 </script>
