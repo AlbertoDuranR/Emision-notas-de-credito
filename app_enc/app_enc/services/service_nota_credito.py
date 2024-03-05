@@ -2,6 +2,8 @@ import os
 import time
 from datetime import datetime
 
+from django.http import HttpResponse
+
 from ..bot.dynamics_bot.dynamics_page_bot import Dynamics_Bot
 from ..models.model_solicitud_nc import SolicitudNC
 from ..models.model_producto_detalle import ProductoDetalle
@@ -54,6 +56,19 @@ class ServiceNotaCredito:
                 self.save_error_in_solicitudNC(sol_id=estado_rpa['sol_id'], estado_error=e.estado, error_msg=e.message, step_rpa=e.step)
 
 
+    def share_file_with_django(self, file_name, file_path):
+        # Read the contents of the file
+        with open(file_path, 'r') as f:
+            file_contents = f.read()
+            print('file_contents:',file_contents)
+
+        # Create an HttpResponse object with the file contents and appropriate headers
+        response = HttpResponse(file_contents, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(file_name)
+
+        # Share the file with Django
+        return response
+
     def crear_nota_credito(self, sol_id):
         '''
         ---- data Ejemplos ---
@@ -77,6 +92,11 @@ class ServiceNotaCredito:
             'monto_total_nota_credito': '2.4' # <--- Cambiar monto del producto
         }
         '''
+        download_dir = os.path.join(os.getcwd(),  'static\\downloads')
+        print('download_dir', download_dir )
+        response = self.share_file_with_django('BC03-00000138', download_dir)
+        print('response_:', response)
+        return
         data_solicitud = self.get_data_solicitud(sol_id=sol_id)
         print('Data_solicitud: \n', data_solicitud)
         if data_solicitud['sol_tipo_nc'] == 'PDV' and data_solicitud['sol_estado'] == 'VALIDADO':
