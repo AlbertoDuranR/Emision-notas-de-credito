@@ -263,7 +263,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
-import { capitalizeFirstLetter, formatCurrency } from '../utils';
+import { capitalizeFirstLetter, formatCurrency, getDateGMT } from '../utils';
 import { downloadNotaTxt } from '../service/downloadFile'
 
 import Swal from "sweetalert2";
@@ -301,7 +301,9 @@ const loading = ref(true);
 
 
 onMounted(() => {
-    solicitudes.value = getCustomers(props.listaSolicitudes);
+    console.log('onMounted-props.listaSolicitudes', props.listaSolicitudes)
+    solicitudes.value = getSolicitudes(props.listaSolicitudes);
+    console.log(' solicitudes.value ',  solicitudes.value )
     loading.value = false;
 });
 
@@ -396,12 +398,14 @@ const formatDate = (value) => {
 const clearFilter = () => {
     initFilters();
 };
-const getCustomers = (data) => {
-    return [...(data || [])].map((d) => {
-        d.FECHA_CREACION = new Date(d.FECHA_CREACION);
-        d.FECHA_EMISION = new Date(d.FECHA_EMISION);
-        d.FECHA_SOLICITUD = new Date(d.FECHA_SOLICITUD);
-        return d;
+
+const getSolicitudes = (data) => {
+    return [...(data || [])].map((item) => {
+        let newItem = { ...item };
+        newItem.FECHA_CREACION = getDateGMT(newItem.FECHA_CREACION);
+        newItem.FECHA_EMISION = getDateGMT(item.FECHA_EMISION);
+        newItem.FECHA_SOLICITUD = getDateGMT(item.FECHA_SOLICITUD);
+        return newItem;
     });
 };
 
