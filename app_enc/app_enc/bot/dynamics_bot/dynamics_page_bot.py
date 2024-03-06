@@ -303,6 +303,7 @@ class Dynamics_Bot:
 
         time.sleep(1)
         self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
+        self._wait_hide_div_bloking(30)
         print('END enlazar pedidos')
 
     def registrar_articulo_para_devolucion(self):
@@ -392,7 +393,7 @@ class Dynamics_Bot:
             print('Scroll al contenedor de articulos')
             xpath_contenedor_articulos_para_confirmar='//div[contains(@id, "ReturnTable") and contains(@id, "SalesLineGrid")]'
             self._scroll_a_elemento_xpath(xpath_contenedor_articulos_para_confirmar)
-            self._wait_hide_div_bloking(20)
+            self._wait_hide_div_bloking(10)
             for articulo in  data['productos']:
                 self._esperar_n_segundos(2)
                 self._hacer_clic_xpath(self.xpath_columna_articulo_confirmar)

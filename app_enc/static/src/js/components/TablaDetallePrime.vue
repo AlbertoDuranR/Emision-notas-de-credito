@@ -243,7 +243,7 @@
                     <span :class="{
                         'bg-gray-300': data.ACEPTA === 'PENDIENTE',
                         'bg-red-400': data.ACEPTA === 'OBSERVADO',
-                        'bg-cyan-500': data.ACEPTA == 'ACEPTADO',
+                        'bg-emerald-500': data.ACEPTA == 'ACEPTADO',
                         'bg-orange-300': data.ACEPTA !== 'PENDIENTE' && data.ACEPTA !== 'OBSERVADO' && data.ACEPTA !== 'ACEPTADO'
                     }" class="px-2 py-1 text-white rounded">
                         {{ data.ACEPTA }}

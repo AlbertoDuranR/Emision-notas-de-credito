@@ -426,7 +426,7 @@ export default {
                 listNroNotasCreadas.forEach(element => {
                   downloadNotaTxt(element)
                 });
-                this.$swal.fire("PROCESADOS", "Solicitudes Procesadas", "info").then(() => {
+                this.$swal.fire("Generación de Notas", `Notas Procesadas: ${response.data.message}`, "info").then(() => {
                   // Recargar la página completa
                   location.reload();
                 });

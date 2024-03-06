@@ -24,7 +24,7 @@ class ServiceDynamics:
             req = requests.post(endp,env)
             if req.status_code == 200:
                 token = req.json()['access_token']
-                print('token' * 20, token)
+                # print('token' * 20, token)
                 return 'Bearer {0}'.format(token)
             else:
                 return None
