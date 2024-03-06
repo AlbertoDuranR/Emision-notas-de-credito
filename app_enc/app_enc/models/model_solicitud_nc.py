@@ -24,6 +24,7 @@ class SolicitudNC(models.Model):
     sol_estado = models.CharField(max_length=64, null=True, choices=ESTADO_CHOICES)
     sol_observacion = models.TextField(null=True)
     sol_usuario_validador = models.IntegerField(null=True)
+    sol_acepta = models.CharField(max_length=64, null=True)
     sol_step_rpa = models.CharField(max_length=45, choices=ESTADO_RPA_CHOICES)
 
     class Meta:

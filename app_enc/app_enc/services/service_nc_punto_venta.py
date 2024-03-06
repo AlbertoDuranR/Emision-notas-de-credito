@@ -167,7 +167,8 @@ class ServiceNCPDV:
             sol_tipo_nc=tipo_nc,
             sol_usuario_creador=usuario_creador,
             sol_fecha_creacion=datetime.now().date(),
-            sol_estado=estado
+            sol_estado=estado,
+            sol_acepta=estado
         )
         solicitud_nc.save()
 
@@ -214,6 +215,17 @@ class ServiceNCPDV:
             # Actualizar el registro existente en SolicitudNC
             solicitud_existente.sol_observacion = observacion
             solicitud_existente.sol_estado = estado
+            solicitud_existente.save()
+
+    def save_observacion_nota(data):
+        sol_id = int(data["id"])
+        observacion = data["observacion"]
+        estado = data['estado'] if data['estado'] else 'OBSERVADO'
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+        if solicitud_existente:
+            # Actualizar el registro existente en SolicitudNC
+            solicitud_existente.sol_observacion = observacion
+            solicitud_existente.sol_acepta = estado
             solicitud_existente.save()
 
     # Actualizar solicitud - puntos de venta
@@ -315,6 +327,15 @@ class ServiceNCPDV:
         solicitud_existente = SolicitudNC.objects.filter(sol_id=id).first()
         if solicitud_existente:
             solicitud_existente.sol_estado = estado
+            solicitud_existente.sol_fecha_modificacion = datetime.now().date()
+            solicitud_existente.save()
+
+    def validate_nota(data):
+        sol_id = int(data["id"])
+        estado = data['estado'] if data['estado'] else 'PENDIENTE'
+        solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
+        if solicitud_existente:
+            solicitud_existente.sol_acepta = estado
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()
             solicitud_existente.save()
 

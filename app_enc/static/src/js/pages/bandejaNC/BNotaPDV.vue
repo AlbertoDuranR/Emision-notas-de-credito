@@ -48,6 +48,26 @@
       </svg>
       &nbsp;Generar Notas de Crédito
     </button>
+    <button
+      class="text-sm rounded-full bg-orange-400 p-2 text-white font-bold flex"
+      type="button"
+      @click="validar_notas"
+    >
+      <svg
+        class="h-5 w-5 white"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      &nbsp;Validar Notas de Crédito
+    </button>
   </div>
   <br/><br/>
   <TablaDetallePrime
@@ -124,7 +144,7 @@ export default {
             this.isLoading=true
             // Lógica para validar
             axios
-              .post("/solicitud_nota_credito/punto_venta/validar/", {
+              .post("/solicitud_nota_credito/validar_comprobante/", {
                 id: itemNota,
                 nro_comprobante: nroComprobante,
               })
@@ -178,11 +198,62 @@ export default {
             this.isLoading=true
             // Lógica para validar
             axios
-              .post("/solicitud_nota_credito/punto_venta/validar_todos/", {})
+              .post("/solicitud_nota_credito/validar_comprobantes/", {})
               .then((response) => {
                 console.log(response);
                 this.$swal.fire(
-                  "Validación",
+                  "Validación de Comprobantes",
+                  `${response.data.message}`,
+                  "success"
+                ).then(() => {
+                  location.reload();
+                });
+              })
+              .catch((err) => {
+                const msg_error = err.response.data.message;
+                this.$swal.fire({
+                  title: "Error de Validación",
+                  text: `${msg_error}`,
+                  icon: "error",
+                }).then(() => {
+                  location.reload();
+                });
+              })
+              .finally(() => {
+                this.isLoading=false
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
+    validar_notas() {
+      this.$swal
+        .fire({
+          title: "Validar",
+          text: "¿Validar notas de crédito?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, validar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            this.isLoading=true
+            // Lógica para validar
+            axios
+              .post("/solicitud_nota_credito/validar_notas/", {})
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "Validación de Notas",
                   `${response.data.message}`,
                   "success"
                 ).then(() => {
