@@ -208,81 +208,6 @@ class ViewNCPDV:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
 
-    def validar_solicitud(request):
-        if request.method == "POST":
-            # Transform data
-            data = json.loads(request.body.decode('utf-8'))
-            nro_comprobante = data['nro_comprobante'] # 'BG02-00052743'
-            sales_invoice = serviceDynamics.get_sales_invoice_headers_by_invoice_number(nro_comprobante)
-            if not sales_invoice:
-                data["observacion"] = "Comprobante de origen no se encontro en Dynamics365. Verificar Nro de Comprobante"
-                servicePDV.save_observacion(data)
-                logger.warning(f'Estado Dynamics 365: {data}')
-                return JsonResponse({'message': 'Comprobante de origen no se encontro en Dynamics365'}, status=404)
-            # logger.info(f'Estado Dynamics 365: {sales_invoice}')
-
-            aceptaScraper = AceptaScraper() # Creamos un Objeto - instancia
-            estado_acepta = aceptaScraper.get_estado_por_comprobante(nro_comprobante)
-            if not estado_acepta == 'ACEPTADO':
-                logger.warning(f'Estado Portal Acepta: {estado_acepta}')
-                obs = f'Comprobante de origen no se encontra Aceptado en el Portal ACEPTA, Estado: {estado_acepta}'
-                data["observacion"] = obs
-                servicePDV.save_observacion(data)
-                return JsonResponse({'message': obs}, status=404)
-            logger.info(f'Estado Dynamics 365: {estado_acepta}')
-
-            try:
-                servicePDV.validate_solicitud(data)
-                return JsonResponse({'message': 'Datos procesados correctamente'}, status=200)
-            except Exception as e:
-                print(e)
-                logger.error(e)
-                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
-        else:
-            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
-
-    def validar_solicitudes(request):
-        if request.method == "POST":
-            comprobantes = [] # [{'id': 1, 'nro_comprobante': 'BG02-00052743', 'estado': 'ACEPTADO', 'observacion': ''},]
-            solicitudes = ViewSolicitudNotaDeCredito.objects.filter(sol_estado='PENDIENTE', sol_tipo_nc='PDV') # Buscar todas las solicitudes con estado PENDIENTE
-            if not solicitudes:
-                return
-            for solicitud in solicitudes:
-                comprobantes.append({'id': solicitud.sol_id, 'nro_comprobante' : solicitud.det_nro_comprobante, 'estado': solicitud.sol_estado})
-
-            print('Comprobantes a validar: ', comprobantes)
-            for comprobante in comprobantes:
-                sales_invoice = serviceDynamics.get_sales_invoice_headers_by_invoice_number(comprobante['nro_comprobante'])
-                if not sales_invoice:
-                    comprobante["observacion"] = "Comprobante de origen no se encontro en Dynamics365. Verificar Nro de Comprobante"
-                    servicePDV.save_observacion(comprobante)
-                    logger.warning(f'Estado Dynamics 365: {comprobante}')
-                    # logger.warning(f'Estado Dynamics 365: Existe')
-                comprobante["estado"] = 'ENCONTRADO'
-
-            nros_comprobantes = [comprobante['nro_comprobante'] for comprobante in comprobantes]
-            aceptaScraper = AceptaScraper() # Creamos un Objeto - instancia
-            estados_acepta = aceptaScraper.get_estados_de_comprobantes(nros_comprobantes)
-            print('estados_acepta: ', estados_acepta)
-            for comprobante in comprobantes:
-                if not estados_acepta[comprobante['nro_comprobante']] == 'ACEPTADO':
-                    comprobante["observacion"] = f'Comprobante de origen no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estados_acepta[comprobante['nro_comprobante']]}'
-                    servicePDV.save_observacion(comprobante)
-                    logger.warning(f'Estado Portal Acepta: {comprobante}')
-                comprobante["estado"] = estados_acepta[comprobante['nro_comprobante']]
-            # logger.info(f'Estado Dynamics 365: {estado_acepta}')
-
-            try:
-                comprobantes_validados = [comprobante for comprobante in comprobantes if comprobante['estado'] == 'ACEPTADO']
-                for comprobante_validar in comprobantes_validados:
-                    servicePDV.validate_solicitud(comprobante_validar)
-                return JsonResponse({'message': f'Datos procesados correctamente: Se validaron {len(comprobantes_validados)} / {len(nros_comprobantes)}'}, status=200)
-            except Exception as e:
-                logger.error(e)
-                return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
-        else:
-            return JsonResponse({'message': 'Error al procesar los datos'}, status=404)
-
     def observar_solicitud_pdv(request):
         if request.method == "POST":
             # Transform data
@@ -295,4 +220,3 @@ class ViewNCPDV:
             except Exception as e:
                 print(e)
                 return JsonResponse({'message': 'Error al procesar los datos'}, status=404)    
-             #    

@@ -21,6 +21,7 @@ from .view.view_nc_punto_venta import ViewNCPDV
 from .view.view_nc_financiero import ViewNCFinanciero
 from .view.view_nc_servicios import ViewNCServicios
 from .view.view_nota_credito import ViewNotaCredito
+from .view.validation_view import ValidationView
 from .view.download_view import DownloadView
 
 urlpatterns = [
@@ -61,8 +62,9 @@ urlpatterns = [
     ###
     
     ## Path View validacion Consolidacion
-    path('solicitud_nota_credito/punto_venta/validar/', ViewNCPDV.validar_solicitud,name="new_nc_pdv"),
-    path('solicitud_nota_credito/punto_venta/validar_todos/', ViewNCPDV.validar_solicitudes),
+    path('solicitud_nota_credito/validar_comprobante/', ValidationView.validar_comprobante,name="new_nc_pdv"),
+    path('solicitud_nota_credito/validar_comprobantes/', ValidationView.validar_comprobantes),
+    path('solicitud_nota_credito/validar_notas/', ValidationView.validar_notas),
     path('solicitud_nota_credito/financieros/validar/', ViewNCFinanciero.validar_solicitud),
     path('solicitud_nota_credito/servicios/validar/', ViewNCServicios.notaServiciosEdit),
     ##
