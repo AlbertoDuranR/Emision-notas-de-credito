@@ -20,13 +20,18 @@ from .acepta_functions import AuxiliaryFunctions
 logger = logging.getLogger(__name__)
 
 load_dotenv()
+is_development_mode = os.environ.get("ENVIRONMENT") == 'development'
 
 class AceptaScraper:
     def __init__(self):
-        # Credenciales
-        self.url = "https://escritorio.acepta.pe/"
-        self.usuario = "wilfredo.caceres@terranovatrading.com.pe"
-        self.contrasena = "118499544"
+        if is_development_mode:
+            self.url = os.environ.get("url_acepta_test")
+            self.usuario = "zaida.gonzales@terranovatrading.com.pe"
+            self.contrasena = "30066868"
+        else:
+            self.url = os.environ.get("url_acepta_prod")
+            self.usuario = "wilfredo.caceres@terranovatrading.com.pe"
+            self.contrasena = "118499544"
 
         # XPaths
         self.xpath_opcion_emitido = "/html/body/div[8]/div[1]/aside/ul/li[2]/a"
@@ -37,6 +42,7 @@ class AceptaScraper:
         self.xpath_buscar = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[9]/input"
         self.xpath_busqueda_avanzada = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[1]/form/div[5]/a"
         self.xpath_buscar_avanzado = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[25]/input"
+        self.xpath_buscar_avanzado_test = "//*[@id='form_buscarNEW_emitidos']/form/div[19]/input"
         self.xpath_tabla_opciones = '/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table'
         self.xpath_tabla_resultados = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
         self.xpath_nota_credito = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table/tbody/tr[4]/td[10]/a"
@@ -91,7 +97,10 @@ class AceptaScraper:
             # espera.until(...)  # Agregar espera explícita si es necesario
             self._ingresar_valor_en_input_xpath(self.xpath_serie, serie)
             self._ingresar_valor_en_input_xpath(self.xpath_correlativo_desde, correlativo_desde)
-            self._hacer_clic_xpath(self.xpath_buscar_avanzado)
+            if is_development_mode:
+                self._hacer_clic_xpath(self.xpath_buscar_avanzado_test)
+            else:
+                self._hacer_clic_xpath(self.xpath_buscar_avanzado)
         except Exception as e:
             print(f"Error al seleccionar opciones: {str(e)}")
 
@@ -151,6 +160,7 @@ class AceptaScraper:
         self.seleccionar_opcion_emitidos()
         self.seleccionar_busqueda_avanzada()
         for nro_comprobante in nro_comprobantes:
+            print('Buscar', nro_comprobante)
             estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
             respuesta[nro_comprobante] = estado_comprobante
         self.cerrar_sesion()
