@@ -217,15 +217,15 @@ class ServiceNCPDV:
             solicitud_existente.sol_estado = estado
             solicitud_existente.save()
 
-    def save_observacion_nota(data):
-        sol_id = int(data["id"])
-        observacion = data["observacion"]
-        estado = data['estado'] if data['estado'] else 'OBSERVADO'
+    def save_observacion_nota(sol_id, observacion, estado_acepta):
+        # sol_id = int(data["id"])
+        # observacion = data["observacion"]
+        # estado = data['estado'] if data['estado'] else 'OBSERVADO'
         solicitud_existente = SolicitudNC.objects.filter(sol_id=sol_id).first()
         if solicitud_existente:
             # Actualizar el registro existente en SolicitudNC
             solicitud_existente.sol_observacion = observacion
-            solicitud_existente.sol_acepta = estado
+            solicitud_existente.sol_acepta = estado_acepta
             solicitud_existente.save()
 
     # Actualizar solicitud - puntos de venta

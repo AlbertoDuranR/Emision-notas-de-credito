@@ -77,7 +77,7 @@ class ValidationView:
     def validar_notas(request):
         if request.method == "POST":
             notas = [] # [{'id': 1, 'nro_comprobante': 'BG02-00052743', 'estado': 'ACEPTADO', 'observacion': ''},]
-            solicitudes = ViewSolicitudNotaDeCredito.objects.filter(sol_estado='CREADO', det_nro_nota_credito__isnull=False) # Solicitudes que tiene notas de credito
+            solicitudes = ViewSolicitudNotaDeCredito.objects.filter(sol_estado='CREADO',det_nro_nota_credito__isnull=False).exclude(sol_acepta='ACEPTADO') # Solicitudes que tiene notas de credito
             if not solicitudes:
                 return JsonResponse({'message': 'No se encontraron Solicitudes CREADAS con Notas de Crédito'}, status=404)
             for solicitud in solicitudes:
@@ -116,13 +116,22 @@ class ValidationView:
             estados_acepta = aceptaScraper.get_estados_de_comprobantes(nros_comprobantes)
             print('estados_acepta: ', estados_acepta)
             for comprobante in _comprobantes:
-                if not estados_acepta[comprobante['nro_comprobante']] == 'ACEPTADO':
-                    comprobante["observacion"] = f'{tipo} no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estados_acepta[comprobante['nro_comprobante']]}'
+                estado_acepta = estados_acepta[comprobante['nro_comprobante']]
+                if estado_acepta is None:
+                    comprobante["observacion"] = f'{tipo} No se encuentra en el PORTAL ACEPTA'
                     if tipo == 'NOTAS':
-                        servicePDV.save_observacion_nota(comprobante)
+                            servicePDV.save_observacion_nota(comprobante['id'], comprobante['observacion'], estado_acepta = 'PENDIENTE')
+                    else:
+                            servicePDV.save_observacion(comprobante)
+                    continue
+
+                if not estado_acepta == 'ACEPTADO':
+                    comprobante["observacion"] = f'{tipo} no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estado_acepta}'
+                    if tipo == 'NOTAS':
+                        servicePDV.save_observacion_nota(comprobante['id'], comprobante['observacion'], estado_acepta)
                     else:
                         servicePDV.save_observacion(comprobante)
-                    logger.warning(f'Estado Portal Acepta: {comprobante}')
-                comprobante["estado"] = estados_acepta[comprobante['nro_comprobante']]
+                logger.warning(f'Estado Portal Acepta: {comprobante}')
+                comprobante["estado"] = estado_acepta
             # logger.info(f'Estado Dynamics 365: {estado_acepta}')
             return _comprobantes
