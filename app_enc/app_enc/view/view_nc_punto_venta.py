@@ -34,9 +34,12 @@ class ViewNCPDV:
 
     def get_sales_invoice(request, nro_comprobante):
         invoice = serviceDynamics.get_sales_invoice_headers_by_invoice_number(nro_comprobante)
-        print('get_sales_invoices', invoice)
         if not invoice:
             return JsonResponse({'error': 'No se encontro el N° Comprobante'}, status=404)
+        retail_transaction = serviceDynamics.get_retail_transaction_payment_lines_v2_by_receip_id(nro_comprobante)
+        if retail_transaction is not None:
+            invoice[0].update({'TenderType':  retail_transaction[0]['TenderType']})
+        print('get_sales_invoices', invoice)
         return JsonResponse(invoice, safe=False)
 
     def get_sales_invoice_details(request, nro_comprobante):
@@ -62,6 +65,8 @@ class ViewNCPDV:
             det_justificacion = solicitud.det_justificacion
             det_nro_nota_credito = solicitud.det_nro_nota_credito
             det_nro_pedido_nota_credito = solicitud.det_nro_pedido_nota_credito
+            det_forma_pago = solicitud.det_forma_pago
+            det_termino_pago = solicitud.det_termino_pago
         # print('solicitud: ', sol_id, det_id, sol_fecha_solicitud,  sol_tipo_nc, det_nro_comprobante, det_metodo, det_monto_total_prod, det_importe_total )
 
         # Get productos
@@ -83,6 +88,8 @@ class ViewNCPDV:
             'det_justificacion':  det_justificacion,
             'det_nro_nota_credito': det_nro_nota_credito,
             'det_nro_pedido_nota_credito': det_nro_pedido_nota_credito,
+            'det_forma_pago': det_forma_pago,
+            'det_termino_pago': det_termino_pago,
             'productos': list_productos
         }
         if not solicitud:

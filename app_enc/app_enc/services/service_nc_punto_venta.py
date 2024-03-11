@@ -116,6 +116,7 @@ class ServiceNCPDV:
         return lista_diccionarios
 
     def save_solicitud(data):
+        print('Data save solicitud: ', data)
         # Solicitud NC
         tipo_nc = "PDV"
         usuario_creador = 1 # Sera el Id del Usuario
@@ -126,6 +127,7 @@ class ServiceNCPDV:
         fecha_solicitud = data["detalle_solicitud"]["fecha_solicitud"]['date']
         fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
         nro_comprobante = data["datos_documento"]["nro_comprobante"]
+        tender_type = data["datos_documento"]["tender_type"]
         motivo = data["detalle_solicitud"]["motivo"]
         importe_total = float(data["datos_documento"]["importe_total"])
         justificacion = data["detalle_solicitud"]["justificacion"]
@@ -175,7 +177,9 @@ class ServiceNCPDV:
         # Guardar Detalle de la Solicitud de Nota de Crédito
         market = Market.get_market_by_department_number(department_number)
         id_market = market.mar_id
-        print('id_market', id_market)
+        # print('id_market', id_market)
+        cod_forma_pago, termino_pago = ServiceNCPDV.get_forma_pago(nro_comprobante, tender_type)
+        print('Forma de pago ', cod_forma_pago, 'Termino pago', termino_pago)
         detalle = DetalleSolicitud(
             det_fecha_emision=fecha_emision.date(),
             det_nro_comprobante=nro_comprobante,
@@ -185,6 +189,8 @@ class ServiceNCPDV:
             det_metodo=metodo,
             det_monto_total_prod=monto_total_productos,
             det_establecimiento=id_market, ## Lugar de solicitud
+            det_forma_pago=cod_forma_pago,
+            det_termino_pago=termino_pago,
             sol_id=solicitud_nc.sol_id,
             sdet_id=detalle_solicitante.sdet_id,
         )
@@ -205,6 +211,25 @@ class ServiceNCPDV:
                     det_id=detalle.det_id
                 ))
             ProductoDetalle.objects.bulk_create(producto_detalle)
+
+    def get_forma_pago(nro_comprobante, tender_type):
+        serviceDynamics = ServiceDynamics()
+        # Get data de Dynamic
+        invoice_headers = serviceDynamics.get_sales_invoice_headers_by_invoice_number(invoice_number=nro_comprobante)
+        if not invoice_headers:
+            print('Error: Sin invoice headers para el nro_comprobante en dynamics', nro_comprobante)
+            return
+        num_pedido_origen=invoice_headers[0]['SalesOrderNumber']
+        # Get data de Dynamics
+        sales_order_headers = serviceDynamics.get_sales_order_headers_by_sales_order_number(sales_order_number=num_pedido_origen)
+        if not sales_order_headers:
+            print('Error: sin datos para el pedido de origen en Dynamics')
+        cod_forma_pago=sales_order_headers[0]['CustomerPaymentMethodName']
+        termino_pago=sales_order_headers[0]['PaymentTermsName']
+        if tender_type == 8:
+            cod_forma_pago = 'FP022'
+            termino_pago = 'CRED-00D'
+        return cod_forma_pago, termino_pago
 
     def save_observacion(data):
         sol_id = int(data["id"])

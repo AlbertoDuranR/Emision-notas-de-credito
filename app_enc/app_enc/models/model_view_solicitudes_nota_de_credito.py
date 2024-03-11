@@ -16,6 +16,8 @@ class ViewSolicitudNotaDeCredito(models.Model):
     det_nro_nota_credito = models.CharField(max_length=13)
     det_nro_pedido_nota_credito = models.CharField(max_length=12)
     sol_acepta = models.CharField(max_length=64, null=True)
+    det_forma_pago =  models.CharField(max_length=6)
+    det_termino_pago =  models.CharField(max_length=10)
 
     class Meta:
         managed = False # Esto indica a Django que no gestione la tabla (ya que es una vista)

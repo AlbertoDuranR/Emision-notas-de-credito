@@ -189,18 +189,18 @@ class ServiceDynamics:
             :return: A list of dictionaries containing invoice details.
                 Ex.
                     [{
-                        'SalesOrderNumber': 'TRV-02755697',
-                        'SalesOrderOriginCode': 'PV',
-                        'DefaultShippingWarehouseId': 'MD04_SUC',
-                        'RequestedShippingDate': '2024-01-21T12:00:00Z',
-                        'SalesOrderProcessingStatus': 'Invoiced',
-                        'CustomerPaymentMethodName': 'FP015'
+                        "SalesOrderOriginCode": "PV",
+                        "DefaultShippingWarehouseId": "MD04_SUC",
+                        "RequestedShippingDate": "2024-02-22T12:00:00Z",
+                        "SalesOrderProcessingStatus": "Invoiced",
+                        "PaymentTermsName": "CONT",
+                        "CustomerPaymentMethodName": "FP015"
                     }]
         """
         # Definir url
         path = f"{self.url}/data/SalesOrderHeaders"
         token = self.get_Token()
-        query = f"?$count=true&$filter=SalesOrderNumber eq '{sales_order_number}'"
+        query = f"?$count=true&$select=SalesOrderOriginCode,DefaultShippingWarehouseId,RequestedShippingDate,SalesOrderProcessingStatus,PaymentTermsName,CustomerPaymentMethodName&$filter=SalesOrderNumber eq '{sales_order_number}'"
         headers = {
             "Authorization": token,
             "Content-Type": "application/json"
@@ -215,7 +215,14 @@ class ServiceDynamics:
                 return None
             invoice_data = pd.read_json(json.dumps(data["value"]))
             result = invoice_data[
-                ["SalesOrderNumber", "SalesOrderOriginCode", "DefaultShippingWarehouseId", "RequestedShippingDate", "SalesOrderProcessingStatus", "CustomerPaymentMethodName"]
+                [
+                 "SalesOrderOriginCode",
+                 "DefaultShippingWarehouseId",
+                 "RequestedShippingDate",
+                 "SalesOrderProcessingStatus",
+                 "PaymentTermsName",
+                 "CustomerPaymentMethodName"
+                ]
             ]
             return result.to_dict(orient='records')
         except Exception as e:
@@ -229,18 +236,17 @@ class ServiceDynamics:
             :return: A list of dictionaries containing invoice details.
                 Ex.
                     [{
-                        'InvoiceNumber': 'BG02-00052743',
-                        'InvoiceDate': '2024-01-10T12:00:00Z',
-                        'TotalTaxAmount': 29.07,
-                        'SalesOrderNumber': 'TRV-02697594',
-                        'TotalInvoiceAmount': 190.6,
-                        'PaymentTermsName' : 'CONT'
+                        "SalesOrderNumber": "TRV-02931050",
+                        "InvoiceDate": "2024-02-22T12:00:00Z",
+                        "TotalTaxAmount": 1.06,
+                        "TotalInvoiceAmount": 6.9,
+                        "PaymentTermsName": "CONT"
                     }]
         """
         # Definir url
         path = f"{self.url}/data/SalesInvoiceHeaders"
         token = self.get_Token()
-        query = f"?$count=true&$filter=InvoiceNumber eq '{invoice_number}'"
+        query = f"?$count=true&$select=SalesOrderNumber,InvoiceDate,TotalTaxAmount,SalesOrderNumber,TotalInvoiceAmount,PaymentTermsName&$filter=InvoiceNumber eq '{invoice_number}'"
         headers = {
             "Authorization": token,
             "Content-Type": "application/json"
@@ -256,8 +262,40 @@ class ServiceDynamics:
                 return None
             invoice_data = pd.read_json(json.dumps(data["value"]))
             result = invoice_data[
-                ["InvoiceNumber", "InvoiceDate", "TotalTaxAmount", "SalesOrderNumber", "TotalInvoiceAmount", "PaymentTermsName"]
+                ["InvoiceDate", "TotalTaxAmount", "SalesOrderNumber", "TotalInvoiceAmount", "PaymentTermsName"]
             ]
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_sales_invoice_headers_by_invoice_number: {e}")
+            return None
+
+    def get_sales_oder_number_by_invoice_number(self, invoice_number: str):
+        """
+            :param invoice_number: The invoice number to query.
+                Ex. 'BG02-00052743'
+            :return: A list of dictionaries containing invoice details.
+                Ex.
+                    [{ 'InvoiceNumber': 'BG02-00052743' }]
+        """
+        # Definir url
+        path = f"{self.url}/data/SalesInvoiceHeaders"
+        token = self.get_Token()
+        query = f"?$count=true&$select=SalesOrderNumber&$filter=InvoiceNumber eq '{invoice_number}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            invoice_data = pd.read_json(json.dumps(data["value"]))
+            result = invoice_data[["InvoiceNumber"]]
             return result.to_dict(orient='records')
         except Exception as e:
             print(f"An exception occurred in get_sales_invoice_headers_by_invoice_number: {e}")
@@ -399,5 +437,42 @@ class ServiceDynamics:
             ]
             return result.to_dict(orient='records')
         except Exception as e:
-            print(f"An exception occurred in get_positionsv2_by_personnel_numberr: {e}")
+            print(f"An exception occurred in get_positionsv2_by_personnel_number: {e}")
+            return None
+
+    def get_retail_transaction_payment_lines_v2_by_receip_id(self, receip_id: str):
+        '''
+            :param receip_id: Nro_comprobante
+            :return: [{
+                "TransactionNumber": "000022-000089-73574",
+                "ReceiptId": "BB06-00068688",
+                "TenderType": "1",
+                }]
+        '''
+        # https://mistr.operations.dynamics.com/data/RetailTransactionPaymentLinesV2?$count=true&$select=TransactionNumber, ReceiptId, TenderType&$filter=ReceiptId eq 'BB06-00068688'
+        # Definir url
+        path = f"{self.url}/data/RetailTransactionPaymentLinesV2"
+        token = self.get_Token()
+        query = f"?$count=true&$select=TransactionNumber, ReceiptId, TenderType&$filter=ReceiptId eq '{receip_id}'"
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/json"
+        }
+        full_path_url=f"{path}{query}"
+        try:
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
+            data = response.json()
+            count_data = int(data["@odata.count"])
+            if count_data == 0:
+                return None
+            data = pd.read_json(json.dumps(data["value"]))
+            print('data retail transaction: ')
+            print(data)
+            result = data[
+                ["TransactionNumber", "ReceiptId", "TenderType"]
+            ]
+            return result.to_dict(orient='records')
+        except Exception as e:
+            print(f"An exception occurred in get_retail_transaction_payment_lines_v2_by_receip_id: {e}")
             return None

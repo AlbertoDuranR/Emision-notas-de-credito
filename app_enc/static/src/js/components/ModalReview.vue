@@ -76,6 +76,14 @@
                               <p>{{ props.detalleSolicitud.det_metodo }}</p>
                             </div>
                             <div class="columns-2 text-sm text-gray-500">
+                              <b>Forma de Pago:</b>
+                              <p>{{ props.detalleSolicitud.det_forma_pago }}</p>
+                            </div>
+                            <div class="columns-2 text-sm text-gray-500">
+                              <b>Termino de Pago:</b>
+                              <p>{{ props.detalleSolicitud.det_termino_pago}}</p>
+                            </div>
+                            <div class="columns-2 text-sm text-gray-500">
                               <b>Número de pedido devolución:</b>
                               <p>{{ props.detalleSolicitud.det_nro_pedido_nota_credito }}</p>
                             </div>

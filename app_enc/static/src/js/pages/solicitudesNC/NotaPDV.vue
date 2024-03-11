@@ -292,6 +292,7 @@ const datos_documento = ref({
   },
   nro_comprobante: "",
   importe_total: "",
+  tender_type: ""
 });
 const detalle_solicitud = ref({
   fecha_solicitud: {
@@ -404,10 +405,10 @@ const getDatosDelComprobante = async () => {
     if (response.status == 200 && response.data[0]) {
       datos_documento.value.importe_total = response.data[0].TotalInvoiceAmount;
       const fechaEmision = response.data[0].InvoiceDate;
-      datos_documento.value.fecha_emision.date =
-        convertirFormatoFecha(fechaEmision);
+      datos_documento.value.fecha_emision.date = convertirFormatoFecha(fechaEmision);
+      datos_documento.value.tender_type = response.data[0].TenderType || ''
     }
-    console.log("fechaFormateada: ", datos_documento.value.fecha_emision.date);
+    // console.log("fechaFormateada: ", datos_documento.value.fecha_emision.date);
   } catch (error) {
     Swal.fire({
       title: "Verificar Campos",
