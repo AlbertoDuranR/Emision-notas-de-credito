@@ -191,6 +191,7 @@ class Dynamics_Bot:
         try:
             print(">>> START crear nuevo pedido")
             self._hacer_clic_xpath(self.xpath_boton_nuevo_pedido)
+            self._wait_hide_div_bloking(15)
             time.sleep(1)
             self._hacer_clic_xpath(self.xpath_combobox_buscar_por)
             self._hacer_clic_xpath(self.xpath_combobox_item_pedido_ventas)
