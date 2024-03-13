@@ -32,7 +32,7 @@
                         </button>
                     </div>
                 </div>
-                <div v-show="showMenu" class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2">
                     <svg class="h-9 w-9 p-2 text-white rounded-full bg-red-600" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -41,7 +41,7 @@
                     <div>
                         <div class="dropdown inline-block relative">
                             <button class="text-gray-700 text-sm font-semibold rounded inline-flex items-center">
-                                <span class="mr-1">{{ selectMarket.mar_descripcion }}</span>
+                                <span class="mr-1">{{ usuario }}</span>
                                 <!-- <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                                 </svg> -->
@@ -145,7 +145,7 @@
                             </ul>
                         </div>
                     </li>
-                    <li class="text-sm font-bold text-gray-500 hover:text-amber-400 flex items-center space-x-1">
+                    <li v-show="showViewAdmin" class="text-sm font-bold text-gray-500 hover:text-amber-400 flex items-center space-x-1">
                         <svg class="h-8 w-8 text-gray-500 hover:text-amber-400 " width="24" height="24" viewBox="0 0 24 24"
                             stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
                             stroke-linejoin="round">
@@ -208,16 +208,31 @@ export default {
         return {
             image: image,
             showMenu: false,
+            showViewAdmin: false,
+            usuario: '',
         }
     },
     mounted() {
         if (!isObjectEmpty(this.selectMarket)) {
             this.showMenu = true;
+            // this.usuario = this.selectMarket?.mar_descripcion
+        }
+        // Obtener la URL actual
+        const urlActual = window.location.href;
+        // Verificar si la URL contiene 'admin'
+        if (urlActual.includes('admin')) {
+            // Mostrar el menú si la URL contiene 'admin'
+            this.showViewAdmin = true;
+            this.usuario = 'ADMIN'
+        } else {
+            // Ocultar el menú si la URL no contiene 'admin'
+            this.showViewAdmin = false;
         }
     },
     updated() {
         if (this.selectMarket?.mar_descripcion) {
             this.showMenu = true;
+            this.usuario = this.selectMarket?.mar_descripcion
         } else {
             this.showMenu = false;
         }

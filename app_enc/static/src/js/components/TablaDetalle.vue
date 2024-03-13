@@ -35,7 +35,7 @@
         <tr>
           <th class="text-sm text-gray-600 text-center">ID</th>
           <!-- <th class="text-sm text-gray-600 text-center">ID_DETALLE</th> -->
-          <th class="text-sm text-gray-600 text-center">FECHA SOLICITUD</th>
+          <th class="text-sm text-gray-600 text-center">FECHA C. SOLICITUD</th>
           <th class="text-sm text-gray-600 text-center">SOLICITANTE</th>
           <th class="text-sm text-gray-600 text-center">SUCURSAL</th>
           <th class="text-sm text-gray-600 text-center">FECHA COMPROBANTE</th>
@@ -61,7 +61,7 @@
           </td>
           -->
           <td class="text-sm text-gray-600 text-center">
-            {{ item.FECHA_SOLICITUD }}
+            {{ item.FECHA_CREACION }}
           </td>
           <td class="text-xs text-gray-600 text-center">
             {{ item.SOLICITANTE }}
@@ -214,7 +214,7 @@
             <!-- INIT consolidado -->
           </td>
           <td class="text-sm text-gray-600 text-center">
-            {{ item.FECHA_CREACION }}
+            {{ item.FECHA_SOLICITUD }}
           </td>
           <td class="text-sm text-gray-600 text-center">{{ item.METODO }}</td>
           <td class="text-sm text-gray-600 text-center">

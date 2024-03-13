@@ -21,6 +21,8 @@ from .view.view_nc_punto_venta import ViewNCPDV
 from .view.view_nc_financiero import ViewNCFinanciero
 from .view.view_nc_servicios import ViewNCServicios
 from .view.view_nota_credito import ViewNotaCredito
+from .view.validation_view import ValidationView
+from .view.download_view import DownloadView
 
 urlpatterns = [
     ## Path Index
@@ -60,8 +62,9 @@ urlpatterns = [
     ###
     
     ## Path View validacion Consolidacion
-    path('solicitud_nota_credito/punto_venta/validar/', ViewNCPDV.validar_solicitud,name="new_nc_pdv"),
-    path('solicitud_nota_credito/punto_venta/validar_todos/', ViewNCPDV.validar_solicitudes),
+    path('solicitud_nota_credito/validar_comprobante/', ValidationView.validar_comprobante,name="new_nc_pdv"),
+    path('solicitud_nota_credito/validar_comprobantes/', ValidationView.validar_comprobantes),
+    path('solicitud_nota_credito/validar_notas/', ValidationView.validar_notas),
     path('solicitud_nota_credito/financieros/validar/', ViewNCFinanciero.validar_solicitud),
     path('solicitud_nota_credito/servicios/validar/', ViewNCServicios.notaServiciosEdit),
     ##
@@ -87,7 +90,8 @@ urlpatterns = [
     path('nota_credito/punto_venta/create/', ViewNotaCredito.create_nota_credito),
     path('nota_credito/punto_venta/create_all/', ViewNotaCredito.create_all_notas_credito),
     path('nota_credito/punto_venta/retry/', ViewNotaCredito.retry_create_nota_credito),
-
+    path('nota_credito/download/<str:nro_nota_credito>', DownloadView.getTxt),
+    
     ## Get Datos Comprobante
     path('comprobante/get_datos_comprobante/<str:nro_comprobante>', ViewNCPDV.get_sales_invoice),
     path('comprobante/detalle_comprobante/<str:nro_comprobante>', ViewNCPDV.get_sales_invoice_details),
@@ -98,7 +102,8 @@ urlpatterns = [
     ## Get datos empleado
     path('solicitud_nota_credito/empleado/<str:dni>/<str:department_number>', ViewNCPDV.get_name_by_dni_and_department),
     ###
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    path('admin/',  ViewNCPDV.bnotaPDV),
     path('oauth2/', include('django_auth_adfs.urls')),
     path('login/',views.login_successful,name='login-view')
     ####

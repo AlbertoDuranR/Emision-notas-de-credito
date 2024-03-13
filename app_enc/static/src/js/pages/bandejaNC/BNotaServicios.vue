@@ -152,7 +152,7 @@ export default {
           if (result.isConfirmed) {
             // Lógica para la confirmación
             axios
-              .post("/solicitud_nota_credito/punto_venta/validar/", {
+              .post("/solicitud_nota_credito/validar_comprobante/", {
                 id: item_nota,
                 nro_comprobante: nroComprobante
               })

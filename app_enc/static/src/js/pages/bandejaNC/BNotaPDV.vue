@@ -48,8 +48,29 @@
       </svg>
       &nbsp;Generar Notas de Crédito
     </button>
+    <button
+      class="text-sm rounded-full bg-orange-400 p-2 text-white font-bold flex"
+      type="button"
+      @click="validar_notas"
+    >
+      <svg
+        class="h-5 w-5 white"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      &nbsp;Validar Notas de Crédito
+    </button>
   </div>
-  <TablaDetalle
+  <br/><br/>
+  <TablaDetallePrime
     tipo="bandeja"
     :listaSolicitudes="lista_solicitudes"
     @validar_item="validar_item"
@@ -57,6 +78,14 @@
     @generar_nota_item="generar_nota_item"
     @reintentar_nota_item="reintentar_nota_item"
   />
+  <!-- <TablaDetalle
+    tipo="bandeja"
+    :listaSolicitudes="lista_solicitudes"
+    @validar_item="validar_item"
+    @observar_item="observar_item"
+    @generar_nota_item="generar_nota_item"
+    @reintentar_nota_item="reintentar_nota_item"
+  /> -->
   <loading-overlay
     :active="isLoading"
     :can-cancel="true"
@@ -67,10 +96,14 @@
   <!-- -- -->
 </template>
 <script setup>
+import { downloadNotaTxt } from '../../service/downloadFile'
+
 import LoadingOverlay from "vue3-loading-overlay";
 import axios from "axios";
 import Header from "../../layouts/Header.vue";
-import TablaDetalle from "../../components/TablaDetalle.vue";
+// import TablaDetalle from "../../components/TablaDetalle.vue";
+import TablaDetallePrime from "../../components/TablaDetallePrime.vue";
+
 </script>
 
 <script>
@@ -111,7 +144,7 @@ export default {
             this.isLoading=true
             // Lógica para validar
             axios
-              .post("/solicitud_nota_credito/punto_venta/validar/", {
+              .post("/solicitud_nota_credito/validar_comprobante/", {
                 id: itemNota,
                 nro_comprobante: nroComprobante,
               })
@@ -122,7 +155,6 @@ export default {
                   "El elemento ha sido validado.",
                   "success"
                 ).then(() => {
-                  // Recargar la página completa
                   location.reload();
                 });
               })
@@ -133,7 +165,6 @@ export default {
                   text: `${msg_error}`,
                   icon: "error",
                 }).then(() => {
-                  // Recargar la página completa
                   location.reload();
                 });
               })
@@ -167,12 +198,63 @@ export default {
             this.isLoading=true
             // Lógica para validar
             axios
-              .post("/solicitud_nota_credito/punto_venta/validar_todos/", {})
+              .post("/solicitud_nota_credito/validar_comprobantes/", {})
               .then((response) => {
                 console.log(response);
                 this.$swal.fire(
-                  "Validados",
-                  "Elementos Validados",
+                  "Validación de Comprobantes",
+                  `${response.data.message}`,
+                  "success"
+                ).then(() => {
+                  location.reload();
+                });
+              })
+              .catch((err) => {
+                const msg_error = err.response.data.message;
+                this.$swal.fire({
+                  title: "Error de Validación",
+                  text: `${msg_error}`,
+                  icon: "error",
+                }).then(() => {
+                  location.reload();
+                });
+              })
+              .finally(() => {
+                this.isLoading=false
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
+    validar_notas() {
+      this.$swal
+        .fire({
+          title: "Validar",
+          text: "¿Validar notas de crédito?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, validar",
+          cancelButtonText: "Cancelar",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            this.isLoading=true
+            // Lógica para validar
+            axios
+              .post("/solicitud_nota_credito/validar_notas/", {})
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "Validación de Notas",
+                  `${response.data.message}`,
                   "success"
                 ).then(() => {
                   location.reload();
@@ -339,8 +421,12 @@ export default {
             axios
               .post("/nota_credito/punto_venta/create_all/", {})
               .then((response) => {
-                console.log(response);
-                this.$swal.fire("CREADO", "Notas de crédito CREADAS", "success").then(() => {
+                const listNroNotasCreadas = response.data.notas_creadas
+                console.log('Notas creadas', listNroNotasCreadas);
+                listNroNotasCreadas.forEach(element => {
+                  downloadNotaTxt(element)
+                });
+                this.$swal.fire("Generación de Notas", `Notas Procesadas: ${response.data.message}`, "info").then(() => {
                   // Recargar la página completa
                   location.reload();
                 });
@@ -349,7 +435,7 @@ export default {
                 console.log('Error', err);
                 this.$swal.fire({
                   title: "Error de Registro",
-                  text: `Error al crear las Notas de Crédito: ${err.response.data.message}`,
+                  text: `Error al crear Masivamente las Notas de Crédito: ${err.response.data.message}`,
                   icon: "error",
                 }).then(() => {
                   // Recargar la página completa
@@ -409,11 +495,12 @@ export default {
                 location.reload();
               })
               .catch((err) => {
-                console.log(err);
-                Swal.fire({
-                  title: "Error",
-                  text: "Error al crear la Nota de Crédito",
+                this.$swal.fire({
+                  title: "Error de Registro",
+                  text: `Error al crear la Nota de Crédito: ${err.response.data.message}`,
                   icon: "error",
+                }).then(() => {
+                  location.reload();
                 });
               })
               .finally(() => {
