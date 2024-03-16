@@ -1,5 +1,5 @@
 <template>
-    <Header />
+    <!-- <Header /> -->
     <div class="container px-6 mx-auto block">
         <div class="flex items-center justify-center py-5"><span class="font-bold text-gray-600">BANDEJA DE SOLICITUDES DE NOTAS DE
                 CRÉDITO - SERVICIOS</span></div>
@@ -83,7 +83,7 @@
 
           <td class="text-sm text-gray-600 text-center">
             <button
-              @click="validar_item(item.ID_NC)"
+              @click="validar_item(item.ID_NC, item.COMPROBANTE)"
               class="bg-blue-0 text-white px-2 py-1 mr-2"
             >
             <svg 
@@ -134,7 +134,7 @@ export default {
     //console.log(this.lista_solicitudes);
   },
   methods: {
-    validar_item(item_nota) {
+    validar_item(item_nota, nroComprobante) {
       console.log("Editar:", item_nota);
 
       this.$swal
@@ -152,7 +152,10 @@ export default {
           if (result.isConfirmed) {
             // Lógica para la confirmación
             axios
-              .post("/solicitud_nota_credito/punto_venta/validar/", { id: item_nota, estado: 'VALIDADO' })
+              .post("/solicitud_nota_credito/validar_comprobante/", {
+                id: item_nota,
+                nro_comprobante: nroComprobante
+              })
               .then((response) => {
                 console.log(response);
                 this.$swal.fire(
@@ -165,9 +168,10 @@ export default {
               })
               .catch((err) => {
                 console.log(err);
-                Swal.fire({
-                  title: "Error de Registro",
-                  text: "Error al validar la solicitud",
+                const msg_error = err.response.data.message
+                this.$swal.fire({
+                  title: "Error de Validación",
+                  text: `${msg_error}`,
                   icon: "error",
                 });
               });

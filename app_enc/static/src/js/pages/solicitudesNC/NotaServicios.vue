@@ -1,5 +1,5 @@
 <template>
-  <Header />
+  <!-- <Header /> -->
   <div class="container px-6 mx-auto block">
     <div class="flex items-center justify-center py-5">
       <span class="font-bold text-gray-600"
@@ -10,36 +10,17 @@
       <div class="flex"></div>
       <div class="block">
         <form action="" v-on:submit.prevent="enviarSolicitud()">
-          <div class="px-4 flex justify-center">
-            <button
-              class="text-sm rounded-full bg-green-600 p-2 text-white font-bold flex"
-              type="submit"
-            >
-              <svg
-                class="h-5 w-5 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              &nbsp;Solicitar NC
-            </button>
-          </div>
+          <loading-overlay
+            :active="isLoadingComprobante"
+            :can-cancel="true"
+            :is-full-page="false"
+            :color="'#dc2626'"
+          >
+          </loading-overlay>
           <div class="py-2">
             <span class="text-sm font-bold text-gray-600 py-5"
               >Datos de Documento de Origen</span
             >
-          </div>
-          <div class="space-y-1 py-2">
-            <label class="text-sm">Fecha emisión del comprobantes:</label>
-            <VueDatePicker
-              v-model="datos_documento.fecha_emision.date"
-            ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Nro. Comprobante:</label>
@@ -47,7 +28,19 @@
               type="text"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
               v-model="datos_documento.nro_comprobante"
+              @blur="getDatosDelComprobante"
             />
+          </div>
+          <div class="space-y-1 py-2">
+            <label class="text-sm">Fecha emisión del comprobantes:</label>
+            <VueDatePicker
+              v-model="datos_documento.fecha_emision.date"
+            ></VueDatePicker>
+          </div>
+          <div class="pt-4 pb-1">
+            <span class="text-sm font-bold text-gray-600 py-5"
+              >Detalle de la Solicitud</span
+            >
           </div>
           <div class="space-y-1 py-2">
             <label class="text-sm">Motivo:</label>
@@ -73,6 +66,25 @@
             ></VueDatePicker>
           </div>
           <div class="py-2"></div>
+          <div class="py-4 px-2 flex justify-center">
+            <button
+              class="w-60 rounded-full bg-green-600 py-3 text-white font-bold flex justify-center hover:opacity-70"
+              type="submit"
+            >
+              <svg  class="h-5 w-5 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              &nbsp;Solicitar NC
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -87,11 +99,13 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 //
 import Multiselect from "vue-multiselect";
+import LoadingOverlay from 'vue3-loading-overlay';
 //
 //
 import axios from "axios";
 //
 import { notify } from "@kyvg/vue3-notification";
+import { convertirFormatoFecha } from "../../utils"
 </script>
 <script>
 export default {
@@ -110,6 +124,7 @@ export default {
           date: null,
         },
       },
+      isLoadingComprobante: false,
     };
   },
   mounted() {
@@ -210,7 +225,34 @@ export default {
       );
     },
 
-    //
+    async getDatosDelComprobante() {
+      if (this.datos_documento.nro_comprobante == '') {
+        notify({
+          title: 'Verificar Campos',
+          text: 'Ingresar Nro Comprobante',
+          type: 'warn',
+        });
+        return;
+      }
+      this.isLoadingComprobante = true;
+      try {
+        const response = await axios.get(`/comprobante/get_datos_comprobante/${this.datos_documento.nro_comprobante}`);
+        if(response.status == 200 && response.data[0]) {
+          const fechaEmision = response.data[0].InvoiceDate
+          this.datos_documento.fecha_emision.date = convertirFormatoFecha(fechaEmision)
+        }
+      } catch (error) {
+        console.log(error)
+        this.$swal.fire({
+          title: 'Verificar Campos',
+          text: `Error con el N° comprobante`,
+          icon: 'error',
+        });
+        this.datos_documento.fecha_emision.date=null;
+      } finally {
+        this.isLoadingComprobante = false;
+      }
+    },
   },
 };
 </script>
