@@ -1,6 +1,7 @@
 import os
 import time
 
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -13,11 +14,20 @@ from .dynamics_functions import AuxiliaryFunctions # Para Django
 from ..constans import CODIGO_DISPOSICION
 from ..constans import SERIES_PARA_NOTA_CREDITO
 
+load_dotenv()
+is_development_mode = os.environ.get("ENVIRONMENT") == 'development'
+is_production_mode = os.environ.get("ENVIRONMENT") == 'production'
+
 
 class Dynamics_Bot:
     def __init__(self):
         # Credenciales
-        self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente a devoluciones
+        if is_development_mode:
+            self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente a devoluciones master
+        elif is_production_mode:
+            print('--Modo producción dynamics activado--')
+            self.url = "https://mistr.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente a devoluciones en producccion
+        print('Url RPA Dynamics:', self.url)
         # self.usuario = "robert.tolentino@terranovatrading.com.pe"
         self.usuario= "danni.flores@terranovatrading.com.pe"
         # self.contrasena = "huaraz2023." # Despues de un tiempo se llega a vencer

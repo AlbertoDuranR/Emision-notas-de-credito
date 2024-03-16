@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 is_development_mode = os.environ.get("ENVIRONMENT") == 'development'
+is_production_mode = os.environ.get("ENVIRONMENT") == 'production'
+
 
 class AceptaScraper:
     def __init__(self):
@@ -28,11 +30,11 @@ class AceptaScraper:
             self.url = os.environ.get("url_acepta_test")
             self.usuario = "zaida.gonzales@terranovatrading.com.pe"
             self.contrasena = "30066868"
-        else:
-            self.url = os.environ.get("url_acepta_prod")
+        elif is_production_mode:
+            self.url = os.environ.get("url_acepta")
             self.usuario = "wilfredo.caceres@terranovatrading.com.pe"
             self.contrasena = "118499544"
-
+        print('Url Scraper Acepta:', self.url)
         # XPaths
         self.xpath_opcion_emitido = "/html/body/div[8]/div[1]/aside/ul/li[2]/a"
         self.xpath_desde = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[2]/form/div[3]/input"
