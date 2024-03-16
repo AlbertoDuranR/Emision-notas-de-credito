@@ -211,7 +211,7 @@ class Dynamics_Bot:
             print(">>> Fin crear nuevo pedido")
             self._esperar_n_segundos(1)
             input_num_pedido_devolucion = self.wait.until(EC.element_to_be_clickable((By.XPATH,  self.xpath_input_num_pedido_devolucion)))
-            self.nro_pedido_venta_devolucion=input_num_pedido_devolucion.get_attribute('value')
+            self.nro_pedido_venta_devolucion=input_num_pedido_devolucion.get_attribute("value")
             time.sleep(1)
         except Exception as e:
                 raise ValueError (f'Error: Al momento de crear el nuevo pedido: {e}')
@@ -522,13 +522,13 @@ class Dynamics_Bot:
             input_focus_forma_pago.clear()
             input_focus_forma_pago.send_keys(data['forma_pago'])
             input_focus_forma_pago.send_keys(Keys.TAB)
-            print(f'Forma de Pago: {input_focus_forma_pago.get_attribute('value')}')
+            print(f'Forma de Pago: {input_focus_forma_pago.get_attribute("value")}')
             self._esperar_n_segundos(2)
             input_focus_pago = self.driver.switch_to.active_element
             input_focus_pago.clear()
             input_focus_pago.send_keys(data['pago'])
             input_focus_pago.send_keys(Keys.TAB)
-            print(f'Pago: {input_focus_pago.get_attribute('value')}')
+            print(f'Pago: {input_focus_pago.get_attribute("value")}')
             # time.sleep(1)
             self._esperar_n_segundos(2)
             input_perfil_contabilizacion = self.driver.switch_to.active_element
@@ -538,7 +538,7 @@ class Dynamics_Bot:
             input_tipo_documento = self.driver.switch_to.active_element
             input_tipo_documento.clear()
             input_tipo_documento.send_keys('07') # Nota de Crédito es 07
-            print(f'Codigo nota de crédito: {input_tipo_documento.get_attribute('value')}')
+            print(f'Codigo nota de crédito: {input_tipo_documento.get_attribute("value")}')
             time.sleep(2)
         except Exception as e:
             print('Error al ingresar forma de pago, pago o codigo nota de crédito', e)
@@ -764,7 +764,7 @@ class Dynamics_Bot:
         estados_rpa = [] # [{}, {}, {}]
         for data in data_solicitudes:
             self.iniciar_sesion()
-            print(f'Crear Data {data}, {data['sol_id']}')
+            print(f'Crear Data {data}, {data["sol_id"]}')
             estado_rpa = self.crear_nota_de_credito(data)
             estados_rpa.append(estado_rpa)
             self.driver.quit()
