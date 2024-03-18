@@ -6,10 +6,15 @@ import multiprocessing
 import dill
 #
 load_dotenv()
+is_development_mode = os.environ.get("ENVIRONMENT") == 'development'
+is_production_mode = os.environ.get("ENVIRONMENT") == 'production'
 #
 class ServiceDynamics:
-
-    url = os.environ.get("url_api_dynamics_master")
+    
+    if is_development_mode:
+        url = os.environ.get("url_api_dynamics_master")
+    elif is_production_mode:
+        url = os.environ.get("url_api_dynamics")
 
     def get_Token(self):
         env = {
