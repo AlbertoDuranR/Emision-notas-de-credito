@@ -31,7 +31,7 @@ class Dynamics_Bot:
         # self.usuario = "robert.tolentino@terranovatrading.com.pe"
         self.usuario= "danni.flores@terranovatrading.com.pe"
         # self.contrasena = "huaraz2023." # Despues de un tiempo se llega a vencer
-        self.contrasena = "huaraz2024.."
+        self.contrasena = "Huaraz2024..."
         self.nro_pedido_venta_devolucion=''
 
         # XPaths
