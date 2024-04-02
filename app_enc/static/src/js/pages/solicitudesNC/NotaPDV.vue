@@ -35,11 +35,12 @@
             />
           </div>
           <div class="space-y-1 py-2">
-            <label class="text-sm">Fecha emisión del comprobantes:</label>
+            <label class="text-sm">Fecha emisión del comprobante:</label>
             <VueDatePicker
               v-model="datos_documento.fecha_emision.date"
               required
-              placeholder="Seleccionar Fecha"
+              placeholder="..."
+              disabled
               :format="format"
             ></VueDatePicker>
           </div>
@@ -51,6 +52,7 @@
               step="any"
               placeholder="0.00"
               class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500"
+              disabled
             />
           </div>
           <div class="pt-4 pb-1">
@@ -84,6 +86,8 @@
               required
               placeholder="Seleccionar Fecha"
               :format="format"
+              select-text="Seleccionar"
+              :day-names="['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']"
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
@@ -344,13 +348,15 @@ const enviarSolicitud = () => {
   if (detalle_solicitud.value.metodo == "parcial") {
     metodoParcialProductos = metodo_parcial_productos.value.selected_products;
   }
+  // Mantener formato del Navegador
+  detalle_solicitud.value.fecha_solicitud.date = convertirFormatoFecha(detalle_solicitud.value.fecha_solicitud.date)
   const send_data = {
     datos_documento: datos_documento.value,
     detalle_solicitud: detalle_solicitud.value,
     metodo_parcial_productos: metodoParcialProductos,
   };
   const jsonString = JSON.stringify(send_data);
-  console.log("enviarr Solicitud", jsonString);
+  // console.log("enviarr Solicitud", jsonString);
   // return
   isLoading.value = true;
   axios
@@ -500,28 +506,6 @@ const getNameByDni = () => {
 };
 
 const format = (date) => formatDateDDMMYYYY(date)
-
-/*
-const queryReniec = () => {
-      let jsonString = {
-        dni : detalle_solicitud.value.dni
-      }
-
-      axios.post("/solicitud_nota_credito/financieros/reniec/", jsonString)
-        .then(data => {
-          // Handle the RENIEC response
-          console.log(data);
-          //this.reniecData.dni = data.nombres || "";
-          detalle_solicitud.value.ap_materno = data["data"]["ap_materno"]
-          detalle_solicitud.value.ap_paterno = data["data"]["ap_paterno"]
-          detalle_solicitud.value.nombres = data["data"]["nombres"]
-        })
-        .catch(error => {
-          console.error(error);
-          // Handle the error if needed
-        })
-    };
-*/
 
 refreshLoading();
 </script>

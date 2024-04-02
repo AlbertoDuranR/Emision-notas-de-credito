@@ -125,7 +125,9 @@ class ServiceNCPDV:
         fecha_emision = datetime.strptime(fecha_emision,'%Y-%m-%dT%H:%M:%S.%fZ')
         # Detalle
         fecha_solicitud = data["detalle_solicitud"]["fecha_solicitud"]['date']
+        print('fecha_solicitud 1', fecha_solicitud )
         fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
+        print('fecha_solicitud 2', fecha_solicitud )
         nro_comprobante = data["datos_documento"]["nro_comprobante"]
         tender_type = data["datos_documento"]["tender_type"]
         motivo = data["detalle_solicitud"]["motivo"]
@@ -172,6 +174,7 @@ class ServiceNCPDV:
             sol_estado=estado,
             sol_acepta=estado
         )
+        print(solicitud_nc, solicitud_nc.sol_fecha_solicitud)
         solicitud_nc.save()
 
         # Guardar Detalle de la Solicitud de Nota de Crédito

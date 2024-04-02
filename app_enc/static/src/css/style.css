@@ -88,3 +88,11 @@
     position: relative;
     bottom: 10px;
 }
+
+.dp__theme_light {
+    --dp-primary-color: #ff5757;
+}
+
+.dp__action_select{
+    background-color: rgba(255, 0, 0, 0.5);
+}

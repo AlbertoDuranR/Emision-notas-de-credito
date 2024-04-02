@@ -1,5 +1,6 @@
 .venv
 env
+venv
 app_enc/node_modules
 app_enc/app_enc/__pycache__
 app_enc/app_enc/models/__pycache__

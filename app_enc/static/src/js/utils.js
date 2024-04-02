@@ -3,29 +3,36 @@ function convertirFormatoFecha(fechaString) {
      * return formato '%Y-%m-%dT%H:%M:%S.%fZ'
      */
     const fecha = new Date(fechaString);
-    const year = fecha.getUTCFullYear();
-    const month = String(fecha.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(fecha.getUTCDate()).padStart(2, '0');
-    const hour = String(fecha.getUTCHours()).padStart(2, '0');
-    const minute = String(fecha.getUTCMinutes()).padStart(2, '0');
-    const second = String(fecha.getUTCSeconds()).padStart(2, '0');
-    const millisecond = String(fecha.getUTCMilliseconds()).padStart(3, '0');
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    const hour = String(fecha.getHours()).padStart(2, '0');
+    const minute = String(fecha.getMinutes()).padStart(2, '0');
+    const second = String(fecha.getSeconds()).padStart(2, '0');
+    const millisecond = String(fecha.getMilliseconds()).padStart(3, '0');
     const formatoFinal = `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}Z`;
     return formatoFinal;
 };
+
 
 function formatDateDDMMYYYY(date) {
   /**
    * return formato 'dd/mm/yyyy, HH:MM:SS'
    */
   const fecha = new Date(date);
-  const year = fecha.getUTCFullYear();
-  const month = String(fecha.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(fecha.getUTCDate()).padStart(2, '0');
-  const hour = String(fecha.getUTCHours()).padStart(2, '0');
-  const minute = String(fecha.getUTCMinutes()).padStart(2, '0');
-  const second = String(fecha.getUTCSeconds()).padStart(2, '0');
-  return `${day}/${month}/${year}, ${hour}:${minute}:${second}`;
+  console.log('fechaDateDDMMYYYY', fecha)
+  const options = {
+    timeZone: 'America/Lima',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  };
+
+  const formattedDate = fecha.toLocaleString('es-PE', options);
+  return formattedDate;
 };
 
 const getDateGMT = (dateUTC) => {
