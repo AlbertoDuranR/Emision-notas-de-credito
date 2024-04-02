@@ -13,7 +13,7 @@ module.exports = {
     root: resolve('./static/src'),
     base: '/static/',
     server: {
-        host: '10.5.0.11',
+        host: 'localhost',
         port: 3000,
         open: false,
         watch: {
