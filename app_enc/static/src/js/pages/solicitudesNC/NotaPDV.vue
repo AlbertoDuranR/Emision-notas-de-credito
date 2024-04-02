@@ -35,11 +35,12 @@
             />
           </div>
           <div class="space-y-1 py-2">
-            <label class="text-sm">Fecha emisión del comprobantes:</label>
+            <label class="text-sm">Fecha emisión del comprobante:</label>
             <VueDatePicker
               v-model="datos_documento.fecha_emision.date"
               required
-              placeholder="Seleccionar Fecha"
+              placeholder="..."
+              disabled
               :format="format"
             ></VueDatePicker>
           </div>
@@ -85,6 +86,8 @@
               required
               placeholder="Seleccionar Fecha"
               :format="format"
+              select-text="Seleccionar"
+              :day-names="['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']"
             ></VueDatePicker>
           </div>
           <div class="space-y-1 py-2">
