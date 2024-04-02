@@ -167,7 +167,7 @@ class ServiceNCPDV:
 
         # Guardar Solicitud de Nota de Crédito
         solicitud_nc = SolicitudNC(
-            sol_fecha_solicitud=fecha_solicitud,
+            sol_fecha_solicitud=fecha_solicitud.date(),
             sol_tipo_nc=tipo_nc,
             sol_usuario_creador=usuario_creador,
             sol_fecha_creacion=datetime.now().date(),
