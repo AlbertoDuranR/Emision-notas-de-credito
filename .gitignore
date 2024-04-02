@@ -1,5 +1,7 @@
+.env
+
+# entornos virtuales
 .venv
-env
 venv
 app_enc/node_modules
 app_enc/app_enc/__pycache__
