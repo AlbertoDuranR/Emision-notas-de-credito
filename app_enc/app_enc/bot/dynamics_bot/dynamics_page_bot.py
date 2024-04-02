@@ -23,15 +23,14 @@ class Dynamics_Bot:
     def __init__(self):
         # Credenciales
         if is_development_mode:
+            print('--Modo desarrollo dynamics activado--')
             self.url = "https://mistr-master.sandbox.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente a devoluciones master
         elif is_production_mode:
             print('--Modo producción dynamics activado--')
             self.url = "https://mistr.operations.dynamics.com/?cmp=TRV&mi=ReturnTableListPage" # Ir defrente a devoluciones en producccion
         print('Url RPA Dynamics:', self.url)
-        # self.usuario = "robert.tolentino@terranovatrading.com.pe"
-        self.usuario= "danni.flores@terranovatrading.com.pe"
-        # self.contrasena = "huaraz2023." # Despues de un tiempo se llega a vencer
-        self.contrasena = "Huaraz2024..."
+        self.usuario= os.environ.get("BOT_DYNAMICS_USER")
+        self.contrasena = os.environ.get("BOT_DYNAMICS_PASSWORD")
         self.nro_pedido_venta_devolucion=''
 
         # XPaths
