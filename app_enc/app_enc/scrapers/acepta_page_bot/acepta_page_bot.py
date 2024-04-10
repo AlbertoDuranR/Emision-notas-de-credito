@@ -16,7 +16,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from .acepta_functions import AuxiliaryFunctions
 # from acepta_functions import AuxiliaryFunctions # No Django
 
-# logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
