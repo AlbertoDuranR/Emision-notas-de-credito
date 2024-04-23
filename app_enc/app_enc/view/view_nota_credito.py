@@ -42,6 +42,9 @@ class ViewNotaCredito:
                         continue
                     nro_notas_credito.append(solicitud.det_nro_nota_credito)
                 return JsonResponse({'message': f'Se crearon {len(nro_notas_credito)} / {len(sol_ids)}', 'notas_creadas' : nro_notas_credito}, status=200)
+            except ViewSolicitudNotaDeCredito.DoesNotExist:
+                print('Expection ViewSolicitudNotaDeCredito.DoesNotExist:', e)
+                return JsonResponse({'message': 'Solicitudes no CREADAS'}, status=404)
             except Exception as e:
                 print('Expection create_nota_credito:', e)
                 return JsonResponse({'message': e.message }, status=404)
