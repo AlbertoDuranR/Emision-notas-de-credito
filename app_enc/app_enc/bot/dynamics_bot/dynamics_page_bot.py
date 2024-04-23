@@ -93,7 +93,7 @@ class Dynamics_Bot:
         self.xpath_div_primer_pedido='//div[contains(@id, "Invoice_Heading") and contains(@id, "row-0")]'
 
         # Confirmar registro
-        self.xpath_cantidad_filas='//*[contains(@id, "SalesLineGrid")]/div[1]/div[4]/div/div[1]/div[2]/div/div[1]/div/div/div/div/div/span' # 1 filas
+        self.xpath_cantidad_filas='//*[contains(@id, "SalesLineGrid")]//span[contains(text(), "filas")]' # 1 filas
         self.div_lineas_articulos_para_registro='//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]'
         self.xpath_actualizar_linea='//*[contains(@id, "ReturnTable") and contains(@id, "Update_button")]'
         self.xpath_registro_inventario='//button[contains(@id, "ReturnTable") and contains(@id, "InventTransRegister")]'
@@ -365,10 +365,13 @@ class Dynamics_Bot:
         time.sleep(1)
         # Verificar que cantidad de articulos seleccionados se igual a los solicitados a devolución
         try:
-            self._esperar_n_segundos(5)
+            self._esperar_n_segundos(10)
             cantidad_text = (self.driver.find_element(By.XPATH, self.xpath_cantidad_filas)).text
+            print('cantidad_text', cantidad_text)
             cantidad_articulos_registrar = int(cantidad_text.strip().split(' ')[0])
-            print('cantidad_text', cantidad_text, cantidad_articulos_registrar)
+            print('cantidad_articulos_registrar' ,cantidad_articulos_registrar)
+            
+
         except Exception as e:
             # Segunda validación siempre y cuando no sean mas de 7 productos. Ya que en este metodo no se muestran mas productos en la tabla. Los demas estan ocultos
             if len(data['productos']) < 7:
@@ -633,10 +636,10 @@ class Dynamics_Bot:
             print('Despues de ingresar fechas de factura')
             self._esperar_n_segundos(1)
             self._hacer_clic_xpath(self.xpath_button_aceptar_en_factura)
-            time.sleep(1)
+            time.sleep(2)
             self._esperar_n_segundos(2)
             self._hacer_clic_xpath(self.xpath_button_confirmar_factura)
-            time.sleep(4)
+            time.sleep(5)
             try:
                 print('Esperar descargar .txt')
                 self._wait_hide_div_bloking(90)
