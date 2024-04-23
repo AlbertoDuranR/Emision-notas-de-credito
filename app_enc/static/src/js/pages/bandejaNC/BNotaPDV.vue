@@ -77,15 +77,8 @@
     @observar_item="observar_item"
     @generar_nota_item="generar_nota_item"
     @reintentar_nota_item="reintentar_nota_item"
+    @eliminar-item="eliminarItem"
   />
-  <!-- <TablaDetalle
-    tipo="bandeja"
-    :listaSolicitudes="lista_solicitudes"
-    @validar_item="validar_item"
-    @observar_item="observar_item"
-    @generar_nota_item="generar_nota_item"
-    @reintentar_nota_item="reintentar_nota_item"
-  /> -->
   <loading-overlay
     :active="isLoading"
     :can-cancel="true"
@@ -510,6 +503,52 @@ export default {
             // Lógica para la cancelación
             this.$swal.fire(
               "Cancelado",
+              "No se realizó ninguna acción.",
+              "info"
+            );
+          }
+        });
+    },
+    eliminarItem(item) {
+      // Lógica para eliminar el elemento (puedes implementar según tus necesidades)
+      this.$swal
+        .fire({
+          title: "¿Estás seguro de eliminar la solicitud?",
+          text: "OJO: Primero Cancelar el Pédido de devolución en Dynamics 365",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#a1a1aa",
+          cancelButtonColor: "#7066e0",
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "No",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            // Lógica para la confirmación
+            axios
+              .post("/solicitud_nota_credito/punto_venta/delete/", { id: item })
+              .then((response) => {
+                console.log(response);
+                this.$swal.fire(
+                  "Elemento eliminado.",
+                  "Importante verificar que fue cancelado en Dynamics365",
+                  "success"
+                );
+                // Recargar la página completa después de eliminar
+                location.reload();
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  title: "Error de Registro",
+                  text: "Error al Eliminar datos, verificar los campos",
+                  icon: "error",
+                });
+              });
+          } else if (result.dismiss === this.$swal.DismissReason.cancel) {
+            // Lógica para la cancelación
+            this.$swal.fire(
+              "Sin Cambios",
               "No se realizó ninguna acción.",
               "info"
             );
