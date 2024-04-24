@@ -20,6 +20,8 @@ is_production_mode = os.environ.get("ENVIRONMENT") == 'production'
 
 
 class Dynamics_Bot:
+    intentos = 0
+
     def __init__(self):
         # Credenciales
         if is_development_mode:
@@ -237,10 +239,6 @@ class Dynamics_Bot:
 
         if data['metodo'] == 'total':
             try:
-                # input_elements = self.driver.find_elements(By.XPATH, f'{self.xpath_div_primer_pedido}//input')
-                # for input_element in input_elements:
-                #     print("Text input:", input_element.get_attribute("value"))
-                # print("Select articulo: ", input_elements[1].get_attribute("value"))
                 self._esperar_n_segundos('2')
                 self._hacer_clic_xpath(f'{self.xpath_div_primer_pedido}//div/span')
             except Exception as e:
@@ -315,6 +313,7 @@ class Dynamics_Bot:
         self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
         self._wait_hide_div_bloking(30)
         print('END enlazar pedidos')
+        return 'ENLAZAR'
 
     def registrar_articulo_para_devolucion(self):
         try:
@@ -361,6 +360,7 @@ class Dynamics_Bot:
                     raise
 
     def registrar_articulos_para_devolucion(self, data):
+        estado=None
         print('>> START Registrar Confirmar Articulos')
         time.sleep(1)
         # Verificar que cantidad de articulos seleccionados se igual a los solicitados a devolución
@@ -426,9 +426,20 @@ class Dynamics_Bot:
                     print('Registrando Articulo')
                     self._esperar_n_segundos(1)
                     self.registrar_articulo_para_devolucion()
+        except IndexError as ie:
+            # Manejar el error de índice fuera de rango
+            print("Error: Índice fuera de rango al acceder a la lista de elementos.", ie)
+            self.intentos+=1
+            if self.intentos > 1:
+                self.intentos = 0
+                raise ValueError (f"Error al recorrer articulos a registrar: {str(e)}")
+            estado = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            self.registrar_articulos_para_devolucion(data=data)
         except Exception as e:
             raise ValueError (f"Error al recorrer articulos a registrar: {str(e)}")
         print(">> END Confirmado")
+        estado = 'REGISTRAR'
+        return estado
 
     def set_data_pedido_devolucion(self, data):
         """
@@ -643,6 +654,7 @@ class Dynamics_Bot:
             except e:
                 print(e)
             print('END Generar Factura')
+            return 'FACTURAR'
         except Exception as e:
             # print('Exception crear nota de credito: ', e)
             raise ValueError ('Error al crear la factura', e)
@@ -666,23 +678,16 @@ class Dynamics_Bot:
         }
         print('START Crear_nota_de_credito')
         try:
-            # Crear nuevo pedido
             self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
             resultado["nro_pedido_venta_devolucion"] = self.nro_pedido_venta_devolucion
             if not self.nro_pedido_venta_devolucion:
                 raise ValueError('No Exite número de pedido de venta para devolución con en el RPA')
             resultado["step_rpa"] = 'PEDIDO'
-            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-            resultado["step_rpa"] = 'ENLAZAR'
-            self.registrar_articulos_para_devolucion(data=data)
-            resultado["step_rpa"] = 'REGISTRAR'
+            resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
-            # Validar Si importe resumen es igual a importe solicitud continuar
-            # self.validar_importe_resumen_con_importe_solicitud(data=data) # Al parecer no es necesario - Si no esta bien los montos no factura
-            # START Generar Factura
-            self.generar_factura(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
-            resultado["step_rpa"] = 'FACTURAR'
+            resultado["step_rpa"] = self.generar_factura(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
         except Exception as e:
             print('Exception crear nota de credito: ', e)
             resultado["estado"] = "ERROR"
@@ -703,9 +708,17 @@ class Dynamics_Bot:
             data: {'num_comprobante_origen': 'BB01-00095300', 'num_pedido_origen': 'TRV-02756273', 'metodo': 'parcial', 'almacen': 'MD02_JRC', 'productos': [{'codigo': '109023', 'cantidad': 1}, {'codigo': '106239', 'cantidad': 2}], 'forma_pago': 'FP015', 'pago': 'CONT', 'fecha_solicitud': '01/30/2024', 'monto_total_nota_credito': 11.2, 'sol_tipo_nc': 'PDV', 'sol_estado': 'ERROR', 'step_rpa': 'REGISTRAR'}
             rma: 'TRV-02756273'
         """
+        if data['sol_estado'] == 'CREADO':
+            print('Pedido con estado CREADO')
+            return
+        if not nro_rma:
+            print('Sin Nro RMA')
+            return
+
         inicio = time.time()
         self.iniciar_sesion()
         print('START Reintentar_crear_nota_de_credito', data, nro_rma )
+        step_rpa = data['step_rpa'] if data['step_rpa'] else 'PEDIDO'
         codigo_motivo_devolucion={
             "parcial": "07",
             "total": "06"
@@ -714,7 +727,7 @@ class Dynamics_Bot:
             "estado": "CREADO",
             "nro_pedido_venta_devolucion": nro_pedido_nota_credito,
             "error": None,
-            "step_rpa": None,
+            "step_rpa":  step_rpa,
         }
 
         try:
@@ -724,7 +737,6 @@ class Dynamics_Bot:
             self._ingresar_valor_en_input_xpath(self.xpath_input_buscar_rma, nro_rma) # Solo es para el ejemplo
             print('Click en buscar rma')
             self._hacer_clic_xpath(self.xpath_button_buscar_rma)
-            # time.sleep(1)
             self._esperar_n_segundos(2)
             input_buscar_rma = self.wait.until(EC.element_to_be_clickable((By.XPATH, self.xpath_input_buscar_rma)))
             input_buscar_rma.click()
@@ -732,22 +744,18 @@ class Dynamics_Bot:
             self._esperar_n_segundos(1)
             pedido_devolucion_rma = self.driver.switch_to.active_element
             pedido_devolucion_rma.send_keys(Keys.ENTER)
-            step_rpa = data['step_rpa']
-            print('step_rpa', step_rpa)
             # end
+
+            print('>> step_rpa:', step_rpa)
+
             if step_rpa == 'PEDIDO':
-                self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-                resultado["step_rpa"] = 'ENLAZAR'
-            # if step_rpa == 'ENLAZAR':
-            self.registrar_articulos_para_devolucion(data=data)
-            resultado["step_rpa"] = 'REGISTRAR'
+               step_rpa = resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            if step_rpa == 'ENLAZAR':
+                resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
+
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
-            # Validar Si importe resumen es igual al importe solicitud continuar
-            # self.validar_importe_resumen_con_importe_solicitud(data=data)  # Al parecer no es necesario - Si no esta bien los montos no factura
-            # START Generar Factura
-            self.generar_factura(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
-            resultado["step_rpa"] = 'FACTURAR'
+            resultado["step_rpa"] = self.generar_factura(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
         except Exception as e:
             print('Exception crear nota de credito: ', e)
             resultado["estado"] = "ERROR"

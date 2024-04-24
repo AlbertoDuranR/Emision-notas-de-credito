@@ -61,7 +61,6 @@ class AceptaScraper:
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
         options.add_argument("--headless=new") # =new Despues de la versión 109
         # options.add_argument("--disable-gpu")
-        # options.add_argument("--window-size=1440, 1050")
         self.driver = webdriver.Chrome(options=options)
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
         # self.driver.maximize_window()
