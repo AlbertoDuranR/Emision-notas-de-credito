@@ -14,9 +14,6 @@ from ..models.model_market import Market
 servicePDV = ServiceNCPDV
 serviceDynamics = ServiceDynamics()
 
-# Configurar el logging para mostrar mensajes en la consola
-# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
 # Obtener el logger para el módulo actual (o elige un nombre específico)
 logger = logging.getLogger(__name__)
 
