@@ -267,32 +267,6 @@ class ServiceNotaCredito:
             solicitud_existente.sol_step_rpa = step_rpa
             solicitud_existente.save()
 
-    def existe_txt_factura(self, nom_archivo: str) -> bool:
-        # Not Used
-        ruta_archivo = f'C:/Users/roberttm/Downloads/{nom_archivo}.txt' # COLOCAR EL USUARIO ADMIN : Joven Danni
-        print(ruta_archivo)
-        if os.path.isfile(ruta_archivo):
-            # El archivo se descargó correctamente
-            print("Archivo TXT descargado")
-            return True
-        else:
-            # El archivo no se descargó
-            print("Error al descargar el archivo TXT")
-            return False
-                # print('VERIFICANDO TXT')
-        # USARLO DE ESTA FORMAR DONDE SE LLAME
-        # existe_txt = self.existe_txt_factura()
-        # count = 0
-        # while existe_txt:
-        #     time.sleep(1)
-        #     existe_txt = self.existe_txt_factura()
-        #     if existe_txt:
-        #         break
-        #     print(f'Esperando {count} Seg para descarga de TXT')
-        #     count += 1
-        #     if count > 30:
-        #         raise ValueError('Alcanzó tiempo estimado para decargar txt: 30 Segundos')
-
 
 class ErrorNotaDeCredito(Exception):
     '''Class to custom Exception'''

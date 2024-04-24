@@ -788,6 +788,8 @@ class Dynamics_Bot:
             estado_rpa = self.crear_nota_de_credito(data)
             estados_rpa.append(estado_rpa)
             self.driver.quit()
+            if estado_rpa['estado'] == 'ERROR':
+                break
         return estados_rpa
 
     def _ingresar_valor_en_input_id(self, xpath, valor):
