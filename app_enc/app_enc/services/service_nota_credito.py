@@ -47,7 +47,7 @@ class ServiceNotaCredito:
             try:
                 self.handle_data_rpa(estado_rpa=estado_rpa, sol_id=estado_rpa['sol_id'])
             except ErrorNotaDeCredito as e:
-                print('Error al Manejar Data RPA', e.estado, e.message, e.step)
+                print('Error al manejar data RPA al crear masivo', e.estado, e.message, e.step)
                 self.save_error_in_solicitudNC(sol_id=estado_rpa['sol_id'], estado_error=e.estado, error_msg=e.message, step_rpa=e.step)
 
     def crear_nota_credito(self, sol_id):
@@ -82,7 +82,7 @@ class ServiceNotaCredito:
             try:
                 self.handle_data_rpa(estado_rpa=estado_rpa, sol_id=sol_id)
             except ErrorNotaDeCredito as e:
-                print('Error al Manejar Data RPA', e, e.estado, e.message, e.step)
+                print('Error al manejar data RPA al crear', e, e.estado, e.message, e.step)
                 self.save_error_in_solicitudNC(sol_id=sol_id, estado_error=e.estado, error_msg=e.message, step_rpa=e.step)
                 raise e
 
@@ -140,7 +140,7 @@ class ServiceNotaCredito:
         try:
             self.handle_data_rpa(estado_rpa=estado_rpa, sol_id=sol_id)
         except ErrorNotaDeCredito as e:
-            print('Error al Manejar Data RPA', e.estado, e.message, e.step)
+            print('Error al manejar data RPA al reintentar', e.estado, e.message, e.step)
             self.save_error_in_solicitudNC(sol_id=sol_id, estado_error=e.estado, error_msg=e.message, step_rpa=e.step)
             raise e
 
@@ -259,7 +259,6 @@ class ServiceNotaCredito:
         }
 
     def save_error_in_solicitudNC(self, sol_id: str, estado_error='', error_msg='', step_rpa = ''):
-        print('Datos a Guardar del Error', sol_id, estado_error, error_msg, step_rpa)
         solicitud_existente = SolicitudNC.objects.get(sol_id=sol_id)
         if solicitud_existente:
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()

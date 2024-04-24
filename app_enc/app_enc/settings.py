@@ -15,9 +15,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-import logging
-# Configurar el logging para mostrar mensajes en la consola
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 ##
 load_dotenv()
 ##
