@@ -28,8 +28,10 @@ class ViewNotaCredito:
             sol_ids = []
             solicitudes = ViewSolicitudNotaDeCredito.objects.filter(sol_estado='VALIDADO', sol_tipo_nc='PDV') # Buscar todas las solicitudes con estado VALIDADO
             if not solicitudes:
-                return
-            for solicitud in solicitudes:
+                return JsonResponse({'message': 'Sin Solicitudes VALIDADAS'}, status=404)
+
+            solicitudes_ordenadas = solicitudes.order_by('sol_id')
+            for solicitud in solicitudes_ordenadas:
                 sol_ids.append(solicitud.sol_id)
 
             try:
@@ -37,14 +39,15 @@ class ViewNotaCredito:
                 ServiceNotaCredito.crear_masivo_notas_de_credito(sol_ids=sol_ids)
                 nro_notas_credito = []
                 for sol_id in sol_ids:
-                    solicitud = ViewSolicitudNotaDeCredito.objects.get(sol_id=sol_id, sol_estado='CREADO')
-                    if not solicitud and not solicitud.det_nro_nota_credito:
+                    try:
+                        solicitud = ViewSolicitudNotaDeCredito.objects.get(sol_id=sol_id, sol_estado='CREADO')
+                    except ViewSolicitudNotaDeCredito.DoesNotExist:
                         continue
-                    nro_notas_credito.append(solicitud.det_nro_nota_credito)
+                    else:
+                        if not solicitud and not solicitud.det_nro_nota_credito:
+                            continue
+                        nro_notas_credito.append(solicitud.det_nro_nota_credito)
                 return JsonResponse({'message': f'Se crearon {len(nro_notas_credito)} / {len(sol_ids)}', 'notas_creadas' : nro_notas_credito}, status=200)
-            except ViewSolicitudNotaDeCredito.DoesNotExist:
-                print('Expection ViewSolicitudNotaDeCredito.DoesNotExist:', e)
-                return JsonResponse({'message': 'Solicitudes no CREADAS'}, status=404)
             except Exception as e:
                 print('Expection create_nota_credito:', e)
                 return JsonResponse({'message': e.message }, status=404)
