@@ -14,6 +14,17 @@ from .dynamics_functions import AuxiliaryFunctions # Para Django
 from ..constans import CODIGO_DISPOSICION
 from ..constans import SERIES_PARA_NOTA_CREDITO
 
+def measure_time(func):
+    ''' Decorator para medir tiempo de ejecución'''
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        total_time = end_time - start_time
+        print(f"La función {func.__name__} tardó {total_time:.2f} segundos en ejecutarse")
+        return result
+    return wrapper
+
 load_dotenv()
 is_development_mode = os.environ.get("ENVIRONMENT") == 'development'
 is_production_mode = os.environ.get("ENVIRONMENT") == 'production'
@@ -34,6 +45,8 @@ class Dynamics_Bot:
         self.usuario= os.environ.get("BOT_DYNAMICS_USER")
         self.contrasena = os.environ.get("BOT_DYNAMICS_PASSWORD")
         self.nro_pedido_venta_devolucion=''
+
+        self.config_navigator()
 
         # XPaths
         self.xpath_siguiente = "//input[@type='submit']"
@@ -162,6 +175,9 @@ class Dynamics_Bot:
         self.wait = WebDriverWait(self.driver , 10)
         self.wait_20 = WebDriverWait(self.driver , 20)
 
+    def ir_a_url_inicial(self):
+        self.driver.get(self.url)
+
     def set_download_folter(self, options):
         # Configura la ruta de descarga
         download_dir = os.path.join(os.getcwd(),  'static\\downloads')
@@ -177,11 +193,11 @@ class Dynamics_Bot:
         options.add_experimental_option('prefs', prefs)
         return options
 
+    @measure_time
     def iniciar_sesion(self):
-        self.config_navigator()
         try:
+            self.ir_a_url_inicial()
             print('Iniciar Sesion')
-            self.driver.get(self.url)
             # ingresar usuario
             #self._ingresar_valor_en_input_id("i0116", self.usuario)
             self._ingresar_valor_en_input_xpath(self.xpath_input_login, self.usuario)
@@ -370,8 +386,6 @@ class Dynamics_Bot:
             print('cantidad_text', cantidad_text)
             cantidad_articulos_registrar = int(cantidad_text.strip().split(' ')[0])
             print('cantidad_articulos_registrar' ,cantidad_articulos_registrar)
-            
-
         except Exception as e:
             # Segunda validación siempre y cuando no sean mas de 7 productos. Ya que en este metodo no se muestran mas productos en la tabla. Los demas estan ocultos
             if len(data['productos']) < 7:
@@ -662,12 +676,12 @@ class Dynamics_Bot:
             # print('Exception crear nota de credito: ', e)
             raise ValueError ('Error al crear la factura', e)
 
+    @measure_time
     def crear_nota_de_credito(self, data):
         '''
             :params
                 data = {'num_comprobante_origen': 'BG01-00054368', 'num_pedido_origen': 'TRV-02752003', 'metodo': 'parcial', 'almacen': 'MD05_CRZ', 'productos': [{'codigo': '109168', 'cantidad': 1}], 'forma_pago': 'FP015', 'pago': 'CONT', 'fecha_solicitud': '22/01/2024', 'monto_total_nota_credito': 4.2, 'sol_tipo_nc': 'PDV', 'sol_estado': 'VALIDADO', 'step_rpa': '', 'sol_id': 110}
         '''
-        inicio = time.time()
         codigo_motivo_devolucion={
             "parcial": "07",
             "total": "06"
@@ -701,10 +715,9 @@ class Dynamics_Bot:
             return  resultado
         time.sleep(2)
         print('END Proceso Crear Nota de Credito')
-        fin = time.time()
-        print(f'Tiempo transcurrido: {fin-inicio} segundos')
         return resultado
 
+    @measure_time
     def reintentar_crear_nota_de_credito(self, data: dict, nro_rma: str, nro_pedido_nota_credito:str):
         """
          :params
@@ -718,7 +731,6 @@ class Dynamics_Bot:
             print('Sin Nro RMA')
             return
 
-        inicio = time.time()
         self.iniciar_sesion()
         print('START Reintentar_crear_nota_de_credito', data, nro_rma )
         step_rpa = data['step_rpa'] if data['step_rpa'] else 'PEDIDO'
@@ -769,8 +781,6 @@ class Dynamics_Bot:
             return  resultado
         time.sleep(2)
         print('END Proceso Reintentar Crear Nota de Credito')
-        fin = time.time()
-        print(f'Tiempo transcurrido: {fin-inicio} segundos')
         self.driver.quit()
         return resultado
 
@@ -782,14 +792,17 @@ class Dynamics_Bot:
 
     def crear_masivo_nota_de_credito(self, data_solicitudes: list):
         estados_rpa = [] # [{}, {}, {}]
+        self.iniciar_sesion()
         for data in data_solicitudes:
-            self.iniciar_sesion()
             print(f'Crear Data {data}, {data["sol_id"]}')
             estado_rpa = self.crear_nota_de_credito(data)
             estados_rpa.append(estado_rpa)
-            self.driver.quit()
             if estado_rpa['estado'] == 'ERROR':
                 break
+            time.sleep(1)
+            self.ir_a_url_inicial()
+            time.sleep(1)
+        self.driver.quit()
         return estados_rpa
 
     def _ingresar_valor_en_input_id(self, xpath, valor):
