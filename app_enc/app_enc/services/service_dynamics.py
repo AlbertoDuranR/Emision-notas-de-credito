@@ -149,17 +149,15 @@ class ServiceDynamics:
 
     def get_return_order_headers_by_return_order_number(self, return_order_number: str):
         """
-            :param invoice_number: The invoice number to query.
-                Ex. 'BG02-00052743'
-            :return: A list of dictionaries containing invoice details.
+            :param return_order_number: The ReturnOrderNumber to query.
+                Ex. 'TRV-03299965'
+            :return: A list of dictionaries containing return order details.
                 Ex.
                     [{
-                        'SalesOrderNumber': 'TRV-02755697',
-                        'SalesOrderOriginCode': 'PV',
-                        'DefaultShippingWarehouseId': 'MD04_SUC',
-                        'RequestedShippingDate': '2024-01-21T12:00:00Z',
-                        'SalesOrderProcessingStatus': 'Invoiced',
-                        'CustomerPaymentMethodName': 'FP015'
+                        'ReturnOrderNumber': 'TRV-03299965',
+                        'ReturnAddressName': 'CLIENTE DESCRIPTIVO',
+                        'RMANumber': 'TRV-009248',
+                        'ReturnOrderStatus': 'Invoiced' | 'Backorder' | 'canceled'
                     }]
         """
         # Definir url
