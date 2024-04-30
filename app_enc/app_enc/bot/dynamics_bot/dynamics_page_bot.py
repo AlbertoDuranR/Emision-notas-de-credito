@@ -385,7 +385,6 @@ class Dynamics_Bot:
             cantidad_text = (self.driver.find_element(By.XPATH, self.xpath_cantidad_filas)).text
             print('cantidad_text', cantidad_text)
             cantidad_articulos_registrar = int(cantidad_text.strip().split(' ')[0])
-            print('cantidad_articulos_registrar' ,cantidad_articulos_registrar)
         except Exception as e:
             # Segunda validación siempre y cuando no sean mas de 7 productos. Ya que en este metodo no se muestran mas productos en la tabla. Los demas estan ocultos
             if len(data['productos']) < 7:
@@ -413,7 +412,6 @@ class Dynamics_Bot:
             if count > 4:
                 raise ValueError('Error: Cantidad de articulos Seleccionados no son iguales a los solicitados')
 
-
         ## Registrar Articulos
         try:
             self._wait_hide_div_bloking(20)
@@ -433,9 +431,22 @@ class Dynamics_Bot:
                 self._esperar_n_segundos(5)
                 input_elements = self.driver.find_elements(By.XPATH, f'{xpath_primera_fila}//input')
                 estado_devolucion_articulo= input_elements[8].get_attribute("value")
+                codigo_articulo = input_elements[0].get_attribute("value")
+                # Verificar si selecciono el nuevo producto a registrar
+                intentos = 0
+                while codigo_articulo != articulo['codigo']:
+                    print('Volver a obtener codigo_articulo')
+                    time.sleep(2)
+                    self._esperar_n_segundos(1)
+                    input_elements = self.driver.find_elements(By.XPATH, f'{xpath_primera_fila}//input')
+                    estado_devolucion_articulo= input_elements[8].get_attribute("value")
+                    codigo_articulo = input_elements[0].get_attribute("value")
+                    intentos += 1
+                    if intentos > 3:
+                        raise Exception(f'Articulo {articulo["codigo"]} a registrar no es igual al árticulo seleccionado')
                 # for input_element in input_elements:
                 #     print("Text input:", input_element.get_attribute("value"))
-                print("-- Articulo a registrar:", articulo['codigo'], "Estado devolución:", estado_devolucion_articulo)
+                print("-- Articulo a registrar:", codigo_articulo, "Estado de devolución:", estado_devolucion_articulo)
                 if estado_devolucion_articulo.lower() == 'previsto':
                     self._esperar_n_segundos(2)
                     self._hacer_clic_xpath(xpath_primera_fila)
@@ -531,6 +542,7 @@ class Dynamics_Bot:
                 self.validar_importe_resumen_con_importe_solicitud(data)
                 print('Click en vistas globales')
                 self._hacer_clic_xpath(self.xpath_button_vistas_globales)
+
             try:
                 print('Click en Vista formulario de pedido de venta')
                 self._esperar_n_segundos(1)
@@ -584,7 +596,8 @@ class Dynamics_Bot:
 
     def validar_importe_resumen_con_importe_solicitud(self, data):
         # Siempre tener visible el DIV "Informacion relacionada" en las vistas del usuario.
-        # START Verificar Ingualdad entre resumen y  monto total de solicitud
+        # START Verificar ngualdad entre resumen y  monto total de solicitud
+        print(">> START validar importe resumen con importe solicitud")
         try:
             try:
                 self._esperar_n_segundos(2)
@@ -601,21 +614,21 @@ class Dynamics_Bot:
             importe_total_resumen = self.driver.find_element(By.XPATH, self.xpath_importe_total_resumen)
             importe_total_resumen_value = abs(round(float(importe_total_resumen.get_attribute("value")), 2))
             importe_total_nota_credito = abs(round(float(data['monto_total_nota_credito']), 2))
-            count=0
+            intentos=0
             while importe_total_nota_credito != importe_total_resumen_value:
                 print('Importe total', importe_total_nota_credito, importe_total_resumen_value)
                 time.sleep(1)
                 importe_total_resumen = self.driver.find_element(By.XPATH, self.xpath_importe_total_resumen)
                 importe_total_resumen_value = abs(round(float(importe_total_resumen.get_attribute("value")), 2))
-                count += 1
-                if count > 5:
-                    print('Error Importe de nota credito diferente al Importe de resumen')
-                    raise ValueError("Importe de Nota credito diferente a Importe de resumen")
+                intentos += 1
+                if intentos > 3:
+                    raise Exception("Importe de pedido de devolución es diferente a Importe de resumen")
             print('Importe total Nota: ', importe_total_nota_credito, 'Importe total Resumen:', importe_total_resumen_value)
             time.sleep(2)
         except Exception as e:
             print('Error al verificar resumen: ', e)
-            raise
+            raise ValueError(f"Error al verificar resumen: {str(e)}")
+        print(">> END validar importe resumen con importe solicitud")
          # END Verificar Ingualdad entre resumen y  monto total de solicitud
 
     def get_serie_documento(self, invoice_number: str) -> str:
@@ -634,6 +647,8 @@ class Dynamics_Bot:
     def generar_factura(self, data, codigo_motivo_devolucion):
         try:
             print('START Generar Factura - Nota de crédito')
+            self.validar_importe_resumen_con_importe_solicitud(data)
+            self._esperar_n_segundos(2)
             self._hacer_clic_xpath(self.xpath_button_factura)
             self._hacer_clic_xpath(self.xpath_button_generar_factura)
             if self._is_displayed_messagebar_error():
