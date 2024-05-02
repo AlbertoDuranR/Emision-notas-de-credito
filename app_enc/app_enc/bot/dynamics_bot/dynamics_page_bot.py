@@ -434,8 +434,8 @@ class Dynamics_Bot:
                 codigo_articulo = input_elements[0].get_attribute("value")
                 # Verificar si selecciono el nuevo producto a registrar
                 intentos = 0
-                while codigo_articulo != articulo['codigo']:
-                    print('Volver a obtener codigo_articulo')
+                while str(codigo_articulo).strip() != str(articulo['codigo']).strip():
+                    print('Volver a obtener codigo_articulo', codigo_articulo, articulo['codigo'])
                     time.sleep(2)
                     self._esperar_n_segundos(1)
                     input_elements = self.driver.find_elements(By.XPATH, f'{xpath_primera_fila}//input')
@@ -612,7 +612,7 @@ class Dynamics_Bot:
             # Para verificar si el monto del resumen es igual al solicitado. SI ES IGUAL IR A FACTURAR
             self._esperar_n_segundos(4)
             importe_total_resumen = self.driver.find_element(By.XPATH, self.xpath_importe_total_resumen)
-            importe_total_resumen_value = abs(round(float(importe_total_resumen.get_attribute("value")), 2))
+            importe_total_resumen_value = abs(round(float(importe_total_resumen.get_attribute("value").replace(',','')), 2))
             importe_total_nota_credito = abs(round(float(data['monto_total_nota_credito']), 2))
             intentos=0
             while importe_total_nota_credito != importe_total_resumen_value:
