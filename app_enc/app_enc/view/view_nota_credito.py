@@ -1,12 +1,10 @@
 import json
 from django.http import JsonResponse
-from django.middleware.csrf import get_token
 from ..models.model_view_solicitudes_nota_de_credito import ViewSolicitudNotaDeCredito
 from ..services.service_nota_credito import ServiceNotaCredito
-from ..services.service_dynamics import ServiceDynamics
 
 ServiceNotaCredito = ServiceNotaCredito()
-serviceDynamics = ServiceDynamics()
+
 
 class ViewNotaCredito:
     def create_nota_credito(request):

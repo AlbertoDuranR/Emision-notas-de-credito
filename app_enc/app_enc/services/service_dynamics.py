@@ -1,149 +1,87 @@
-from dotenv import load_dotenv
-import requests,json
+import requests
 import os
+import json
+import jwt
 import pandas as pd
-import multiprocessing
-import dill
-#
+
+from dotenv import load_dotenv
+from datetime import datetime
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
 load_dotenv()
 is_development_mode = os.environ.get("ENVIRONMENT") == 'development'
 is_production_mode = os.environ.get("ENVIRONMENT") == 'production'
-#
-class ServiceDynamics:
-    
-    if is_development_mode:
-        url = os.environ.get("url_api_dynamics_master")
-    elif is_production_mode:
-        url = os.environ.get("url_api_dynamics")
 
-    def get_Token(self):
-        env = {
-                "client_id":"53f3c906-9bfc-4a5d-89d8-30ce9a672481",
-                "client_secret":"zNA3~9-5wuywwiflFbAP52cgJ_5wQ__Y48",
-                "resource":f"{self.url}",
-                "grant_type":"client_credentials"
-            }
-        endp = 'https://login.microsoftonline.com/ceb88b8e-4e6a-4561-a112-5cf771712517/oauth2/token'
 
-        try:
-            req = requests.post(endp,env)
-            if req.status_code == 200:
-                token = req.json()['access_token']
-                # print('token' * 20, token)
-                return 'Bearer {0}'.format(token)
-            else:
-                return None
-        except:
-            return None
+class SingletonMeta(type):
+    _instances = {}
 
-    def fetch_data(self,query_update):
-        token = self.get_Token()
-        #Headers
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class ServiceDynamics(metaclass=SingletonMeta):
+    def __init__(self) -> None:
+        print('INIT SERVICE DYNAMCIS')
+        if is_development_mode:
+            self.url = os.environ.get("url_api_dynamics_master")
+        elif is_production_mode:
+            self.url = os.environ.get("url_api_dynamics")
+        self.token_dynamics = TokenDynamics(self.url)
+
+    def fetch_data(self, full_path_url):
+        """
+        Fetches data from the given url using a token for authorization.
+
+        Args:
+            url (str): The URL url from which to fetch the data.
+
+        Returns:
+            dict or list: The JSON data returned from the request, or an empty list if the request fails.
+        """
+        print('fetch_data: ', full_path_url);
+        token = self.token_dynamics.get_token()
+        # Set up headers
         headers = {
             "Authorization": token,
             "Content-Type": "application/json"
         }
-        response = requests.get(query_update, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return []
-
-    def process_data(self,path,method=1,i=0):
-        if method == 1:
-            query_update = f"{path}"
-            return self.fetch_data(query_update)
-        elif method == 2:
-            query_update = f"{path}&$top=1000&$skip={int(i)}"
-            return self.fetch_data(query_update)["value"]
-
-    def getProductsIssued(self):
-        #Definir url
-        path = f"{self.url}/data/AllProducts"
-        # token = self.get_Token()
-        #Queries
-        query_temp = f"?$count=true&$top=1"
-        path_temp=path+query_temp
-
-        query = f"?$count=true&$select=ProductNumber,ProductDescription"
-        path_final=path+query
-
+        # Make the request
         try:
-            count_temp = self.process_data(path=path_temp)
-            count = int((int(count_temp["@odata.count"]))/1000)
-            if count >0:
-                list_count = list(range(0,int(count_temp["@odata.count"])+1000,1000))
-                result = []
-                pool = multiprocessing.Pool()
-                # results = pool.map(self.process_data,path_final,2,list_count)
-                #results = pool.map(lambda x: self.process_data(path=path_final,method=2,i=x),list_count)
-                # results = pool.map(process_data_method_2,list_count)
-                # pool.close()
-                # pool.join()
-                # Apply the process_data_method_2 function asynchronously to each element in list_count
-                results = [pool.apply_async(self.process_data,args=(path_final, 2, x)) for x in list_count]
-                for item in results:
-                    temp= list(item.get())
-                    result.extend(temp)
-                pool.close()
-                pool.join()
-                ##
-                print(len(result))
-                products = pd.read_json(json.dumps(result))
-                products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
-                result = products[["ProductNumber","ProductDescription","Product"]]
-                result = result.to_dict(orient='records')
-                return result
-            else:
-                result = self.process_data(path=path_final)
-                products = pd.read_json(json.dumps(result["value"]))
-                products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
-                result = products[["ProductNumber","ProductDescription","Product"]]
-                result = result.to_dict(orient='records')
-                return result
-        except Exception as e:
-            print(e)
-            return []
+            response = requests.get(full_path_url, headers=headers)
+            response.raise_for_status()  # Raise an error for non-200 status codes
+            return response.json()  # Return the JSON response
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data: {e}")
+            return []  # Return an empty list if there's an error
+
 
     def getUnitsConversion(self):
         #Definir url
         path = f"{self.url}/data/UnitsOfMeasure"
-        token = self.get_Token()
-        #Queries
         query = f"?$count=true&$select=UnitSymbol"
-        #Headers
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
-        path=path+query
+        path = path+query
 
         try:
-            response = requests.get(path,headers=headers)
-            if response.status_code == 200:
-                temp1= response.json()
-                #
-                count = int(int(temp1["@odata.count"])/10000)
-                if count > 0 :
-                    result= temp1["value"]
-                    for i in range(count):
-                        query_update = f"{path}&$top=10000&$skip={int(i)+1}0000"
-                        response = requests.get(query_update,headers=headers)
-                        if response.status_code == 200:
-                            result.extend(response.json()["value"])
-                    ##
-                    products = pd.read_json(json.dumps(result))
-                    result = products[["UnitSymbol"]]
-                    result = result.to_dict(orient='records')
-                    ##
-                    return result
-                else:
-                    ##
-                    products = pd.read_json(json.dumps(temp1["value"]))
-                    result = products[["UnitSymbol"]]
-                    result = result.to_dict(orient='records')
-                    ##
-                    return result
+            temp1 = self.fetch_data(path)
+            count = int(int(temp1["@odata.count"])/10000)
+            if count > 0 :
+                result= temp1["value"]
+                for i in range(count):
+                    path_query_update = f"{path}&$top=10000&$skip={int(i)+1}0000"
+                    response = self.fetch_data(path_query_update)
+                    result.extend(response.json()["value"])
+                products = pd.read_json(json.dumps(result))
+                result = products[["UnitSymbol"]]
+                result = result.to_dict(orient='records')
+                return result
+            else:
+                products = pd.read_json(json.dumps(temp1["value"]))
+                result = products[["UnitSymbol"]]
+                result = result.to_dict(orient='records')
+                return result
         except:
             return None
 
@@ -162,17 +100,10 @@ class ServiceDynamics:
         """
         # Definir url
         path = f"{self.url}/data/ReturnOrderHeaders"
-        token = self.get_Token()
         query = f"?$count=true&$filter=ReturnOrderNumber eq '{return_order_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -202,17 +133,10 @@ class ServiceDynamics:
         """
         # Definir url
         path = f"{self.url}/data/SalesOrderHeaders"
-        token = self.get_Token()
         query = f"?$count=true&$select=SalesOrderOriginCode,DefaultShippingWarehouseId,RequestedShippingDate,SalesOrderProcessingStatus,PaymentTermsName,CustomerPaymentMethodName&$filter=SalesOrderNumber eq '{sales_order_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -248,18 +172,11 @@ class ServiceDynamics:
         """
         # Definir url
         path = f"{self.url}/data/SalesInvoiceHeaders"
-        token = self.get_Token()
         query = f"?$count=true&$select=SalesOrderNumber,InvoiceDate,TotalTaxAmount,SalesOrderNumber,TotalInvoiceAmount,PaymentTermsName&$filter=InvoiceNumber eq '{invoice_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
 
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -282,18 +199,11 @@ class ServiceDynamics:
         """
         # Definir url
         path = f"{self.url}/data/SalesInvoiceHeaders"
-        token = self.get_Token()
         query = f"?$count=true&$select=SalesOrderNumber&$filter=InvoiceNumber eq '{invoice_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
 
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -321,18 +231,11 @@ class ServiceDynamics:
         """
         # Definir url
         path = f"{self.url}/data/SalesInvoiceHeaders"
-        token = self.get_Token()
         query = f"?$count=true&$filter=SalesOrderNumber eq '{sales_order_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
 
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -353,17 +256,10 @@ class ServiceDynamics:
         # https://mistr.operations.dynamics.com/data/SalesInvoiceLines?$count=true&$filter=InvoiceNumber eq 'BA01-00249590'
         # Definir url
         path = f"{self.url}/data/SalesInvoiceLines"
-        token = self.get_Token()
         query = f"?$count=true&$filter=InvoiceNumber eq '{invoice_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -383,17 +279,10 @@ class ServiceDynamics:
         # https://mistr.operations.dynamics.com/data/EmployeesV2?$count=true&$select=PersonnelNumber, Name&$filter=PersonnelNumber eq '47518569'
         # Definir url
         path = f"{self.url}/data/EmployeesV2"
-        token = self.get_Token()
         query = f"?$count=true&$select=PersonnelNumber, Name&$filter=PersonnelNumber eq '{personnel_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -420,17 +309,10 @@ class ServiceDynamics:
         # https://mistr.operations.dynamics.com/data/PositionsV2?$count=true&$select=PositionId, Description, WorkerName, DepartmentNumber, WorkerPersonnelNumber&$filter=WorkerPersonnelNumber eq '75650740'
         # Definir url
         path = f"{self.url}/data/PositionsV2"
-        token = self.get_Token()
         query = f"?$count=true&$select=PositionId, Description, WorkerName, DepartmentNumber, WorkerPersonnelNumber&$filter=WorkerPersonnelNumber eq '{worker_personnel_number}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -455,17 +337,10 @@ class ServiceDynamics:
         # https://mistr.operations.dynamics.com/data/RetailTransactionPaymentLinesV2?$count=true&$select=TransactionNumber, ReceiptId, TenderType&$filter=ReceiptId eq 'BB06-00068688'
         # Definir url
         path = f"{self.url}/data/RetailTransactionPaymentLinesV2"
-        token = self.get_Token()
         query = f"?$count=true&$select=TransactionNumber, ReceiptId, TenderType&$filter=ReceiptId eq '{receip_id}'"
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
         full_path_url=f"{path}{query}"
         try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status() # Raises an HTTPError if the HTTP request returned an unsuccessful status code
-            data = response.json()
+            data = self.fetch_data(full_path_url)
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
@@ -478,4 +353,98 @@ class ServiceDynamics:
             return result.to_dict(orient='records')
         except Exception as e:
             print(f"An exception occurred in get_retail_transaction_payment_lines_v2_by_receip_id: {e}")
+            return None
+
+
+class TokenDynamics():
+    def __init__(self, url) -> None:
+        print('INIT TOKEN DYNAMICS', url)
+        self.url = url
+
+    def _decode_token(self, token):
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False})
+            return payload
+        except ExpiredSignatureError:
+            print("El token ha expirado.")
+            return None
+        except InvalidTokenError:
+            print("El token es inválido.")
+            return None
+
+    def _expired_token(self, payload):
+        if payload:
+            expiracion = payload.get("exp", 0)
+            if expiracion > 0:
+                exp_timestamp = datetime.utcfromtimestamp(expiracion)
+                curr_date = datetime.utcnow()
+                expired_token = exp_timestamp < curr_date
+                # print('entro expired_token', expired_token, exp_timestamp, curr_date)
+                if expired_token:
+                    print("El token ha expirado.")
+                else:
+                    print("El token es válido hasta:", exp_timestamp.strftime("%Y-%m-%d %H:%M:%S"))
+                return expired_token
+            else:
+                print("El token no incluye información de expiración.")
+        else:
+            print('Sin payload', payload)
+
+    def set_token_in_json(self):
+        env = {
+                "client_id": os.environ.get("CLIENT_ID_DYNAMICS"),
+                "client_secret": os.environ.get("CLIENT_SECRET_DYNAMICS"),
+                "resource":f"{self.url}",
+                "grant_type":"client_credentials"
+            }
+        endp = 'https://login.microsoftonline.com/ceb88b8e-4e6a-4561-a112-5cf771712517/oauth2/token'
+
+        try:
+            req = requests.post(endp,env)
+            if req.status_code == 200:
+                token = req.json()['access_token']
+                # print('token' * 20, token)
+                # Guardar el token en un archivo JSON
+                data = {"dynamics_token": token}
+                print('set_token_in_json', data)
+                # Ruta al directorio static de tu aplicación Django
+                directorio_static = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'services')
+                ruta_json = os.path.join(directorio_static, 'data_token.json')
+                with open(ruta_json, 'w') as json_file:
+                    json.dump(data, json_file)
+            else:
+                return None
+        except:
+            return None
+
+    def is_active_token(self, token):
+        payload = self._decode_token(token)
+        if payload is None:
+            return False
+        return not self._expired_token(payload)
+
+    def get_token_from_json(self):
+        # Cargar el token desde el archivo JSON
+        try:
+            # Ruta al directorio static de tu aplicación Django
+            directorio_static = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'services')
+            ruta_json = os.path.join(directorio_static, 'data_token.json')
+            with open(ruta_json, 'r') as json_file:
+                data = json.load(json_file)
+                return data["dynamics_token"]
+        except FileNotFoundError as e:
+            print(e)
+            return None
+
+    def get_token(self):
+        # Cargar el token desde el archivo JSON
+        token = self.get_token_from_json()
+        try:
+            if token == '' or not self.is_active_token(token):
+                self.set_token_in_json()
+                token = self.get_token_from_json()
+                print('T'*10, token)
+            return 'Bearer {0}'.format(token)
+        except FileNotFoundError as e:
+            print(e)
             return None

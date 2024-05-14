@@ -5,7 +5,6 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from ..services.service_nc_punto_venta import ServiceNCPDV
 from ..services.service_dynamics import ServiceDynamics
-from ..scrapers.acepta_page_bot.acepta_page_bot import AceptaScraper
 from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_view_solicitudes_nota_de_credito import ViewSolicitudNotaDeCredito
 from ..models.model_market import Market
