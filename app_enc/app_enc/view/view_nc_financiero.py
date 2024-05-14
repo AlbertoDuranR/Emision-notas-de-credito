@@ -7,6 +7,7 @@ import json
 serviceFinanciero = ServiceNCFinanciero
 serviceDynamics = ServiceDynamics()
 
+
 class ViewNCFinanciero:
     ### Formulario Financieros
     def notaFinanciero(request):

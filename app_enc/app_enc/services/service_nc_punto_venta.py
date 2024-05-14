@@ -10,6 +10,8 @@ from ..models.model_solicitante_detalle import SolicitanteDet
 from ..models.model_market import Market
 from ..services.service_dynamics import ServiceDynamics
 
+serviceDynamics = ServiceDynamics()
+
 
 class ServiceNCPDV:
     # vista
@@ -33,7 +35,6 @@ class ServiceNCPDV:
                     # print('estado_nota_credito', det_id,estado_nota_credito, nro_nota_credito)
                     if not nro_nota_credito:
                         print('verificar')
-                        serviceDynamics = ServiceDynamics()
                         sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
                         # print('lista_solicitudes: ', sales_invoice_headers)
                         if sales_invoice_headers:
@@ -216,7 +217,6 @@ class ServiceNCPDV:
             ProductoDetalle.objects.bulk_create(producto_detalle)
 
     def get_forma_pago(nro_comprobante, tender_type):
-        serviceDynamics = ServiceDynamics()
         # Get data de Dynamic
         invoice_headers = serviceDynamics.get_sales_invoice_headers_by_invoice_number(invoice_number=nro_comprobante)
         if not invoice_headers:
