@@ -19,7 +19,7 @@ if defined PID (
 
 REM Levantar FrontEnd VueJS
 echo Iniciando FrontEnd VueJS...
-cd "E:\Python\Emision-notas-de-credito\app_enc"
+cd /d "E:\Python\Emision-notas-de-credito\app_enc"
 npm run dev
 
 REM Mensaje de finalización
