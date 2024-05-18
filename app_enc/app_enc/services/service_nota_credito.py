@@ -10,6 +10,7 @@ from ..models.model_view_solicitudes_nota_de_credito import ViewSolicitudNotaDeC
 from ..services.service_dynamics import ServiceDynamics
 
 serviceDynamics = ServiceDynamics()
+dynamics_bot = Dynamics_Bot()
 
 
 class ServiceNotaCredito:
@@ -40,7 +41,6 @@ class ServiceNotaCredito:
             print(data_solicitudes)
 
         # crear  NC uno por uno
-        dynamics_bot = Dynamics_Bot()
         estados_rpa=dynamics_bot.crear_masivo_nota_de_credito(data_solicitudes=data_solicitudes)
         print(f'Estados rpa: {estados_rpa}')
         for estado_rpa in estados_rpa:
@@ -76,7 +76,6 @@ class ServiceNotaCredito:
         data_solicitud = self.get_data_solicitud(sol_id=sol_id)
         print('Data_solicitud: \n', data_solicitud)
         if data_solicitud['sol_tipo_nc'] == 'PDV' and data_solicitud['sol_estado'] == 'VALIDADO':
-            dynamics_bot = Dynamics_Bot()
             estado_rpa = dynamics_bot.crear_individual_nota_de_credito(data=data_solicitud)
             print(f'Estado sol_id {sol_id} RPA:  {estado_rpa}')
             try:
@@ -134,7 +133,6 @@ class ServiceNotaCredito:
         # START Reintentar
         data_solicitud = self.get_data_solicitud(sol_id=sol_id)
         print('Data_solicitud: \n', data_solicitud, '\n nro_rma: ', nro_rma)
-        dynamics_bot = Dynamics_Bot()
         estado_rpa = dynamics_bot.reintentar_crear_nota_de_credito(data=data_solicitud, nro_rma=nro_rma, nro_pedido_nota_credito=nro_pedido_nota_credito)
         print('Estado RPA: ', estado_rpa, estado_rpa['step_rpa'])
         try:

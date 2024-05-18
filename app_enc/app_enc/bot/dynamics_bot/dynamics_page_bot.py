@@ -29,11 +29,11 @@ load_dotenv()
 is_development_mode = os.environ.get("ENVIRONMENT") == 'development'
 is_production_mode = os.environ.get("ENVIRONMENT") == 'production'
 
-
 class Dynamics_Bot:
     intentos = 0
 
     def __init__(self):
+        print('INIT DYNAMICS BOT')
         # Credenciales
         if is_development_mode:
             print('--Modo desarrollo dynamics activado--')
@@ -45,8 +45,6 @@ class Dynamics_Bot:
         self.usuario= os.environ.get("BOT_DYNAMICS_USER")
         self.contrasena = os.environ.get("BOT_DYNAMICS_PASSWORD")
         self.nro_pedido_venta_devolucion=''
-
-        self.config_navigator()
 
         # XPaths
         self.xpath_siguiente = "//input[@type='submit']"
@@ -159,10 +157,10 @@ class Dynamics_Bot:
         # Reintentar
         self.xpath_button_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl")]/button'
 
-    def config_navigator(self):
+    def init_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        # options.add_argument("--headless=new") # =new Despues de la versión 109
+        options.add_argument("--headless=new") # =new Despues de la versión 109
         # options.add_argument("--no-sandbox") # Ejecutar en entornos con sandboxing, como Docker Averiguar
 
         options = self.set_download_folter(options)
@@ -197,7 +195,6 @@ class Dynamics_Bot:
     @measure_time
     def iniciar_sesion(self):
         try:
-            self.ir_a_url_inicial()
             print('Iniciar Sesion')
             # ingresar usuario
             #self._ingresar_valor_en_input_id("i0116", self.usuario)
@@ -610,7 +607,7 @@ class Dynamics_Bot:
         return
 
     def validar_importe_resumen_con_importe_solicitud(self, data):
-        # Siempre tener visible el DIV "Informacion relacionada" en las vistas del usuario.
+        ''' Siempre tener visible el DIV "Informacion relacionada" en las vistas del usuario. '''
         # START Verificar ngualdad entre resumen y  monto total de solicitud
         print(">> START validar importe resumen con importe solicitud")
         try:
@@ -742,8 +739,7 @@ class Dynamics_Bot:
                 "mensaje": str(e),
                 "donde": "Crear nota de crédito"
             }
-            return  resultado
-        time.sleep(2)
+        time.sleep(1)
         print('END Proceso Crear Nota de Credito')
         return resultado
 
@@ -760,7 +756,8 @@ class Dynamics_Bot:
         if not nro_rma:
             print('Sin Nro RMA')
             return
-
+        self.init_navigator()
+        self.ir_a_url_inicial()
         self.iniciar_sesion()
         print('START Reintentar_crear_nota_de_credito', data, nro_rma )
         step_rpa = data['step_rpa'] if data['step_rpa'] else 'PEDIDO'
@@ -808,13 +805,14 @@ class Dynamics_Bot:
                 "mensaje": str(e),
                 "donde": "Crear factura para la nota de crédito"
             }
-            return  resultado
-        time.sleep(2)
-        print('END Proceso Reintentar Crear Nota de Credito')
+        time.sleep(1)
         self.driver.quit()
+        print('END Proceso Reintentar Crear Nota de Credito')
         return resultado
 
     def crear_individual_nota_de_credito(self, data):
+        self.init_navigator()
+        self.ir_a_url_inicial()
         self.iniciar_sesion()
         result_rpa= self.crear_nota_de_credito(data)
         self.driver.quit()
@@ -822,6 +820,8 @@ class Dynamics_Bot:
 
     def crear_masivo_nota_de_credito(self, data_solicitudes: list):
         estados_rpa = [] # [{}, {}, {}]
+        self.init_navigator()
+        self.ir_a_url_inicial()
         self.iniciar_sesion()
         for data in data_solicitudes:
             print(f'Crear Data {data}, {data["sol_id"]}')
