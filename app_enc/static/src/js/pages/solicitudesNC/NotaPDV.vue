@@ -396,7 +396,8 @@ const refreshLoading = () => {
 };
 
 const getDatosDelComprobante = async () => {
-  if (datos_documento.value.nro_comprobante == "") {
+  const valueNroComprobante = datos_documento.value.nro_comprobante.toUpperCase();
+  if (valueNroComprobante == "") {
     notify({
       title: "Verificar Campos",
       text: "Ingresar Nro Comprobante",
@@ -406,13 +407,14 @@ const getDatosDelComprobante = async () => {
   }
 
   isLoading.value = true;
+  datos_documento.value.nro_comprobante = valueNroComprobante;
   try {
     const response = await axios.get(
-      `/comprobante/get_datos_comprobante/${datos_documento.value.nro_comprobante}`
+      `/comprobante/get_datos_comprobante/${valueNroComprobante}`
     );
     if (response.status == 200 && response.data[0]) {
-      datos_documento.value.importe_total = response.data[0].TotalInvoiceAmount;
       const fechaEmision = response.data[0].InvoiceDate;
+      datos_documento.value.importe_total = response.data[0].TotalInvoiceAmount;
       datos_documento.value.fecha_emision.date = convertirFormatoFecha(fechaEmision);
       datos_documento.value.tender_type = response.data[0].TenderType || ''
     }
