@@ -1,3 +1,4 @@
+<!-- Deprecated by NotaPDV.vue -->
 <template>
   <Header />
   <div class="container px-6 mx-auto block">

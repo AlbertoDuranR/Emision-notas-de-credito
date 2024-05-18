@@ -130,6 +130,7 @@ class ServiceNCPDV:
         fecha_solicitud = datetime.strptime(fecha_solicitud,'%Y-%m-%dT%H:%M:%S.%fZ')
         print('fecha_solicitud 2', fecha_solicitud )
         nro_comprobante = data["datos_documento"]["nro_comprobante"]
+        nro_comprobante = nro_comprobante.upper()
         tender_type = data["datos_documento"]["tender_type"]
         motivo = data["detalle_solicitud"]["motivo"]
         importe_total = float(data["datos_documento"]["importe_total"])
