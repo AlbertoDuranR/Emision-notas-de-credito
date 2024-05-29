@@ -127,9 +127,9 @@ class Dynamics_Bot:
         self.xpath_edit_icon='//*[contains(@id, "SalesTable") and contains(@id, "SalesTable_DeliveryNameHeaderOverview")]/span[2]' # Para poder editar todo.
         self.xpath_input_numero_cuenta_cliente='//input[contains(@id, "SalesTable") and contains(@id, "CarrierCustomerAccountNumber_input")]' # usamos para luego llgar con tab a la forma de pago
         self.xpath_button_vistas_globales='//button[contains(@id, "alesTable") and contains(@id, "SystemDefinedManageViewFilters")]'
-        # self.xpath_vista_estandar='//div[contains(@id, "ViewButtons")]/div[2]/button[1]'
         self.xpath_vista_formulario_pedido_venta='//div[contains(@id, "ViewButtons")]/div[2]/button[3]'
-        self.xpath_vista_estandar='//div[contains(@id, "ViewButtons")]/div[2]/button[1]'
+        # self.xpath_vista_estandar='//div[contains(@id, "ViewButtons")]/div[2]/button[1]' # Deprecated por cambios en las vistas en Dynamics
+        self.xpath_vista_estandar='//div[contains(@id, "GlobalGroup")]/div[2]/div[1]/div[2]/button[1]'
         self.xpath_span_actualizar_lineas_pedido='//*[contains(@id, "Dialog") and contains(@id, "DeliveryDate_toggle")]'
         self.xpath_button_aceptar_actualizar='//button[contains(@id, "Dialog") and contains(@id, "OkButton")]'
         self.xpath_encabezado_pedidos_ventas='//button[contains(@id, "SalesTable") and contains(@id, "LineViewHeader_caption")]'
