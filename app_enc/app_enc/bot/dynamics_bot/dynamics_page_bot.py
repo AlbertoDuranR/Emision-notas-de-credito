@@ -14,6 +14,7 @@ from .dynamics_functions import AuxiliaryFunctions # Para Django
 from ..constans import CODIGO_DISPOSICION
 from ..constans import SERIES_PARA_NOTA_CREDITO
 
+
 def measure_time(func):
     ''' Decorator para medir tiempo de ejecución'''
     def wrapper(*args, **kwargs):
@@ -818,22 +819,24 @@ class Dynamics_Bot:
         self.driver.quit()
         return result_rpa
 
-    def crear_masivo_nota_de_credito(self, data_solicitudes: list):
-        estados_rpa = [] # [{}, {}, {}]
-        self.init_navigator()
-        self.ir_a_url_inicial()
-        self.iniciar_sesion()
-        for data in data_solicitudes:
-            print(f'Crear Data {data}, {data["sol_id"]}')
-            estado_rpa = self.crear_nota_de_credito(data)
-            estados_rpa.append(estado_rpa)
-            if estado_rpa['estado'] == 'ERROR':
-                break
-            time.sleep(1)
-            self.ir_a_url_inicial()
-            time.sleep(1)
+    # Deprecated: Ahora es manejado desde service_nota_credito para guardar en la BD
+    # def crear_masivo_nota_de_credito(self, data_solicitudes: list):
+    #     estados_rpa = [] # [{}, {}, {}]
+    #     self.init_navigator()
+    #     self.ir_a_url_inicial()
+    #     self.iniciar_sesion()
+    #     for data in data_solicitudes:
+    #         print(f'Crear Data {data}, {data["sol_id"]}')
+    #         estado_rpa = self.crear_nota_de_credito(data)
+    #         estados_rpa.append(estado_rpa)
+    #         if estado_rpa['estado'] == 'ERROR':
+    #             break
+    #         time.sleep(1)
+    #         self.ir_a_url_inicial()
+    #         time.sleep(1)
+
+    def close_navigator(self):
         self.driver.quit()
-        return estados_rpa
 
     def _ingresar_valor_en_input_id(self, xpath, valor):
         AuxiliaryFunctions.ingresar_valor_en_input_id(self.driver, self.wait, xpath, valor)
