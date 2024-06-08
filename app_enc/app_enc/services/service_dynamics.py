@@ -43,20 +43,35 @@ class ServiceDynamics(metaclass=SingletonMeta):
             dict or list: The JSON data returned from the request, or an empty list if the request fails.
         """
         print('fetch_data: ', full_path_url);
-        token = self.token_dynamics.get_token()
-        # Set up headers
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
-        # Make the request
-        try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status()  # Raise an error for non-200 status codes
-            return response.json()  # Return the JSON response
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching data: {e}")
-            return []  # Return an empty list if there's an error
+        max_attempts = 3
+        attempt = 0
+
+        while attempt < max_attempts:
+            token = self.token_dynamics.get_token()
+            headers = {
+                "Authorization": token,
+                "Content-Type": "application/json"
+            }
+
+            try:
+                response = requests.get(full_path_url, headers=headers)
+                response.raise_for_status()  # Raise an error for non-200 status codes
+                return response.json()  # Return the JSON response
+            except requests.exceptions.HTTPError as http_err:
+                if response.status_code == 401:
+                    print(f"Attempt {attempt + 1}: Unauthorized (401) - Refreshing token and retrying...")
+                    self.token_dynamics.set_token_in_json()  # Method to refresh the token
+                else:
+                    print(f"HTTP error occurred: {http_err}")
+                    return []
+            except requests.exceptions.RequestException as e:
+                print(f"Error fetching data: {e}")
+                return []  # Return an empty list if there's another type of error
+
+            attempt += 1
+
+        print(f"Failed to fetch data after {max_attempts} attempts")
+        return []  # Return an empty list if all attempts fail
 
 
     def getUnitsConversion(self):
