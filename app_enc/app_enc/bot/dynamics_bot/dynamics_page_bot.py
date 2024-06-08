@@ -161,7 +161,7 @@ class Dynamics_Bot:
     def init_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        # options.add_argument("--headless=new") # =new Despues de la versión 109
+        #options.add_argument("--headless=new") # =new Despues de la versión 109
         # options.add_argument("--no-sandbox") # Ejecutar en entornos con sandboxing, como Docker Averiguar
 
         options = self.set_download_folter(options)
