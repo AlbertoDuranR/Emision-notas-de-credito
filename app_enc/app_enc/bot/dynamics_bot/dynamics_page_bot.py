@@ -3,6 +3,9 @@ import time
 
 from dotenv import load_dotenv
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
@@ -87,7 +90,7 @@ class Dynamics_Bot:
 
         # Enlazar pedido origen a pedido devolución
         """ Test avances """
-        self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]' # correcto
+        self.xpath_boton_buscar_pedido_ventas='//button[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]' # correcto
         # self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "returntableforedit") and contains(@id, "ReturnFindSalesOrder")]' # test
         self.xpath_columna_pedido_ventas='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Heading")]/div/div/div/div/div[2]/div/div/div[2]/div/div[2]'
         self.xpath_input_columna_pedido_ventas= '//input[@id="__FilterField_CustInvoiceJour_SalesNum_SalesId_Input_0_0_input"]'
@@ -105,7 +108,10 @@ class Dynamics_Bot:
 
         ## seleccionar articulos si es total
         self.xpath_div_primer_pedido='//div[contains(@id, "Invoice_Heading") and contains(@id, "row-0")]'
-
+        
+        # Modal Aviso Verificar transaccion en la tienda fisica y tambien podria devovler en la tienda
+        self.xpath_button_modal_si='//button[contains(@id, "SysBoxForm") and contains(@id, "Yes")]'
+        
         # Confirmar registro
         self.xpath_cantidad_filas='//*[contains(@id, "SalesLineGrid")]//span[contains(text(), "filas")]' # 1 filas
         self.div_lineas_articulos_para_registro='//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]'
@@ -158,14 +164,71 @@ class Dynamics_Bot:
         # Reintentar
         self.xpath_button_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl")]/button'
 
-    def init_navigator(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        #options.add_argument("--headless=new") # =new Despues de la versión 109
-        # options.add_argument("--no-sandbox") # Ejecutar en entornos con sandboxing, como Docker Averiguar
+    def create_chrome_driver(self):
+        chrome_options = ChromeOptions()
+        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options = self.set_download_folter(chrome_options)
+        return webdriver.Chrome(options=chrome_options)
 
-        options = self.set_download_folter(options)
-        self.driver = webdriver.Chrome(options=options)
+    def create_edge_driver(self):
+        edge_options = EdgeOptions()
+        edge_options.use_chromium = True
+        # edge_options.add_argument("--headless")
+        edge_options.add_argument("--disable-gpu")
+        edge_options.add_argument("--no-sandbox")
+        edge_options.add_argument("--disable-dev-shm-usage")
+        edge_options = self.set_download_folter(edge_options)
+        return webdriver.Edge(options=edge_options)
+
+    def create_firefox_driver(self):
+        firefox_options = FirefoxOptions()
+        # firefox_options.headless = True
+        firefox_options = self.set_download_folter(firefox_options)
+        return webdriver.Firefox(options=firefox_options)
+
+    def set_driver(self):
+        # try:
+            # # Por el momento para probar Edge
+            # print("Trying to use Chrome...")
+            # self.driver = self.create_chrome_driver()
+            # self.driver.get("http://www.example.com")
+            # return self.driver
+        # except WebDriverException as e:
+            # print(f"Chrome failed: {e}")
+            # self.close_navigator()
+            try:
+                print("Trying to use Edge...")
+                self.driver = self.create_edge_driver()
+                self.driver.get("http://www.example.com")
+                return self.driver
+            except WebDriverException as e:
+                print(f"Edge failed: {e}")
+                self.close_navigator()
+                try:
+                    print("Trying to use Firefox...")
+                    self.driver = self.create_firefox_driver()
+                    self.driver.get("http://www.example.com")
+                    return self.driver
+                except WebDriverException as e:
+                    print(f"Firefox failed: {e}")
+                    self.close_navigator()
+                    raise RuntimeError("All browsers failed to initialize")
+
+    def init_navigator(self):
+        ## options = webdriver.ChromeOptions()
+        ## options = webdriver.EdgeOptions()
+        ## options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+        # options.add_argument("--headless=new") # =new Despues de la versión 109
+        # options.add_argument('--disable-gpu')
+        ## options.add_argument('--no-sandbox') # Ejecutar en entornos con sandboxing, como Docker Averiguar
+        # options.add_argument('--disable-dev-shm-usage')  # Importante para problemas de memoria
+
+        # options = self.set_download_folter(options)
+        ## self.driver = webdriver.Chrome(options=options)
+        self.set_driver()
         self.driver.set_page_load_timeout(60) # 60 Seg
         self.driver.set_window_position(0, 0)
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
@@ -246,7 +309,6 @@ class Dynamics_Bot:
         # START Enlazar pedido origen a pedido devolución
         print('>>> START enlazar pedidos')
         self._hacer_clic_xpath(self.xpath_boton_buscar_pedido_ventas)
-        time.sleep(1)
         self._hacer_clic_xpath(self.xpath_columna_pedido_ventas)
         self._ingresar_valor_en_input_xpath(self.xpath_input_columna_pedido_ventas, data['num_pedido_origen'])
         self._hacer_clic_xpath(self.xpath_boton_aplicar_pedido_ventas)
@@ -325,10 +387,19 @@ class Dynamics_Bot:
                 raise
 
         time.sleep(1)
-        self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
+        try:
+            self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
+            try:
+                self._hacer_clic_xpath(self.xpath_button_modal_si)
+            except NoSuchElementException:
+                print("El elemento 'modal transaccion en la tienda fisica...' no se pudo encontrar en la página web.")
+        except Exception as e:
+            print(f"Error al Aceptar productos a enlazar: {str(e)}")
+            raise e
         self._wait_hide_div_bloking(30)
         print('END enlazar pedidos')
-        return 'ENLAZAR'
+        return
+        # return 'ENLAZAR' # Al poner reintentar es mejor que vuelva a realizar este paso
 
     def registrar_articulo_para_devolucion(self):
         try:
@@ -728,7 +799,7 @@ class Dynamics_Bot:
             if not self.nro_pedido_venta_devolucion:
                 raise ValueError('No Exite número de pedido de venta para devolución con en el RPA')
             resultado["step_rpa"] = 'PEDIDO'
-            resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
             resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
@@ -791,10 +862,12 @@ class Dynamics_Bot:
 
             print('>> step_rpa:', step_rpa)
 
-            if step_rpa == 'PEDIDO':
-               step_rpa = resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-            if step_rpa == 'ENLAZAR':
-                resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
+            if step_rpa == '':
+                raise Exception(f"No se creo el Pedido {nro_pedido_nota_credito} con RMA {nro_rma}, Verificar")
+            # step_rpa = resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            # if step_rpa == 'ENLAZAR':
+            resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
 
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
@@ -836,7 +909,20 @@ class Dynamics_Bot:
     #         time.sleep(1)
 
     def close_navigator(self):
-        self.driver.quit()
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        self.kill_browser_processes()
+
+    def kill_browser_processes(self):
+        browser_processes = ["chrome", "msedge", "firefox"]
+        for process in psutil.process_iter():
+            try:
+                for browser in browser_processes:
+                    if browser in process.name().lower():
+                        process.kill()
+            except psutil.NoSuchProcess:
+                pass
 
     def _ingresar_valor_en_input_id(self, xpath, valor):
         AuxiliaryFunctions.ingresar_valor_en_input_id(self.driver, self.wait, xpath, valor)
@@ -896,6 +982,8 @@ class Dynamics_Bot:
             .scroll_to_element(elemento)\
             .perform()
 
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close_navigator()
 # ---------------------------------------------------------------------------------
 # ---- data Ejemplos ---
 data_parcial={
