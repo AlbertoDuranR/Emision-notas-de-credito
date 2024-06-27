@@ -58,7 +58,7 @@ class ServiceNotaCredito:
                 print('Error al manejar data RPA al crear masivo', e.estado, e.message, e.step)
                 self.save_error_in_solicitudNC(sol_id=estado_rpa['sol_id'], estado_error=e.estado, error_msg=e.message, step_rpa=e.step)
                 break
-        dynamics_bot.close_navigator()
+        dynamics_bot.close_driver()
 
     # Deprecated: Ahora se indicara que hacer al bot en todo momento desde service_nota_credito
     # def crear_masivo_notas_de_credito(self, sol_ids):
