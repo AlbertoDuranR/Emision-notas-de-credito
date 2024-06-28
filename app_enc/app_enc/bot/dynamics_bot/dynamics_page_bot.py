@@ -150,7 +150,7 @@ class Dynamics_Bot:
 
     def create_chrome_driver(self):
         chrome_options = ChromeOptions()
-        chrome_options.add_argument("--headless") # =new Despues de la versión 109
+        # chrome_options.add_argument("--headless") # =new Despues de la versión 109
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -160,7 +160,7 @@ class Dynamics_Bot:
     def create_edge_driver(self):
         edge_options = EdgeOptions()
         edge_options.use_chromium = True
-        edge_options.add_argument("--headless")
+        # edge_options.add_argument("--headless")
         edge_options.add_argument("--disable-gpu")
         edge_options.add_argument("--no-sandbox")
         edge_options.add_argument("--disable-dev-shm-usage")
@@ -384,15 +384,15 @@ class Dynamics_Bot:
             self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
             try:
                 self._hacer_clic_xpath(self.xpath_button_modal_si)
-            except NoSuchElementException:
-                print("El elemento 'modal transaccion en la tienda fisica...' no se pudo encontrar en la página web.")
+            except Exception as e:
+                print("Error click en SI del elemento 'Modal transaccion en la tienda fisica...'")
         except Exception as e:
             print(f"Error al Aceptar productos a enlazar: {str(e)}")
             raise e
         self._wait_hide_div_bloking(30)
         print('>> END enlazar pedidos')
-        return
-        # return 'ENLAZAR' # Al poner reintentar es mejor que vuelva a realizar este paso
+        # return
+        return 'ENLAZAR'
 
     def registrar_articulo_para_devolucion(self):
         try:
@@ -775,7 +775,7 @@ class Dynamics_Bot:
             if not self.nro_pedido_venta_devolucion:
                 raise ValueError('No Exite número de pedido de venta para devolución con en el RPA')
             resultado["step_rpa"] = 'PEDIDO'
-            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
             resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
@@ -839,11 +839,11 @@ class Dynamics_Bot:
             print('>> step_rpa:', step_rpa)
 
             if step_rpa == '':
-                raise Exception(f"No se creo el Pedido {nro_pedido_nota_credito} con RMA {nro_rma}, Verificar")
-            # step_rpa = resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-            self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
-            # if step_rpa == 'ENLAZAR':
-            resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
+                raise Exception(f"No se guardo paso RPA {nro_pedido_nota_credito} con RMA {nro_rma}, Verificar")
+            if step_rpa == 'PEDIDO':
+                step_rpa = resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+            if step_rpa == 'ENLAZAR':
+                resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
 
             # Establecer Fecha de solicitud, Forma de pago, pago, codigo Nota de crédito
             self.set_data_pedido_devolucion(data=data)
@@ -951,7 +951,7 @@ class Dynamics_Bot:
                 break
 
     def _scroll_a_elemento_xpath(self, xpath, name_element):
-        # Desplazarse a una elemento
+        # Desplazarse a un elemento
         print(f'Scroll a {name_element}')
         self._esperar_n_segundos(2)
         elemento = self.driver.find_element(By.XPATH, xpath)
