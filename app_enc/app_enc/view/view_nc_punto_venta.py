@@ -9,7 +9,7 @@ from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_view_solicitudes_nota_de_credito import ViewSolicitudNotaDeCredito
 from ..models.model_market import Market
 
-LIST_DNI_CAN_REQUESTED = ('48371957',)
+LIST_DNI_CAN_REQUESTED = ('48371957','71959546',)
 
 servicePDV = ServiceNCPDV
 serviceDynamics = ServiceDynamics()
