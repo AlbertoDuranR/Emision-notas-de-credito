@@ -58,6 +58,10 @@ SERIES_PARA_NOTA_CREDITO = {
     'T_BI02' : 'T_BIN2',
     'BI01' : 'T_BIN1',
     'FI01' : 'T_FIN1',
-    'FT01' : 'T_FTN1'
+    'FT01' : 'T_FTN1',
+    'BK01' : 'T_BC70',
+    'BK02' : 'T_BC71',
+    'FK01' : 'T_FC70',
+    'FK02' : 'T_FC71'
 }
 
