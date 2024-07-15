@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 import logging
 import pandas as pd
+import psutil
 import time
 
 from selenium import webdriver
@@ -137,8 +138,11 @@ class AceptaScraper:
             print(f"Error al imprimir datos de la tabla: {str(e)}")
 
     def cerrar_sesion(self):
-        time.sleep(5)
-        self.driver.quit()
+        time.sleep(2)
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        self.kill_browser_processes()
         print("Sesión cerrada")
 
     def get_estado_por_comprobante(self, nro_comprobante: str) -> str:
@@ -165,6 +169,16 @@ class AceptaScraper:
             respuesta[nro_comprobante] = estado_comprobante
         self.cerrar_sesion()
         return respuesta
+
+    def kill_browser_processes(self):
+        browser_processes = ["chrome", "msedge", "firefox"]
+        for process in psutil.process_iter():
+            try:
+                for browser in browser_processes:
+                    if browser in process.name().lower():
+                        process.kill()
+            except psutil.NoSuchProcess:
+                pass
 
     # Funciones auxiliares
     def _ingresar_valor_en_input_id(self, xpath, valor):
