@@ -42,7 +42,7 @@ class ValidationView:
                 servicePDV.save_observacion(data)
                 return JsonResponse({'message': obs}, status=500)
 
-            if estado_comprobante is not None and not estado_comprobante == 'ACEPTADO':
+            if not estado_comprobante == 'ACEPTADO':
                 logger.warning(f'Estado Portal Acepta: {estado_comprobante}')
                 obs = f'Comprobante no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estado_comprobante}'
                 data["observacion"] = obs
@@ -136,7 +136,7 @@ class ValidationView:
                             servicePDV.save_observacion(comprobante)
                     continue
 
-                if estado_comprobante is not None and not estado_comprobante == 'ACEPTADO':
+                if not estado_comprobante == 'ACEPTADO':
                     comprobante["observacion"] = f'{tipo} no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estado_comprobante}'
                     if tipo == 'NOTAS':
                         servicePDV.save_observacion_nota(comprobante['id'], comprobante['observacion'], estado_comprobante)
