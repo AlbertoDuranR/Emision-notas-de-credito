@@ -47,6 +47,7 @@ class AceptaScraper:
         self.xpath_buscar_avanzado_test = "//*[@id='form_buscarNEW_emitidos']/form/div[19]/input"
         self.xpath_tabla_opciones = '/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table'
         self.xpath_tabla_resultados = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
+        self.xpath_label_no_se_encontraton = '//*[@id="grilla_buscarNEW_emitidos"]/div/div/label'
         self.xpath_nota_credito = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table/tbody/tr[4]/td[10]/a"
         self.xpath_paginacion = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li"
 
@@ -106,6 +107,14 @@ class AceptaScraper:
             print(f"Error al seleccionar opciones: {str(e)}")
 
     def extraer_estado_por_comprobante(self, nro_comprobante):
+        '''
+            @param ['BG02-00052743', 'BG02-00052741']
+            @return {'estado': ACEPTADO, 'error': None}
+        '''
+        resp = {
+            'estado': None,
+            'error': None
+        }
         serie, correlativo_desde = nro_comprobante.split('-')
         # Vista de Documentos Emitidos - Opciones avanzadas
         self.buscar_comprobante(serie, correlativo_desde)
@@ -117,7 +126,14 @@ class AceptaScraper:
             tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
         except TimeoutException:
             print("No se encontro la tabla de estados")
-            return None
+            label_no_se_encontraton_registros = self.driver.find_element(By.XPATH, self.xpath_label_no_se_encontraton)
+            value = label_no_se_encontraton_registros.text
+            if value != '':
+                resp['error'] =f"{value} del comprobante {nro_comprobante}"
+                return resp
+            else:
+                resp['error'] =f"No se encontro la tabla de estados"
+                return resp
 
         try:
             datos_totales = []
@@ -133,31 +149,35 @@ class AceptaScraper:
             lista_diccionarios = df.set_index('NRO CPE')['Estado'].to_dict()
             # Imprimir el DataFrame
             print(df)
-            return lista_diccionarios[nro_comprobante]
+            resp['estado'] = lista_diccionarios[nro_comprobante]
         except Exception as e:
-            print(f"Error al imprimir datos de la tabla: {str(e)}")
-
-    def cerrar_sesion(self):
-        time.sleep(2)
-        if self.driver:
-            self.driver.quit()
-            self.driver = None
-        self.kill_browser_processes()
-        print("Sesión cerrada")
+            msg_error = f"Error al imprimir datos de la tabla: {str(e)}"
+            print(msg_error)
+            resp['error'] = msg_error
+        return resp
 
     def get_estado_por_comprobante(self, nro_comprobante: str) -> str:
-        ''' :param 'BG02-00052743' '''
+        '''
+            @param 'BG02-00052743'
+            @return {'estado': ACEPTADO, 'error': None}
+        '''
         # Ejecutar acciones
         self.iniciar_sesion()
         self.seleccionar_opcion_emitidos()
         self.seleccionar_busqueda_avanzada()
-        estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+        resp_estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
         # self.capture_logs()
         self.cerrar_sesion()
-        return estado_comprobante
+        return resp_estado_comprobante
 
     def get_estados_de_comprobantes(self, nro_comprobantes: list) -> dict:
-        ''' :param ['BG02-00052743', 'BG02-00052741'] '''
+        '''
+            @param ['BG02-00052743', 'BG02-00052741']
+            @return {
+                'BG02-00052743': {'estado': ACEPTADO, 'error': None},
+                'BG02-00052741': {'estado': None, 'error': 'Error al imprimir datos...'},
+                }
+        '''
         print(nro_comprobantes)
         respuesta = {}
         self.iniciar_sesion()
@@ -169,6 +189,14 @@ class AceptaScraper:
             respuesta[nro_comprobante] = estado_comprobante
         self.cerrar_sesion()
         return respuesta
+
+    def cerrar_sesion(self):
+        time.sleep(2)
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        self.kill_browser_processes()
+        print("Sesión cerrada")
 
     def kill_browser_processes(self):
         browser_processes = ["chrome", "msedge", "firefox"]
