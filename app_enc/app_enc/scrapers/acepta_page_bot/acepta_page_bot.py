@@ -61,9 +61,15 @@ class AceptaScraper:
     def config_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        options.add_argument("--headless=new") # =new Despues de la versión 109
+        # options.add_argument("--headless=new") # =new Despues de la versión 109 # Si esta en remote no es necesario
         # options.add_argument("--disable-gpu")
-        self.driver = webdriver.Chrome(options=options)
+        # self.driver = webdriver.Chrome(options=options) # Modo Local
+        # URL del hub de Selenium Grid
+        selenium_grid_url = "http://40.86.9.189:4444"
+        self.driver = webdriver.Remote(
+            command_executor=selenium_grid_url,
+            options=options,
+        )
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
         # self.driver.maximize_window()
         self.wait_10 = WebDriverWait(self.driver , 10)
@@ -161,13 +167,18 @@ class AceptaScraper:
             @param 'BG02-00052743'
             @return {'estado': ACEPTADO, 'error': None}
         '''
-        # Ejecutar acciones
-        self.iniciar_sesion()
-        self.seleccionar_opcion_emitidos()
-        self.seleccionar_busqueda_avanzada()
-        resp_estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
-        # self.capture_logs()
-        self.cerrar_sesion()
+        try:
+            # Ejecutar acciones
+            self.iniciar_sesion()
+            self.seleccionar_opcion_emitidos()
+            self.seleccionar_busqueda_avanzada()
+            resp_estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+        except Exception as e:
+            print('Exception get estados de comprobantes', e)
+            raise e
+        finally:
+            # self.capture_logs()
+            self.close_driver()
         return resp_estado_comprobante
 
     def get_estados_de_comprobantes(self, nro_comprobantes: list) -> dict:
@@ -180,25 +191,31 @@ class AceptaScraper:
         '''
         print(nro_comprobantes)
         respuesta = {}
-        self.iniciar_sesion()
-        self.seleccionar_opcion_emitidos()
-        self.seleccionar_busqueda_avanzada()
-        for nro_comprobante in nro_comprobantes:
-            print('Buscar', nro_comprobante)
-            estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
-            respuesta[nro_comprobante] = estado_comprobante
-        self.cerrar_sesion()
+        try:
+            self.iniciar_sesion()
+            self.seleccionar_opcion_emitidos()
+            self.seleccionar_busqueda_avanzada()
+            for nro_comprobante in nro_comprobantes:
+                print('Buscar', nro_comprobante)
+                estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+                respuesta[nro_comprobante] = estado_comprobante
+        except Exception as e:
+            print('Exception get estados de comprobantes', e)
+            raise e
+        finally:
+            self.close_driver()
         return respuesta
 
-    def cerrar_sesion(self):
-        time.sleep(2)
+    def close_driver(self):
+        time.sleep(1)
         if self.driver:
             self.driver.quit()
             self.driver = None
-        self.kill_browser_processes()
+        # self.kill_browser_processes() # No es necesario si se usa selenium-grid
         print("Sesión cerrada")
 
     def kill_browser_processes(self):
+        ''' Cierra todos los procesos de los navegadores listados '''
         browser_processes = ["chrome", "msedge", "firefox"]
         for process in psutil.process_iter():
             try:
@@ -274,4 +291,4 @@ nro_comprobantes = ['BC11-00000329', 'BC11-00000329X', 'BA01-00249590', 'BA01-00
 #     print(f'Estado Comprobante: {nro_comprobante} : {estado_comprobante if estado_comprobante else 'No Existe'}')
 #     time.sleep(1)
 # # acepta_bot.extraer_estados()
-# acepta_bot.cerrar_sesion()
+# acepta_bot.close_driver()
