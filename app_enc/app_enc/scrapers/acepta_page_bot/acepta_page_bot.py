@@ -159,7 +159,7 @@ class AceptaScraper:
             print('estado_resultante', estado_resultante)
             # Crear la lista de diccionarios
             # lista_diccionarios = df.set_index('NRO CPE')['Estado'].to_dict()
-            resp['estado'] = estado_resultante
+            resp['estado'] = estado_resultante.strip()
 
         except Exception as e:
             msg_error = f"Error al imprimir datos de la tabla: {str(e)}"

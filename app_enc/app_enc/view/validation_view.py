@@ -142,7 +142,7 @@ class ValidationView:
                         servicePDV.save_observacion_nota(comprobante['id'], comprobante['observacion'], estado_comprobante)
                     else:
                         servicePDV.save_observacion(comprobante)
-                logger.warning(f'Estado Portal Acepta: {comprobante}')
+                logger.warning(f'Estado Portal Acepta: {estado_acepta}')
                 comprobante["estado"] = estado_comprobante
             # logger.info(f'Estado Dynamics 365: {estado_acepta}')
             return _comprobantes
