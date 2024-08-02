@@ -151,11 +151,16 @@ class AceptaScraper:
                     datos_totales.append((columnas[3].text, columnas[7].text))
             # Convertir la lista de datos en un DataFrame
             df = pd.DataFrame(datos_totales, columns=['Estado', 'NRO CPE'])
-            # Crear la lista de diccionarios
-            lista_diccionarios = df.set_index('NRO CPE')['Estado'].to_dict()
-            # Imprimir el DataFrame
             print(df)
-            resp['estado'] = lista_diccionarios[nro_comprobante]
+            if 'ACEPTADO' in df['Estado'].values:
+                estado_resultante = df[df['Estado'] == 'ACEPTADO'].iloc[0]['Estado']
+            else:
+                estado_resultante = df.iloc[0]['Estado']
+            print('estado_resultante', estado_resultante)
+            # Crear la lista de diccionarios
+            # lista_diccionarios = df.set_index('NRO CPE')['Estado'].to_dict()
+            resp['estado'] = estado_resultante
+
         except Exception as e:
             msg_error = f"Error al imprimir datos de la tabla: {str(e)}"
             print(msg_error)
