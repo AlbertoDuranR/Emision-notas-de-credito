@@ -891,7 +891,7 @@ class Dynamics_Bot:
         self.kill_browser_processes()
 
     def kill_browser_processes(self):
-        browser_processes = ["chrome", "msedge", "firefox"]
+        browser_processes = ["msedge"]
         for process in psutil.process_iter():
             try:
                 for browser in browser_processes:
