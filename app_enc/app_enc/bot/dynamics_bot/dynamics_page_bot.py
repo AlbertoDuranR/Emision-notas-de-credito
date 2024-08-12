@@ -154,6 +154,7 @@ class Dynamics_Bot:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--incognito")
         chrome_options = self.set_download_folder(chrome_options)
         return webdriver.Chrome(options=chrome_options)
 
@@ -165,6 +166,7 @@ class Dynamics_Bot:
         edge_options.add_argument("--no-sandbox")
         edge_options.add_argument("--disable-dev-shm-usage")
         edge_options.add_argument("--log-level=3")  # Suprimir mensajes de consola
+        edge_options.add_argument("--inprivate") # Para mostrar un navegadro en incognito
         # Crear el servicio de Edge con la opción de suprimir salida
         edge_service = EdgeService(log_path='NUL')
 
@@ -907,13 +909,13 @@ class Dynamics_Bot:
         AuxiliaryFunctions.ingresar_valor_en_input_name(self.driver, self.wait, xpath, valor)
 
     def _ingresar_valor_en_input_xpath(self, xpath, valor):
-        AuxiliaryFunctions.ingresar_valor_en_input_xpath(self.driver, self.wait, xpath, valor)
+        AuxiliaryFunctions.ingresar_valor_en_input_xpath(self.driver, self.wait_20, xpath, valor)
 
     def _hacer_clic_class_name(self, class_name):
         AuxiliaryFunctions.hacer_clic_class_name(self.driver, self.wait, class_name)
 
     def _hacer_clic_xpath(self, xpath):
-        AuxiliaryFunctions.hacer_clic_xpath(self.driver, self.wait, xpath)
+        AuxiliaryFunctions.hacer_clic_xpath(self.driver, self.wait_20, xpath)
 
     def _esperar_n_segundos(self, seg):
         """
