@@ -6,6 +6,7 @@ import pandas as pd
 
 from dotenv import load_dotenv
 from datetime import datetime
+from io import StringIO
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 load_dotenv()
@@ -42,20 +43,35 @@ class ServiceDynamics(metaclass=SingletonMeta):
             dict or list: The JSON data returned from the request, or an empty list if the request fails.
         """
         print('fetch_data: ', full_path_url);
-        token = self.token_dynamics.get_token()
-        # Set up headers
-        headers = {
-            "Authorization": token,
-            "Content-Type": "application/json"
-        }
-        # Make the request
-        try:
-            response = requests.get(full_path_url, headers=headers)
-            response.raise_for_status()  # Raise an error for non-200 status codes
-            return response.json()  # Return the JSON response
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching data: {e}")
-            return []  # Return an empty list if there's an error
+        max_attempts = 3
+        attempt = 0
+
+        while attempt < max_attempts:
+            token = self.token_dynamics.get_token()
+            headers = {
+                "Authorization": token,
+                "Content-Type": "application/json"
+            }
+
+            try:
+                response = requests.get(full_path_url, headers=headers)
+                response.raise_for_status()  # Raise an error for non-200 status codes
+                return response.json()  # Return the JSON response
+            except requests.exceptions.HTTPError as http_err:
+                if response.status_code == 401:
+                    print(f"Attempt {attempt + 1}: Unauthorized (401) - Refreshing token and retrying...")
+                    self.token_dynamics.set_token_in_json()  # Method to refresh the token
+                else:
+                    print(f"HTTP error occurred: {http_err}")
+                    return []
+            except requests.exceptions.RequestException as e:
+                print(f"Error fetching data: {e}")
+                return []  # Return an empty list if there's another type of error
+
+            attempt += 1
+
+        print(f"Failed to fetch data after {max_attempts} attempts")
+        return []  # Return an empty list if all attempts fail
 
 
     def getUnitsConversion(self):
@@ -73,12 +89,12 @@ class ServiceDynamics(metaclass=SingletonMeta):
                     path_query_update = f"{path}&$top=10000&$skip={int(i)+1}0000"
                     response = self.fetch_data(path_query_update)
                     result.extend(response.json()["value"])
-                products = pd.read_json(json.dumps(result))
+                products = pd.read_json(StringIO(json.dumps(result)))
                 result = products[["UnitSymbol"]]
                 result = result.to_dict(orient='records')
                 return result
             else:
-                products = pd.read_json(json.dumps(temp1["value"]))
+                products = pd.read_json(StringIO(json.dumps(temp1["value"])))
                 result = products[["UnitSymbol"]]
                 result = result.to_dict(orient='records')
                 return result
@@ -107,7 +123,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            return_order_data = pd.read_json(json.dumps(data["value"]))
+            return_order_data = pd.read_json(StringIO(json.dumps(data["value"])))
             result = return_order_data[
                 ["ReturnOrderNumber", "ReturnAddressName", "RMANumber", "ReturnOrderStatus"]
             ]
@@ -140,7 +156,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            invoice_data = pd.read_json(json.dumps(data["value"]))
+            invoice_data = pd.read_json(StringIO(json.dumps(data["value"])))
             result = invoice_data[
                 [
                  "SalesOrderOriginCode",
@@ -180,7 +196,9 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            invoice_data = pd.read_json(json.dumps(data["value"]))
+            # Envuelve la cadena JSON en un objeto StringIO.
+            json_buffer = StringIO(json.dumps(data["value"]))
+            invoice_data = pd.read_json(json_buffer)
             result = invoice_data[
                 ["InvoiceDate", "TotalTaxAmount", "SalesOrderNumber", "TotalInvoiceAmount", "PaymentTermsName"]
             ]
@@ -207,7 +225,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            invoice_data = pd.read_json(json.dumps(data["value"]))
+            invoice_data = pd.read_json(StringIO(json.dumps(data["value"])))
             result = invoice_data[["InvoiceNumber"]]
             return result.to_dict(orient='records')
         except Exception as e:
@@ -239,7 +257,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            invoice_data = pd.read_json(json.dumps(data["value"]))
+            invoice_data = pd.read_json(StringIO(json.dumps(data["value"])))
             result = invoice_data[
                 ["InvoiceNumber", "InvoiceDate", "TotalTaxAmount", "SalesOrderNumber", "TotalInvoiceAmount", "PaymentTermsName"]
             ]
@@ -263,7 +281,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            products = pd.read_json(json.dumps(data["value"]))
+            products = pd.read_json(StringIO(json.dumps(data["value"])))
             products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
             result = products[["ProductNumber", "ProductDescription", "Product", "InvoicedQuantity", "SalesPrice", "SalesUnitSymbol"]]
             return result.to_dict(orient='records')
@@ -286,7 +304,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            data = pd.read_json(json.dumps(data["value"]))
+            data = pd.read_json(StringIO(json.dumps(data["value"])))
             result = data[
                 ["PersonnelNumber", "Name"]
             ]
@@ -316,7 +334,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            data = pd.read_json(json.dumps(data["value"]))
+            data = pd.read_json(StringIO(json.dumps(data["value"])))
             result = data[
                 ["PositionId", "Description", "WorkerName", "DepartmentNumber", "WorkerPersonnelNumber"]
             ]
@@ -344,7 +362,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
             count_data = int(data["@odata.count"])
             if count_data == 0:
                 return None
-            data = pd.read_json(json.dumps(data["value"]))
+            data = pd.read_json(StringIO(json.dumps(data["value"])))
             print('data retail transaction: ')
             print(data)
             result = data[
@@ -443,7 +461,7 @@ class TokenDynamics():
             if token == '' or not self.is_active_token(token):
                 self.set_token_in_json()
                 token = self.get_token_from_json()
-                print('T'*10, token)
+                print('Token: ', token)
             return 'Bearer {0}'.format(token)
         except FileNotFoundError as e:
             print(e)

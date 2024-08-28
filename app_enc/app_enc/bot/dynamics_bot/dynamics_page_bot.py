@@ -1,18 +1,25 @@
 import os
+import psutil
 import time
 
 from dotenv import load_dotenv
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.edge.options import Options as EdgeOptions
+# from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+
 from .dynamics_functions import AuxiliaryFunctions # Para Django
 # from dynamics_functions import AuxiliaryFunctions
 from ..constans import CODIGO_DISPOSICION
 from ..constans import SERIES_PARA_NOTA_CREDITO
+
 
 def measure_time(func):
     ''' Decorator para medir tiempo de ejecución'''
@@ -50,26 +57,8 @@ class Dynamics_Bot:
         self.xpath_siguiente = "//input[@type='submit']"
         self.xpath_input_login = '/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div[1]/div[3]/div/div/div/div[2]/div[2]/div/input[1]'
         self.xpath_input_contrasena = '/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[3]/div/div[2]/input'
-        self.xpath_contrasena = "/html/body/div/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[3]/div/div[2]/input"
         self.xpath_iniciar_sesion = "/html/body/div[1]/form[1]/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[5]/div/div/div/div/input"
         self.xpath_mantener_sesion = "/html/body/div/form/div/div/div[2]/div[1]/div/div/div/div/div/div[3]/div/div[2]/div/div[3]/div[2]/div/div/div[2]/input"
-        self.xpath_favoritos = "/html/body/div[2]/div/div[5]/div/div/div[2]/div[2]/span[2]"
-        self.xpath_favoritos_diario_facturas = "/html/body/div[2]/div/div[5]/div/div[1]/div[2]/div[5]"
-        self.xpath_favoritos_transacciones_tienda = "/html/body/div[2]/div/div[5]/div/div[1]/div[2]/div[14]"
-        self.xpath_columna_factura = "/html/body/div[2]/div/div[6]/div/form[2]/div[5]/div/div[3]/div[2]/div[1]/div[4]/div/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div[1]/div[3]/div/div/div/div"
-        self.xpath_input_busqueda_diario_factura = "/html/body/div[22]/div[3]/div/div[3]/div/div/input"
-        self.xpath_boton_buscar_diario_factura = "/html/body/div[22]/div[4]/button[1]"
-        self.path_resultado_diario_factura = "/html/body/div[2]/div/div[6]/div/form[2]/div[5]/div/div[3]/div[2]/div[1]/div[4]/div/div[2]/div/div/div/div[1]/div[3]/div/div/div[1]/div[2]/div/div[3]/div/div/div/div/div/div/input"
-        self.xpath_columna_numero_recibo = "/html/body/div[2]/div/div[6]/div/form/div[5]/div/div[2]/div[2]/div[2]/div/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/div[3]/div/div/div/div"
-        self.xpath_input_busqueda_transacciones_tienda = "/html/body/div[21]/div[3]/div/div[3]/div/div/input"
-        self.xpath_boton_buscar_transacciones_tienda = "/html/body/div[21]/div[4]/button[1]"
-        self.xpath_resultado_transacciones_tienda = "/html/body/div[2]/div/div[6]/div/form/div[5]/div/div[2]/div[2]/div[2]/div/div/div/div[1]/div[3]/div/div/div[1]/div[2]/div/div[2]/div/div/div/div/div/div/input"
-        self.xpath_modulos='//*[@id="navPaneModuleID"]' # si uso el full path se confunde si el modulo esta en otra posición
-        self.xpath_ventas_marketing='//*[@id="mainPane"]/div[5]/div/div[1]/div[2]/a[37]'
-        self.xpath_devolucion_ventas='/html/body/div[2]/div/div[5]/div/div[2]/div/div[2]/a[8]'
-        self.xpath_contenedor_ventas_marketing='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[2]'
-        self.xpath_todos_pedidos_de_devolucion='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[2]/div[1]/a[1]'
-        self.xpath_expadir_todo='//*[@id="mainPane"]/div[5]/div/div[2]/div/div[1]/button[1]'
 
         # Crear nuevo pedido
         self.xpath_boton_nuevo_pedido='//*[contains(@id, "returntablelistpage") and contains(@id, "SystemDefinedNewButton")]' # XPAT que contenga subcadenas 'returntablelistpage' y 'SystemDefinedNewButton'
@@ -77,7 +66,7 @@ class Dynamics_Bot:
         self.xpath_combobox_item_pedido_ventas='//*[contains(@id, "SalesCreateOrder") and contains(@id, "MCRCustSearchType_list_item1")][1]'
         self.xpath_input_num_pedido='//*[contains(@id, "SalesCreateOrder") and contains(@id, "MCRSearchText_input")]'
         self.xpath_buscar_cliente='//*[contains(@id, "SalesCreateOrder") and contains(@id, "MCRCustomerSearch")]' # //*[@id="SalesCreateOrder_9_MCRCustomerSearch"]
-        self.xpath_table_row_cliente='//*[contains(@id, "MCRCustSearch") and contains(@id, "Grid")]/div/div/div/div/div[3]/div[1]'
+        # self.xpath_table_row_cliente='//*[contains(@id, "MCRCustSearch") and contains(@id, "Grid")]/div/div/div/div/div[3]/div[1]'
         self.xpath_boton_seleccionar_cliente='//*[contains(@id, "MCRCustSearch") and contains(@id, "ButtonSelect")]'
         self.xpath_input_codigo_motivo_devolucion='//*[contains(@id, "SalesCreateOrder") and contains(@id, "SalesTable_ReturnReasonCodeId_input")]' # //*[@id="SalesCreateOrder_26_SalesTable_ReturnReasonCodeId_input"]
         self.xpath_input_almacen='//*[contains(@id, "SalesCreateOrder") and contains(@id, "SalesTable_InventLocationId_input")]'
@@ -86,7 +75,7 @@ class Dynamics_Bot:
 
         # Enlazar pedido origen a pedido devolución
         """ Test avances """
-        self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]' # correcto
+        self.xpath_boton_buscar_pedido_ventas='//button[contains(@id, "ReturnTable") and contains(@id, "ReturnFindSalesOrder")]' # correcto
         # self.xpath_boton_buscar_pedido_ventas='//*[contains(@id, "returntableforedit") and contains(@id, "ReturnFindSalesOrder")]' # test
         self.xpath_columna_pedido_ventas='//*[contains(@id, "SalesCopying") and contains(@id, "Invoice_Heading")]/div/div/div/div/div[2]/div/div/div[2]/div/div[2]'
         self.xpath_input_columna_pedido_ventas= '//input[@id="__FilterField_CustInvoiceJour_SalesNum_SalesId_Input_0_0_input"]'
@@ -104,7 +93,10 @@ class Dynamics_Bot:
 
         ## seleccionar articulos si es total
         self.xpath_div_primer_pedido='//div[contains(@id, "Invoice_Heading") and contains(@id, "row-0")]'
-
+        
+        # Modal Aviso Verificar transaccion en la tienda fisica y tambien podria devovler en la tienda
+        self.xpath_button_modal_si='//button[contains(@id, "SysBoxForm") and contains(@id, "Yes")]'
+        
         # Confirmar registro
         self.xpath_cantidad_filas='//*[contains(@id, "SalesLineGrid")]//span[contains(text(), "filas")]' # 1 filas
         self.div_lineas_articulos_para_registro='//div[contains(@id, "SalesLineGrid") and contains(@id, "row")]'
@@ -127,9 +119,8 @@ class Dynamics_Bot:
         self.xpath_edit_icon='//*[contains(@id, "SalesTable") and contains(@id, "SalesTable_DeliveryNameHeaderOverview")]/span[2]' # Para poder editar todo.
         self.xpath_input_numero_cuenta_cliente='//input[contains(@id, "SalesTable") and contains(@id, "CarrierCustomerAccountNumber_input")]' # usamos para luego llgar con tab a la forma de pago
         self.xpath_button_vistas_globales='//button[contains(@id, "alesTable") and contains(@id, "SystemDefinedManageViewFilters")]'
-        # self.xpath_vista_estandar='//div[contains(@id, "ViewButtons")]/div[2]/button[1]'
         self.xpath_vista_formulario_pedido_venta='//div[contains(@id, "ViewButtons")]/div[2]/button[3]'
-        self.xpath_vista_estandar='//div[contains(@id, "ViewButtons")]/div[2]/button[1]'
+        self.xpath_vista_estandar='//div[contains(@id, "GlobalGroup")]/div[2]/div[1]/div[2]/button[1]'
         self.xpath_span_actualizar_lineas_pedido='//*[contains(@id, "Dialog") and contains(@id, "DeliveryDate_toggle")]'
         self.xpath_button_aceptar_actualizar='//button[contains(@id, "Dialog") and contains(@id, "OkButton")]'
         self.xpath_encabezado_pedidos_ventas='//button[contains(@id, "SalesTable") and contains(@id, "LineViewHeader_caption")]'
@@ -145,7 +136,7 @@ class Dynamics_Bot:
         self.xpath_button_factura='//button[contains(@id, "SalesTable") and contains(@id, "Invoice_button")]'
         self.xpath_button_generar_factura='//button[contains(@id, "SalesTable") and contains(@id, "buttonUpdateInvoice")]'
         self.xpath_open_seleccion_tipo_documento='//*[contains(@id, "SalesParmTable_DPCodTypeDocPay_PE") and contains(@id, "_0")]/div/div'
-        self.xpath_input_tipo_documento_en_factura='//input[contains(@id, "SalesParmTable") and contains(@id, "_DPCodTypeDocPay_PE") and contains(@id, "input")]'
+        # self.xpath_input_tipo_documento_en_factura='//input[contains(@id, "SalesParmTable") and contains(@id, "_DPCodTypeDocPay_PE") and contains(@id, "input")]'
         self.xpath_input_serie_documento_en_factura='//input[contains(@id, "SalesParmTable_DPNumberSequenceGroup_PE") and contains(@id, "input")]'
         self.xpath_input_tipo_de_nota_en_factura='//input[contains(@id, "SalesParmTable") and contains( @id, "DPIdTypeNote_PE") and contains(@id, "input")]'
         self.xpath_input_fecha_de_factura='//input[contains(@id, "SalesEditLines") and  contains(@id, "SalesParmTable_Transdate_input")]'
@@ -157,14 +148,68 @@ class Dynamics_Bot:
         # Reintentar
         self.xpath_button_buscar_rma='//*[contains(@id, "returntablelistpage") and contains(@id, "QuickFilterControl")]/button'
 
-    def init_navigator(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        options.add_argument("--headless=new") # =new Despues de la versión 109
-        # options.add_argument("--no-sandbox") # Ejecutar en entornos con sandboxing, como Docker Averiguar
+    def create_chrome_driver(self):
+        chrome_options = ChromeOptions()
+        # chrome_options.add_argument("--headless") # =new Despues de la versión 109
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options = self.set_download_folder(chrome_options)
+        return webdriver.Chrome(options=chrome_options)
 
-        options = self.set_download_folter(options)
-        self.driver = webdriver.Chrome(options=options)
+    def create_edge_driver(self):
+        edge_options = EdgeOptions()
+        edge_options.use_chromium = True
+        # edge_options.add_argument("--headless")
+        edge_options.add_argument("--disable-gpu")
+        edge_options.add_argument("--no-sandbox")
+        edge_options.add_argument("--disable-dev-shm-usage")
+        edge_options.add_argument("--log-level=3")  # Suprimir mensajes de consola
+        # Crear el servicio de Edge con la opción de suprimir salida
+        edge_service = EdgeService(log_path='NUL')
+
+        edge_options = self.set_download_folder(edge_options)
+        return webdriver.Edge(service=edge_service, options=edge_options)
+
+    # def create_firefox_driver(self):
+    #   # unused: Al usar cambian muchas directivas de selenium usadas para chrome o edge
+    #     firefox_options = FirefoxOptions()
+    #     firefox_options.headless = True
+    #     firefox_options = self.set_download_folder(firefox_options)
+    #     return webdriver.Firefox(options=firefox_options)
+
+    def set_driver(self):
+        # try:
+            ### Por el momento para probar Edge
+            # print("Trying to use Chrome...")
+            # self.driver = self.create_chrome_driver()
+            # self.driver.get("http://www.example.com")
+            # return self.driver
+        # except WebDriverException as e:
+            # print(f"Chrome failed: {e}")
+            # self.close_driver()
+            try:
+                print("Trying to use Edge...")
+                self.driver = self.create_edge_driver()
+                self.driver.get("http://www.example.com")
+                return self.driver
+            except WebDriverException as e:
+                print(f"Edge failed: {e}")
+                self.close_driver()
+                # try:
+                #     print("Trying to use Firefox...")
+                #     self.driver = self.create_firefox_driver()
+                #     self.driver.get("http://www.example.com")
+                #     return self.driver
+                # except WebDriverException as e:
+                #     print(f"Firefox failed: {e}")
+                #     self.close_driver()
+                #     raise RuntimeError("All browsers failed to initialize")
+                raise RuntimeError("All browsers failed to initialize")
+
+    def init_navigator(self):
+        # options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+        self.set_driver()
         self.driver.set_page_load_timeout(60) # 60 Seg
         self.driver.set_window_position(0, 0)
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
@@ -177,7 +222,7 @@ class Dynamics_Bot:
     def ir_a_url_inicial(self):
         self.driver.get(self.url)
 
-    def set_download_folter(self, options):
+    def set_download_folder(self, options):
         # Configura la ruta de descarga
         download_dir = os.path.join(os.getcwd(),  'static\\downloads')
         if not os.path.exists(download_dir):
@@ -191,6 +236,18 @@ class Dynamics_Bot:
         # print('prefs: ', prefs)
         options.add_experimental_option('prefs', prefs)
         return options
+
+    # def set_download_folder(self, options):
+    # # Para Firefox
+    #     # Configura la ruta de descarga
+    #     download_dir = os.path.join(os.getcwd(), 'static', 'downloads')
+    #     if not os.path.exists(download_dir):
+    #         os.makedirs(download_dir)
+
+    #     options.set_preference("browser.download.folderList", 2)  # 2 indica que se utilizará una carpeta personalizada
+    #     options.set_preference("browser.download.dir", download_dir)
+    #     options.set_preference("browser.download.useDownloadDir", True)
+    #     return options
 
     @measure_time
     def iniciar_sesion(self):
@@ -225,7 +282,7 @@ class Dynamics_Bot:
             time.sleep(1)
             self._hacer_clic_xpath(self.xpath_boton_seleccionar_cliente)
             time.sleep(2)
-            self._scroll_a_elemento_xpath(self.xpath_input_codigo_motivo_devolucion)
+            self._scroll_a_elemento_xpath(self.xpath_input_codigo_motivo_devolucion, 'Codigo motido devolución')
             self._esperar_n_segundos(2)
             self._ingresar_valor_en_input_xpath(self.xpath_input_codigo_motivo_devolucion, codigo_motivo_devolucion[data["metodo"]])
             time.sleep(1)
@@ -233,7 +290,7 @@ class Dynamics_Bot:
             self._hacer_clic_xpath(self.xpath_input_sitio)
             time.sleep(1)
             self._hacer_clic_xpath(self.xpath_boton_crear_pedido_devolucion)
-            print(">>> Fin crear nuevo pedido")
+            print(">> END crear nuevo pedido")
             self._esperar_n_segundos(1)
             input_num_pedido_devolucion = self.wait.until(EC.element_to_be_clickable((By.XPATH,  self.xpath_input_num_pedido_devolucion)))
             self.nro_pedido_venta_devolucion=input_num_pedido_devolucion.get_attribute("value")
@@ -245,7 +302,6 @@ class Dynamics_Bot:
         # START Enlazar pedido origen a pedido devolución
         print('>>> START enlazar pedidos')
         self._hacer_clic_xpath(self.xpath_boton_buscar_pedido_ventas)
-        time.sleep(1)
         self._hacer_clic_xpath(self.xpath_columna_pedido_ventas)
         self._ingresar_valor_en_input_xpath(self.xpath_input_columna_pedido_ventas, data['num_pedido_origen'])
         self._hacer_clic_xpath(self.xpath_boton_aplicar_pedido_ventas)
@@ -324,9 +380,18 @@ class Dynamics_Bot:
                 raise
 
         time.sleep(1)
-        self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
+        try:
+            self._hacer_clic_xpath(self.xpath_boton_aceptar_enlazar_ventas)
+            try:
+                self._hacer_clic_xpath(self.xpath_button_modal_si)
+            except Exception as e:
+                print("Error click en SI del elemento 'Modal transaccion en la tienda fisica...'")
+        except Exception as e:
+            print(f"Error al Aceptar productos a enlazar: {str(e)}")
+            raise e
         self._wait_hide_div_bloking(30)
-        print('END enlazar pedidos')
+        print('>> END enlazar pedidos')
+        # return
         return 'ENLAZAR'
 
     def registrar_articulo_para_devolucion(self):
@@ -375,7 +440,7 @@ class Dynamics_Bot:
 
     def registrar_articulos_para_devolucion(self, data):
         estado=None
-        print('>> START Registrar Confirmar Articulos')
+        print('>>> START Registrar Confirmar Articulos')
         time.sleep(1)
         # Verificar que cantidad de articulos seleccionados se igual a los solicitados a devolución
         try:
@@ -413,9 +478,8 @@ class Dynamics_Bot:
         ## Registrar Articulos
         try:
             self._wait_hide_div_bloking(20)
-            print('Scroll al contenedor de articulos')
             xpath_contenedor_articulos_para_confirmar='//div[contains(@id, "ReturnTable") and contains(@id, "SalesLineGrid")]'
-            self._scroll_a_elemento_xpath(xpath_contenedor_articulos_para_confirmar)
+            self._scroll_a_elemento_xpath(xpath_contenedor_articulos_para_confirmar, 'Contenedor de articulos')
             self._wait_hide_div_bloking(10)
             for articulo in  data['productos']:
                 self._esperar_n_segundos(2)
@@ -476,7 +540,7 @@ class Dynamics_Bot:
             - Codigo de Nota de Crédito
         """
         # START Poner fecha de solicitud
-        print(">> START Poner data al pedido de devolucion")
+        print(">>> START Poner data al pedido de devolucion")
         self._esperar_n_segundos(2)
         self._hacer_clic_xpath(self.xpath_input_num_pedido_devolucion)
         self._wait_hide_div_bloking(15)
@@ -541,35 +605,29 @@ class Dynamics_Bot:
                 print('Click en vistas globales')
                 self._hacer_clic_xpath(self.xpath_button_vistas_globales)
 
+
+            self._wait_hide_div_bloking(20)
             # try:
+            #     print('Click panel Actualizar lineas de pedido')
+            #     self._hacer_clic_xpath(self.xpath_span_actualizar_lineas_pedido)
+            #     self._hacer_clic_xpath(self.xpath_button_aceptar_actualizar)
+            #     self._esperar_n_segundos(10)
             #     print('Click en Vista formulario de pedido de venta')
-            #     self._esperar_n_segundos(1)
             #     self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
             # except:
-            #     try:
-            #         self._wait_hide_div_bloking(15)
-            #         print('Click en Vista formulario de pedido de venta despues del bloking')
-            #         self._esperar_n_segundos(2)
-            #         self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
-            #     except:
-            #         print('Click panel actualizar lineas de pedido')
-            #         self._hacer_clic_xpath(self.xpath_span_actualizar_lineas_pedido)
-            #         self._hacer_clic_xpath(self.xpath_button_aceptar_actualizar)
-            #         print('Click en Vista formulario de pedido de venta')
-            #         self._esperar_n_segundos(2)
-            #         self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
+            #     print('-- No se mostro Actualizar lineas de pedido')
+            #     self._esperar_n_segundos(2)
+            #     print('Click en Vista formulario de pedido de venta')
+            #     self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
 
-            self._wait_hide_div_bloking(10)
             try:
+                print('Click en Vista formulario de pedido de venta')
+                self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
+            except:
                 print('Click panel Actualizar lineas de pedido')
                 self._hacer_clic_xpath(self.xpath_span_actualizar_lineas_pedido)
                 self._hacer_clic_xpath(self.xpath_button_aceptar_actualizar)
                 self._esperar_n_segundos(10)
-                print('Click en Vista formulario de pedido de venta')
-                self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
-            except:
-                print('-- No se mostro Actualizar lineas de pedido')
-                self._esperar_n_segundos(2)
                 print('Click en Vista formulario de pedido de venta')
                 self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
 
@@ -604,12 +662,13 @@ class Dynamics_Bot:
         except Exception as e:
             print('Error al ingresar forma de pago, pago o codigo nota de crédito', e)
             raise
+        print(">> END Poner data al pedido de devolucion")
         return
 
     def validar_importe_resumen_con_importe_solicitud(self, data):
         ''' Siempre tener visible el DIV "Informacion relacionada" en las vistas del usuario. '''
         # START Verificar ngualdad entre resumen y  monto total de solicitud
-        print(">> START validar importe resumen con importe solicitud")
+        print(">>> START validar importe resumen con importe solicitud")
         try:
             try:
                 self._esperar_n_segundos(2)
@@ -658,7 +717,7 @@ class Dynamics_Bot:
 
     def generar_factura(self, data, codigo_motivo_devolucion):
         try:
-            print('START Generar Factura - Nota de crédito')
+            print('>>> START Generar Factura - Nota de crédito')
             self.validar_importe_resumen_con_importe_solicitud(data)
             self._esperar_n_segundos(2)
             self._hacer_clic_xpath(self.xpath_button_factura)
@@ -697,7 +756,7 @@ class Dynamics_Bot:
                 self._wait_hide_div_bloking(90)
             except e:
                 print(e)
-            print('END Generar Factura')
+            print('>> END Generar Factura')
             return 'FACTURAR'
         except Exception as e:
             # print('Exception crear nota de credito: ', e)
@@ -720,7 +779,7 @@ class Dynamics_Bot:
             "error": None,
             "sol_id": data['sol_id']
         }
-        print('START Crear_nota_de_credito')
+        print('-- START Crear_nota_de_credito --')
         try:
             self.crear_nuevo_pedido(data=data, codigo_motivo_devolucion=codigo_motivo_devolucion)
             resultado["nro_pedido_venta_devolucion"] = self.nro_pedido_venta_devolucion
@@ -740,7 +799,7 @@ class Dynamics_Bot:
                 "donde": "Crear nota de crédito"
             }
         time.sleep(1)
-        print('END Proceso Crear Nota de Credito')
+        print('-- END Proceso Crear Nota de Credito --')
         return resultado
 
     @measure_time
@@ -759,7 +818,7 @@ class Dynamics_Bot:
         self.init_navigator()
         self.ir_a_url_inicial()
         self.iniciar_sesion()
-        print('START Reintentar_crear_nota_de_credito', data, nro_rma )
+        print('-- START Reintentar_crear_nota_de_credito', data, nro_rma , ' --')
         step_rpa = data['step_rpa'] if data['step_rpa'] else 'PEDIDO'
         codigo_motivo_devolucion={
             "parcial": "07",
@@ -790,8 +849,10 @@ class Dynamics_Bot:
 
             print('>> step_rpa:', step_rpa)
 
+            if step_rpa == '':
+                raise Exception(f"No se guardo paso RPA {nro_pedido_nota_credito} con RMA {nro_rma}, Verificar")
             if step_rpa == 'PEDIDO':
-               step_rpa = resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
+                step_rpa = resultado["step_rpa"] = self.enlazar_pedido_origen_a_pedido_devolucion(data=data)
             if step_rpa == 'ENLAZAR':
                 resultado["step_rpa"] = self.registrar_articulos_para_devolucion(data=data)
 
@@ -806,8 +867,8 @@ class Dynamics_Bot:
                 "donde": "Crear factura para la nota de crédito"
             }
         time.sleep(1)
-        self.driver.quit()
-        print('END Proceso Reintentar Crear Nota de Credito')
+        self.close_driver()
+        print('-- END Proceso Reintentar Crear Nota de Credito --')
         return resultado
 
     def crear_individual_nota_de_credito(self, data):
@@ -815,25 +876,40 @@ class Dynamics_Bot:
         self.ir_a_url_inicial()
         self.iniciar_sesion()
         result_rpa= self.crear_nota_de_credito(data)
-        self.driver.quit()
+        self.close_driver()
         return result_rpa
 
-    def crear_masivo_nota_de_credito(self, data_solicitudes: list):
-        estados_rpa = [] # [{}, {}, {}]
-        self.init_navigator()
-        self.ir_a_url_inicial()
-        self.iniciar_sesion()
-        for data in data_solicitudes:
-            print(f'Crear Data {data}, {data["sol_id"]}')
-            estado_rpa = self.crear_nota_de_credito(data)
-            estados_rpa.append(estado_rpa)
-            if estado_rpa['estado'] == 'ERROR':
-                break
-            time.sleep(1)
-            self.ir_a_url_inicial()
-            time.sleep(1)
-        self.driver.quit()
-        return estados_rpa
+    # Deprecated: Ahora es manejado desde service_nota_credito para guardar en la BD
+    # def crear_masivo_nota_de_credito(self, data_solicitudes: list):
+    #     estados_rpa = [] # [{}, {}, {}]
+    #     self.init_navigator()
+    #     self.ir_a_url_inicial()
+    #     self.iniciar_sesion()
+    #     for data in data_solicitudes:
+    #         print(f'Crear Data {data}, {data["sol_id"]}')
+    #         estado_rpa = self.crear_nota_de_credito(data)
+    #         estados_rpa.append(estado_rpa)
+    #         if estado_rpa['estado'] == 'ERROR':
+    #             break
+    #         time.sleep(1)
+    #         self.ir_a_url_inicial()
+    #         time.sleep(1)
+
+    def close_driver(self):
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        self.kill_browser_processes()
+
+    def kill_browser_processes(self):
+        browser_processes = ["msedge"]
+        for process in psutil.process_iter():
+            try:
+                for browser in browser_processes:
+                    if browser in process.name().lower():
+                        process.kill()
+            except psutil.NoSuchProcess:
+                pass
 
     def _ingresar_valor_en_input_id(self, xpath, valor):
         AuxiliaryFunctions.ingresar_valor_en_input_id(self.driver, self.wait, xpath, valor)
@@ -885,14 +961,21 @@ class Dynamics_Bot:
                 print (f'>>>>>>>> Visible DIV BLOCKING "Espera mientras procesamos..." por mas de {segundos} segundos')
                 break
 
-    def _scroll_a_elemento_xpath(self, xpath):
-        # Desplazarse a una elemento
+    def _scroll_a_elemento_xpath(self, xpath, name_element):
+        # Desplazarse a un elemento
+        print(f'Scroll a {name_element}')
         self._esperar_n_segundos(2)
         elemento = self.driver.find_element(By.XPATH, xpath)
-        ActionChains(self.driver)\
-            .scroll_to_element(elemento)\
-            .perform()
+        # Debería funcionar correctamente en Firefox, Chrome, y Edge.
+        self.driver.execute_script("arguments[0].scrollIntoView();", elemento)
 
+        # Solo funciona para Chrome y Edge
+        # ActionChains(self.driver)\
+        #     .scroll_to_element(elemento)\
+        #     .perform()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close_driver()
 # ---------------------------------------------------------------------------------
 # ---- data Ejemplos ---
 data_parcial={

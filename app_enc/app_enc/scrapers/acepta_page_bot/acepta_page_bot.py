@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 import logging
 import pandas as pd
+import psutil
 import time
 
 from selenium import webdriver
@@ -46,6 +47,7 @@ class AceptaScraper:
         self.xpath_buscar_avanzado_test = "//*[@id='form_buscarNEW_emitidos']/form/div[19]/input"
         self.xpath_tabla_opciones = '/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table'
         self.xpath_tabla_resultados = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/div[2]/div[2]/div/table"
+        self.xpath_label_no_se_encontraton = '//*[@id="grilla_buscarNEW_emitidos"]/div/div/label'
         self.xpath_nota_credito = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[3]/table/tbody/tr[4]/td[10]/a"
         self.xpath_paginacion = "/html/body/div[8]/div[1]/section/div[2]/div/div/div[2]/div[4]/div/center[1]/nav/ul[@class='pagination pagination-lg']/li"
 
@@ -59,9 +61,15 @@ class AceptaScraper:
     def config_navigator(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-        options.add_argument("--headless=new") # =new Despues de la versión 109
+        # options.add_argument("--headless=new") # =new Despues de la versión 109 # Si esta en remote no es necesario
         # options.add_argument("--disable-gpu")
-        self.driver = webdriver.Chrome(options=options)
+        # self.driver = webdriver.Chrome(options=options) # Modo Local
+        # URL del hub de Selenium Grid
+        selenium_grid_url = "http://40.86.9.189:4444"
+        self.driver = webdriver.Remote(
+            command_executor=selenium_grid_url,
+            options=options,
+        )
         self.driver.set_window_size(1440, 900)  # Resolution Laptop L Aprox.
         # self.driver.maximize_window()
         self.wait_10 = WebDriverWait(self.driver , 10)
@@ -105,6 +113,14 @@ class AceptaScraper:
             print(f"Error al seleccionar opciones: {str(e)}")
 
     def extraer_estado_por_comprobante(self, nro_comprobante):
+        '''
+            @param ['BG02-00052743', 'BG02-00052741']
+            @return {'estado': ACEPTADO, 'error': None}
+        '''
+        resp = {
+            'estado': None,
+            'error': None
+        }
         serie, correlativo_desde = nro_comprobante.split('-')
         # Vista de Documentos Emitidos - Opciones avanzadas
         self.buscar_comprobante(serie, correlativo_desde)
@@ -116,7 +132,14 @@ class AceptaScraper:
             tabla_resultado = self.driver.find_element(By.XPATH, self.xpath_tabla_resultados)
         except TimeoutException:
             print("No se encontro la tabla de estados")
-            return None
+            label_no_se_encontraton_registros = self.driver.find_element(By.XPATH, self.xpath_label_no_se_encontraton)
+            value = label_no_se_encontraton_registros.text
+            if value != '':
+                resp['error'] =f"{value} del comprobante {nro_comprobante}"
+                return resp
+            else:
+                resp['error'] =f"No se encontro la tabla de estados"
+                return resp
 
         try:
             datos_totales = []
@@ -128,43 +151,84 @@ class AceptaScraper:
                     datos_totales.append((columnas[3].text, columnas[7].text))
             # Convertir la lista de datos en un DataFrame
             df = pd.DataFrame(datos_totales, columns=['Estado', 'NRO CPE'])
-            # Crear la lista de diccionarios
-            lista_diccionarios = df.set_index('NRO CPE')['Estado'].to_dict()
-            # Imprimir el DataFrame
             print(df)
-            return lista_diccionarios[nro_comprobante]
-        except Exception as e:
-            print(f"Error al imprimir datos de la tabla: {str(e)}")
+            if 'ACEPTADO' in df['Estado'].values:
+                estado_resultante = df[df['Estado'] == 'ACEPTADO'].iloc[0]['Estado']
+            else:
+                estado_resultante = df.iloc[0]['Estado']
+            print('estado_resultante', estado_resultante)
+            # Crear la lista de diccionarios
+            # lista_diccionarios = df.set_index('NRO CPE')['Estado'].to_dict()
+            resp['estado'] = estado_resultante.strip()
 
-    def cerrar_sesion(self):
-        time.sleep(5)
-        self.driver.quit()
-        print("Sesión cerrada")
+        except Exception as e:
+            msg_error = f"Error al imprimir datos de la tabla: {str(e)}"
+            print(msg_error)
+            resp['error'] = msg_error
+        return resp
 
     def get_estado_por_comprobante(self, nro_comprobante: str) -> str:
-        ''' :param 'BG02-00052743' '''
-        # Ejecutar acciones
-        self.iniciar_sesion()
-        self.seleccionar_opcion_emitidos()
-        self.seleccionar_busqueda_avanzada()
-        estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
-        # self.capture_logs()
-        self.cerrar_sesion()
-        return estado_comprobante
+        '''
+            @param 'BG02-00052743'
+            @return {'estado': ACEPTADO, 'error': None}
+        '''
+        try:
+            # Ejecutar acciones
+            self.iniciar_sesion()
+            self.seleccionar_opcion_emitidos()
+            self.seleccionar_busqueda_avanzada()
+            resp_estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+        except Exception as e:
+            print('Exception get estados de comprobantes', e)
+            raise e
+        finally:
+            # self.capture_logs()
+            self.close_driver()
+        return resp_estado_comprobante
 
     def get_estados_de_comprobantes(self, nro_comprobantes: list) -> dict:
-        ''' :param ['BG02-00052743', 'BG02-00052741'] '''
+        '''
+            @param ['BG02-00052743', 'BG02-00052741']
+            @return {
+                'BG02-00052743': {'estado': ACEPTADO, 'error': None},
+                'BG02-00052741': {'estado': None, 'error': 'Error al imprimir datos...'},
+                }
+        '''
         print(nro_comprobantes)
         respuesta = {}
-        self.iniciar_sesion()
-        self.seleccionar_opcion_emitidos()
-        self.seleccionar_busqueda_avanzada()
-        for nro_comprobante in nro_comprobantes:
-            print('Buscar', nro_comprobante)
-            estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
-            respuesta[nro_comprobante] = estado_comprobante
-        self.cerrar_sesion()
+        try:
+            self.iniciar_sesion()
+            self.seleccionar_opcion_emitidos()
+            self.seleccionar_busqueda_avanzada()
+            for nro_comprobante in nro_comprobantes:
+                print('Buscar', nro_comprobante)
+                estado_comprobante = self.extraer_estado_por_comprobante(nro_comprobante)
+                respuesta[nro_comprobante] = estado_comprobante
+        except Exception as e:
+            print('Exception get estados de comprobantes', e)
+            raise e
+        finally:
+            self.close_driver()
         return respuesta
+
+    def close_driver(self):
+        time.sleep(1)
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        # self.kill_browser_processes() # No es necesario si se usa selenium-grid
+        print("Sesión cerrada")
+
+    def kill_browser_processes(self):
+        ''' Cierra todos los procesos de los navegadores listados '''
+        browser_processes = ["chrome", "msedge", "firefox"]
+        for process in psutil.process_iter():
+            try:
+                for browser in browser_processes:
+                    if browser in process.name().lower():
+                        process.kill()
+            except psutil.NoSuchProcess:
+                pass
 
     # Funciones auxiliares
     def _ingresar_valor_en_input_id(self, xpath, valor):
@@ -232,4 +296,4 @@ nro_comprobantes = ['BC11-00000329', 'BC11-00000329X', 'BA01-00249590', 'BA01-00
 #     print(f'Estado Comprobante: {nro_comprobante} : {estado_comprobante if estado_comprobante else 'No Existe'}')
 #     time.sleep(1)
 # # acepta_bot.extraer_estados()
-# acepta_bot.cerrar_sesion()
+# acepta_bot.close_driver()

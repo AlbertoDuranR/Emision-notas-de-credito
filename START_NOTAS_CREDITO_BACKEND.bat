@@ -7,11 +7,7 @@ title AppNotasCreditoBackend.bat
 
 :inicio
 
-REM paso 1: Levantar FrontEnd VueJS
-REM Abrir una nueva ventana de cmd y ejecutar el archivo batch para Levantar el FrontEnd con ruta absoluta /d
-start cmd /k "cd /d E:\Python\Emision-notas-de-credito && call START_NOTAS_CREDITO_FRONTEND.bat"
-
-REM Paso 2: Levantar .venv
+REM Paso 1: Levantar .venv
 echo Iniciando entorno virtual...
 cd /d "E:\Python\Emision-notas-de-credito"
 call .venv\Scripts\activate

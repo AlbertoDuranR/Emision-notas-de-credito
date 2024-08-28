@@ -9,6 +9,7 @@ from ..models.model_producto_detalle import ProductoDetalle
 from ..models.model_view_solicitudes_nota_de_credito import ViewSolicitudNotaDeCredito
 from ..models.model_market import Market
 
+LIST_DNI_CAN_REQUESTED = ('48371957','71959546',)
 
 servicePDV = ServiceNCPDV
 serviceDynamics = ServiceDynamics()
@@ -98,9 +99,16 @@ class ViewNCPDV:
         employees = serviceDynamics.get_positionsv2_by_personnel_number(dni)
         if not employees:
             return JsonResponse({'error': 'No se encontro el empleado'}, status=404)
+
         for employee in employees:
+            # Caso especial GILMER No necesita pertenecer a un departamento
+            if str(employee['WorkerPersonnelNumber']) in LIST_DNI_CAN_REQUESTED:
+                name_employee = employee['WorkerName']
+                break
+
             if employee['DepartmentNumber'] == department_number:
                 name_employee = employee['WorkerName']
+
         if not name_employee:
             return JsonResponse({'error': 'El empleado no pertenece al departamento'}, status=404)
         print('name_employee', name_employee)

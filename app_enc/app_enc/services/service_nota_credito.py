@@ -40,15 +40,44 @@ class ServiceNotaCredito:
             data_solicitudes.append(data_solicitud)
             print(data_solicitudes)
 
-        # crear  NC uno por uno
-        estados_rpa=dynamics_bot.crear_masivo_nota_de_credito(data_solicitudes=data_solicitudes)
-        print(f'Estados rpa: {estados_rpa}')
-        for estado_rpa in estados_rpa:
+        # estados_rpa = [] # [{}, {}, {}]
+        dynamics_bot.init_navigator()
+        dynamics_bot.ir_a_url_inicial()
+        dynamics_bot.iniciar_sesion()
+        for data in data_solicitudes:
             try:
+                print(f'Crear Data {data}, {data["sol_id"]}')
+                estado_rpa = dynamics_bot.crear_nota_de_credito(data)
+                # estados_rpa.append(estado_rpa)
+                print(f'Estado RPA: {estado_rpa}')
                 self.handle_data_rpa(estado_rpa=estado_rpa, sol_id=estado_rpa['sol_id'])
+                time.sleep(1)
+                dynamics_bot.ir_a_url_inicial()
+                time.sleep(1)
             except ErrorNotaDeCredito as e:
                 print('Error al manejar data RPA al crear masivo', e.estado, e.message, e.step)
                 self.save_error_in_solicitudNC(sol_id=estado_rpa['sol_id'], estado_error=e.estado, error_msg=e.message, step_rpa=e.step)
+                break
+        dynamics_bot.close_driver()
+
+    # Deprecated: Ahora se indicara que hacer al bot en todo momento desde service_nota_credito
+    # def crear_masivo_notas_de_credito(self, sol_ids):
+    #     print('crear_masivo_notas_de_credito, sol_ids:', sol_ids)
+    #     data_solicitudes = [] # [{} , {}, {}]
+    #     for sol_id in sol_ids:
+    #         data_solicitud = self.get_data_solicitud(sol_id=sol_id)
+    #         data_solicitudes.append(data_solicitud)
+    #         print(data_solicitudes)
+
+    #     # crear  NC uno por uno
+    #     estados_rpa=dynamics_bot.crear_masivo_nota_de_credito(data_solicitudes=data_solicitudes)
+    #     print(f'Estados rpa: {estados_rpa}')
+    #     for estado_rpa in estados_rpa:
+    #         try:
+    #             self.handle_data_rpa(estado_rpa=estado_rpa, sol_id=estado_rpa['sol_id'])
+    #         except ErrorNotaDeCredito as e:
+    #             print('Error al manejar data RPA al crear masivo', e.estado, e.message, e.step)
+    #             self.save_error_in_solicitudNC(sol_id=estado_rpa['sol_id'], estado_error=e.estado, error_msg=e.message, step_rpa=e.step)
 
     def crear_nota_credito(self, sol_id):
         '''
@@ -148,12 +177,12 @@ class ServiceNotaCredito:
         sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
         count = 0
         while sales_invoice_headers == None:
-            time.sleep(8)
+            time.sleep(5)
             sales_invoice_headers = serviceDynamics.get_sales_invoice_headers_by_sales_order_number(nro_pedido_nota_credito)
             if sales_invoice_headers:
                 break
             count += 1
-            if count > 4:
+            if count > 3:
                 msg_error = f'No se encontro la factura para la nota de crédito en Dynamics. Para el pedido : {nro_pedido_nota_credito}'
                 self.save_error_in_solicitudNC(sol_id, estado_error='ERROR', error_msg=msg_error, step_rpa=estado_rpa['step_rpa'])
                 raise ErrorNotaDeCredito(message=msg_error)
@@ -257,6 +286,7 @@ class ServiceNotaCredito:
         }
 
     def save_error_in_solicitudNC(self, sol_id: str, estado_error='', error_msg='', step_rpa = ''):
+        print('save_error_in_solicitudNC')
         solicitud_existente = SolicitudNC.objects.get(sol_id=sol_id)
         if solicitud_existente:
             solicitud_existente.sol_fecha_modificacion = datetime.now().date()

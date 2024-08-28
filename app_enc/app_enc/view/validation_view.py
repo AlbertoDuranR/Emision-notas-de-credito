@@ -32,13 +32,24 @@ class ValidationView:
 
             aceptaScraper = AceptaScraper() # Creamos un Objeto - instancia
             estado_acepta = aceptaScraper.get_estado_por_comprobante(nro_comprobante)
-            if not estado_acepta == 'ACEPTADO':
-                logger.warning(f'Estado Portal Acepta: {estado_acepta}')
-                obs = f'Comprobante de origen no se encontra Aceptado en el Portal ACEPTA, Estado: {estado_acepta}'
+            estado_comprobante = estado_acepta['estado']
+            error_comprobante = estado_acepta['error']
+            # print('estado_acepta'*5, estado_acepta)
+            if estado_comprobante is None:
+                obs = f'Error al obtener el estado en el Portal ACEPTA. {error_comprobante}'
+                logger.warning(obs)
+                data["observacion"] = obs
+                servicePDV.save_observacion(data)
+                return JsonResponse({'message': obs}, status=500)
+
+            if not estado_comprobante == 'ACEPTADO':
+                logger.warning(f'Estado Portal Acepta: {estado_comprobante}')
+                obs = f'Comprobante no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estado_comprobante}'
                 data["observacion"] = obs
                 servicePDV.save_observacion(data)
                 return JsonResponse({'message': obs}, status=404)
-            logger.info(f'Estado Dynamics 365: {estado_acepta}')
+
+            logger.info(f'Estado Dynamics 365: {estado_comprobante}')
 
             try:
                 servicePDV.validate_solicitud(data)
@@ -112,24 +123,26 @@ class ValidationView:
             nros_comprobantes = [comprobante['nro_comprobante'] for comprobante in _comprobantes]
             aceptaScraper = AceptaScraper() # Creamos un Objeto - instancia
             estados_acepta = aceptaScraper.get_estados_de_comprobantes(nros_comprobantes)
-            print('estados_acepta: ', estados_acepta)
             for comprobante in _comprobantes:
                 estado_acepta = estados_acepta[comprobante['nro_comprobante']]
-                if estado_acepta is None:
-                    comprobante["observacion"] = f'{tipo} No se encuentra en el PORTAL ACEPTA'
+                estado_comprobante = estado_acepta['estado']
+                error_comprobante = estado_acepta['error']
+
+                if estado_comprobante is None:
+                    comprobante["observacion"] = f'Error al obtener el estado en el Portal ACEPTA: {error_comprobante}'
                     if tipo == 'NOTAS':
                             servicePDV.save_observacion_nota(comprobante['id'], comprobante['observacion'], estado_acepta = 'PENDIENTE')
                     else:
                             servicePDV.save_observacion(comprobante)
                     continue
 
-                if not estado_acepta == 'ACEPTADO':
-                    comprobante["observacion"] = f'{tipo} no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estado_acepta}'
+                if not estado_comprobante == 'ACEPTADO':
+                    comprobante["observacion"] = f'{tipo} no se encuentra ACEPTADO en el PORTAL ACEPTA. Estado: {estado_comprobante}'
                     if tipo == 'NOTAS':
-                        servicePDV.save_observacion_nota(comprobante['id'], comprobante['observacion'], estado_acepta)
+                        servicePDV.save_observacion_nota(comprobante['id'], comprobante['observacion'], estado_comprobante)
                     else:
                         servicePDV.save_observacion(comprobante)
-                logger.warning(f'Estado Portal Acepta: {comprobante}')
-                comprobante["estado"] = estado_acepta
+                logger.warning(f'Estado Portal Acepta: {estado_acepta}')
+                comprobante["estado"] = estado_comprobante
             # logger.info(f'Estado Dynamics 365: {estado_acepta}')
             return _comprobantes
