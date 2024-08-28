@@ -608,17 +608,28 @@ class Dynamics_Bot:
                 self._hacer_clic_xpath(self.xpath_button_vistas_globales)
 
 
-            self._wait_hide_div_bloking(10)
+            self._wait_hide_div_bloking(20)
+            # try:
+            #     print('Click panel Actualizar lineas de pedido')
+            #     self._hacer_clic_xpath(self.xpath_span_actualizar_lineas_pedido)
+            #     self._hacer_clic_xpath(self.xpath_button_aceptar_actualizar)
+            #     self._esperar_n_segundos(10)
+            #     print('Click en Vista formulario de pedido de venta')
+            #     self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
+            # except:
+            #     print('-- No se mostro Actualizar lineas de pedido')
+            #     self._esperar_n_segundos(2)
+            #     print('Click en Vista formulario de pedido de venta')
+            #     self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
+
             try:
+                print('Click en Vista formulario de pedido de venta')
+                self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
+            except:
                 print('Click panel Actualizar lineas de pedido')
                 self._hacer_clic_xpath(self.xpath_span_actualizar_lineas_pedido)
                 self._hacer_clic_xpath(self.xpath_button_aceptar_actualizar)
                 self._esperar_n_segundos(10)
-                print('Click en Vista formulario de pedido de venta')
-                self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
-            except:
-                print('-- No se mostro Actualizar lineas de pedido')
-                self._esperar_n_segundos(2)
                 print('Click en Vista formulario de pedido de venta')
                 self._hacer_clic_xpath(self.xpath_vista_formulario_pedido_venta)
 
