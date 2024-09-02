@@ -167,8 +167,8 @@
                         :clear-on-select="false"
                         :preserve-search="true"
                         placeholder="Seleccionar producto..."
-                        label="Product"
-                        track-by="Product"
+                        label="productName"
+                        track-by="id"
                         @update:modelValue="handleSelectionChange"
                       >
                       </multiselect>
@@ -183,11 +183,7 @@
                         <div
                           class="text-center text-sm font-bold bg-gray-600 text-white rounded-lg py-1"
                         >
-                          {{
-                            product["ProductNumber"] +
-                            " - " +
-                            product["ProductDescription"]
-                          }}
+                          {{ product["productName"] }}
                         </div>
                         <div class="columns-4">
                           <div class="space-y-1 py-2 px-2">
@@ -447,6 +443,19 @@ const getProductosDelComprobante = async () => {
       `/comprobante/detalle_comprobante/${datos_documento.value.nro_comprobante}`
     );
     productos.value = response.data;
+
+    // Agregar un identificador único a cada producto
+    productos.value = response.data.map((producto, index) => {
+      console.log(producto)
+      const productName = producto.LineAmount == 0 ? `${producto.Product} - BONIFICACIÓN` : producto.Product
+      return  {
+          ...producto,
+          id: `${producto.ProductNumber}-${index}`, // Crear un ID único combinando el nombre del producto y el índice
+          productName: productName, // Nombrar el producto según sea el caso
+        }
+    })
+
+    // console.log('productos_with:index', productos.value)
   } catch (error) {
     Swal.fire({
       title: "Verificar Campos",
@@ -468,20 +477,26 @@ onMounted(() => {
     console.log("datos_documento: ", datos_documento);
   });
 
-const handleSelectionChange = (value) => {
-  value.forEach(
-    (element, index) =>
-      (metodo_parcial_productos.value.selected_products[index]["Total"] = (
-        element.InvoicedQuantity * element.SalesPrice
-      ).toFixed(2))
-  );
+const handleSelectionChange = (selectedProducts) => {
+  metodo_parcial_productos.value.selected_products = selectedProducts.map((product, index) => {
+    const { LineAmount, InvoicedQuantity, SalesPrice } = product;
+    const total = LineAmount === 0 ? 0.0 : (InvoicedQuantity * SalesPrice).toFixed(2);
+
+    return {
+      ...metodo_parcial_productos.value.selected_products[index],
+      Total: total
+    };
+  });
 };
+
 const handleInputChange = (index) => {
-  metodo_parcial_productos.value.selected_products[index].Total = (
-    metodo_parcial_productos.value.selected_products[index].InvoicedQuantity *
-    metodo_parcial_productos.value.selected_products[index].SalesPrice
-  ).toFixed(2);
+  const selectedProduct = metodo_parcial_productos.value.selected_products[index];
+  const { LineAmount, InvoicedQuantity, SalesPrice } = selectedProduct;
+
+  // Determinar si es bonificación y calcular el total en consecuencia
+  selectedProduct.Total = LineAmount === 0 ? 0 : (InvoicedQuantity * SalesPrice).toFixed(2);
 };
+
 const handleDniInput = () => {
       if (detalle_solicitud.value.dni.length === 8) {
         getNameByDni();

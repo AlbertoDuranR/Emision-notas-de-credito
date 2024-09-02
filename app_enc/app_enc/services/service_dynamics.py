@@ -283,7 +283,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
                 return None
             products = pd.read_json(StringIO(json.dumps(data["value"])))
             products["Product"] = products["ProductNumber"].apply(str) +' - ' + products["ProductDescription"].apply(str)
-            result = products[["ProductNumber", "ProductDescription", "Product", "InvoicedQuantity", "SalesPrice", "SalesUnitSymbol"]]
+            result = products[["ProductNumber", "ProductDescription", "Product", "InvoicedQuantity", "SalesPrice", "SalesUnitSymbol", "LineAmount"]]
             return result.to_dict(orient='records')
         except Exception as e:
             print(f"An exception occurred in get_sales_invoice_lines_by_invoice_number: {e}")

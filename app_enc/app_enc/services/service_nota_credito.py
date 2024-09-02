@@ -182,7 +182,7 @@ class ServiceNotaCredito:
             if sales_invoice_headers:
                 break
             count += 1
-            if count > 3:
+            if count > 1:
                 msg_error = f'No se encontro la factura para la nota de crédito en Dynamics. Para el pedido : {nro_pedido_nota_credito}'
                 self.save_error_in_solicitudNC(sol_id, estado_error='ERROR', error_msg=msg_error, step_rpa=estado_rpa['step_rpa'])
                 raise ErrorNotaDeCredito(message=msg_error)
