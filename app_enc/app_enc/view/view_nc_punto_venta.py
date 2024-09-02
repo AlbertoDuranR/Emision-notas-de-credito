@@ -68,13 +68,22 @@ class ViewNCPDV:
 
         # Get productos
         list_productos = []
-        productos = ProductoDetalle.objects.filter(det_id=det_id)
+        productos = []
         if det_metodo == 'parcial':
             productos = ProductoDetalle.objects.filter(det_id=det_id)
             if not productos:
-                raise 'Error: Sin productos para el N° Comprobante en el metodo Parcial'
+                raise 'Sin productos para el N° Comprobante en el metodo Parcial'
             for producto in productos:
-                list_productos.append({'codigo': producto.dpro_codigo, 'descripcion': producto.dpro_descripcion, 'cantidad': producto.dpro_cantidad, 'unidad': producto.dpro_unidad, 'monto_total': producto.dpro_monto_total})
+                list_productos.append({'codigo': producto.dpro_codigo, 'descripcion': producto.dpro_descripcion,
+                                      'cantidad': producto.dpro_cantidad, 'unidad': producto.dpro_unidad, 'monto_total': producto.dpro_monto_total})
+        if det_metodo == 'total':
+            productos = serviceDynamics.get_sales_invoice_lines(det_nro_comprobante)
+            if not productos:
+                raise 'No se llego a obtener productos para el N° Comprobante en el metodo Total desde Dynamics'
+            for producto in productos:
+                list_productos.append({'codigo': producto["ProductNumber"], 'descripcion': producto["ProductDescription"],
+                                      'cantidad': producto["InvoicedQuantity"], 'unidad': producto["SalesUnitSymbol"], 'monto_total': producto["LineAmount"]})
+
         data_response = {
             'sol_fecha_solicitud': sol_fecha_solicitud,
             'sol_tipo_nc': sol_tipo_nc,

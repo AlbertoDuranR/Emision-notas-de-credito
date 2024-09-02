@@ -154,6 +154,10 @@
                               {{ item.unidad }}
                             </td>
                             <td
+                              :class="{
+                                'bg-red-400': item.monto_total == 0,
+                                'text-white': item.monto_total == 0,
+                              }"
                               class="py-2 px-4 border-b text-sm text-gray-600 text-center"
                             >
                               {{ formatCurrency(item.monto_total) }}

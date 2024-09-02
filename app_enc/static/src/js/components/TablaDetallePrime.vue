@@ -1,8 +1,14 @@
 <template>
     <ThemeSwitcher />
     <div class="card">
-        <DataTable v-model:filters="filters" :value="solicitudes" paginator
-            :rows="15" dataKey="id" filterDisplay="menu"
+        <DataTable
+            v-model:filters="filters"
+            :value="solicitudes"
+            paginator
+            :rows="15"
+            :rowsPerPageOptions="[5, 15, 25, 50]"
+            dataKey="id"
+            filterDisplay="menu"
             :globalFilterFields="['ID_NC', 'SOLICITANTE', 'ESTABLECIMIENTO', 'TIPO', 'NRO_COMPROBANTE']"
             sortField="ID_NC"
             :sortOrder="-1"
@@ -260,6 +266,14 @@
     </div>
     <ModalReview v-if="isOpen" @show-modal="closeModal" @close="closeModal" :open="isOpen"
         :detalleSolicitud="datos_detalle_solicitud" />
+    <loading-overlay
+        :active="loading"
+        :can-cancel="true"
+        :is-full-page="true"
+        :color="'#dc2626'"
+    >
+        <b>{{ textLoading }}</b>
+    </loading-overlay>
 </template>
 
 <script setup>
@@ -276,6 +290,7 @@ import Column from 'primevue/column';
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
+import LoadingOverlay from "vue3-loading-overlay";
 
 const props = defineProps({
     "tipo": {
@@ -300,12 +315,14 @@ const datos_detalle_solicitud = ref({});
 const solicitudes = ref();
 const filters = ref();
 const loading = ref(true);
+const textLoading = ref(true);
 
 
 onMounted(() => {
+    loading.value = true;
     console.log('onMounted-props.listaSolicitudes', props.listaSolicitudes)
     solicitudes.value = getSolicitudes(props.listaSolicitudes);
-    console.log(' solicitudes.value ',  solicitudes.value )
+    // console.log(' solicitudes.value ',  solicitudes.value )
     loading.value = false;
 });
 
@@ -347,6 +364,8 @@ const mostrarObservacion = (dato) => {
 };
 
 const getDatosSolicitud = async (idSol) => {
+    loading.value = true;
+    textLoading.value = 'Cargando Detalle...'
     try {
         console.log("entro activador modal");
         const response = await axios.get(
@@ -354,6 +373,7 @@ const getDatosSolicitud = async (idSol) => {
         );
         if (response.status == 200) {
             openModal();
+            // console.log(response.data)
             datos_detalle_solicitud.value = response.data;
         }
     } catch (error) {
@@ -363,6 +383,9 @@ const getDatosSolicitud = async (idSol) => {
             text: `No se tiene datos de esta solicitud: ${idSol}`,
             icon: "error",
         });
+    } finally {
+        loading.value = false;
+        textLoading.value = '';
     }
 };
 
@@ -412,6 +435,8 @@ const getSolicitudes = (data) => {
 };
 
 const downloadNota = async (nroNotaCredito) => {
+    loading.value = true;
+    textLoading.value = 'Descargando txt...'
     try {
         await downloadNotaTxt(nroNotaCredito);
     } catch (error) {
@@ -420,6 +445,9 @@ const downloadNota = async (nroNotaCredito) => {
             text: `Error al descargar el archivo:${nroNotaCredito}.txt`,
             icon: "error",
         });
+    } finally {
+        loading.value = false;
+        textLoading.value = '';
     }
 }
 

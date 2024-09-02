@@ -120,7 +120,6 @@ export default {
   },
   methods: {
     validar_item(itemNota, nroComprobante) {
-      console.log("Editar:", itemNota);
       this.$swal
         .fire({
           title: "Validar",
