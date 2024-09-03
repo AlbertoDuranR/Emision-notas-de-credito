@@ -81,9 +81,11 @@ class ViewNCPDV:
             if not productos:
                 raise 'No se llego a obtener productos para el N° Comprobante en el metodo Total desde Dynamics'
             for producto in productos:
+                monto_total =  0 if producto['LineAmount'] == 0 else producto["InvoicedQuantity"] * producto["SalesPrice"]
+
                 list_productos.append({'codigo': producto["ProductNumber"], 'descripcion': producto["ProductDescription"],
                                       'cantidad': producto["InvoicedQuantity"], 'unidad': producto["SalesUnitSymbol"],
-                                      'monto_total': producto["InvoicedQuantity"] * producto["SalesPrice"]}) # Monto con IGV
+                                      'monto_total': monto_total}) # Monto con IGV
 
         data_response = {
             'sol_fecha_solicitud': sol_fecha_solicitud,
