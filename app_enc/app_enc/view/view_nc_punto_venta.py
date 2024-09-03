@@ -82,7 +82,8 @@ class ViewNCPDV:
                 raise 'No se llego a obtener productos para el N° Comprobante en el metodo Total desde Dynamics'
             for producto in productos:
                 list_productos.append({'codigo': producto["ProductNumber"], 'descripcion': producto["ProductDescription"],
-                                      'cantidad': producto["InvoicedQuantity"], 'unidad': producto["SalesUnitSymbol"], 'monto_total': producto["LineAmount"]})
+                                      'cantidad': producto["InvoicedQuantity"], 'unidad': producto["SalesUnitSymbol"],
+                                      'monto_total': producto["InvoicedQuantity"] * producto["SalesPrice"]}) # Monto con IGV
 
         data_response = {
             'sol_fecha_solicitud': sol_fecha_solicitud,

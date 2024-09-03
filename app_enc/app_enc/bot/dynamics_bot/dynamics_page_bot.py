@@ -460,18 +460,19 @@ class Dynamics_Bot:
                     time.sleep(1)
                     self._esperar_n_segundos(1)
                     cantidad_articulos_registrar=len(self.driver.find_elements(By.XPATH, self.div_lineas_articulos_para_registro))
-                    print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
+                    print('Exception, Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
                     count += 1
                     if count > 4:
                         raise ValueError('Error: Cantidad de articulos Seleccionados no son iguales a los solicitados')
             else:
                 print('Error: Al obtener cantidad de articulos a registrar', e)
-                # raise ValueError('Error: Al obtener cantidad de articulos a registrar', e)
+
         print('Cantidad: Articulos Solicitados para devolución:', len(data['productos']), ' | Articulos a registrar ', cantidad_articulos_registrar)
         count = 0
         while not cantidad_articulos_registrar == len(data['productos']):
             time.sleep(1)
             cantidad_text = (self.driver.find_element(By.XPATH, self.xpath_cantidad_filas)).text
+            print('cantidad_text nuevamente:', cantidad_text)
             cantidad_articulos_registrar = int(cantidad_text.strip().split(' ')[0])
             count += 1
             if count > 4:
