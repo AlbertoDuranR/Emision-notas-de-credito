@@ -22,7 +22,8 @@
         "vue-multiselect": "^3.0.0-alpha.2",
         "vue-router": "^4.2.4",
         "vue-sweetalert2": "^5.0.5",
-        "vue3-loading-overlay": "^0.0.0"
+        "vue3-loading-overlay": "^0.0.0",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.16",

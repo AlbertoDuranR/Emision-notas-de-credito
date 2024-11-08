@@ -12,11 +12,12 @@
             :globalFilterFields="['ID_NC', 'SOLICITANTE', 'ESTABLECIMIENTO', 'TIPO', 'NRO_COMPROBANTE']"
             sortField="ID_NC"
             :sortOrder="-1"
+            ref="dt"
             >
             <template #header>
                 <div class="flex justify-between">
-                    <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
-                    <span class="relative">
+                    <div class="flex gap-3">
+                        <span class="relative">
                         <!-- <i class="pi pi-search absolute top-2/4 -mt-2 left-3 text-surface-400 dark:text-surface-600" /> -->
                         <svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 512 512"
                             class="pi absolute top-2/4 -mt-2 left-3 text-surface-400 dark:text-surface-600">
@@ -25,6 +26,13 @@
                         </svg>
                         <InputText v-model="filters['global'].value" placeholder="Buscar" class="pl-10 font-normal" />
                     </span>
+                    <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
+                    </div>
+                    <div class="flex gap-3">
+                        <Button icon="pi pi-file-excel" label="Exportar a CSV" @click="exportCSV" class="p-button-success" />
+                        <Button icon="pi pi-file-excel" label="Exportar a Excel" @click="exportToExcel" class="p-button-success" />
+                    </div>
+
                 </div>
             </template>
 
@@ -47,7 +55,7 @@
                         mask="99/99/9999" />
                 </template>
             </Column>
-            <Column header="Solicitante" sortable sortField="SOLICITANTE" filterField="SOLICITANTE"
+            <Column field="SOLICITANTE" header="Solicitante" sortable sortField="SOLICITANTE" filterField="SOLICITANTE"
                 style="min-width: 2rem;  padding: 0 0.5rem 0 0.5rem;" class="text-xs">
 
                 <template #body="{ data }">
@@ -59,7 +67,7 @@
                         placeholder="Buscar por Solicitante" />
                 </template>
             </Column>
-            <Column header="Sucursal" sortable sortField="ESTABLECIMIENTO" filterField="ESTABLECIMIENTO"
+            <Column field="SUCURSAL" header="Sucursal" sortable sortField="ESTABLECIMIENTO" filterField="ESTABLECIMIENTO"
                 style="min-width: 0.5rem; padding: 0 0.5rem 0 0.5rem;" class="text-xs">
 
                 <template #body="{ data }">
@@ -83,7 +91,7 @@
                         mask="99/99/9999" />
                 </template>
             </Column>
-            <Column header="Tipo Comprobante" sortable sortField="TIPO" filterField="TIPO"
+            <Column field="TIPO_COMPROBANTE" header="Tipo Comprobante" sortable sortField="TIPO" filterField="TIPO"
                 style="min-width: 5rem; padding: 0 0.5rem 0 0.5rem" class="text-xs">
 
                 <template #body="{ data }">
@@ -95,7 +103,7 @@
                         placeholder="Buscar por Tipo" />
                 </template>
             </Column>
-            <Column header="N° Comprobante" sortable sortField="NRO_COMPROBANTE" filterField="NRO_COMPROBANTE"
+            <Column field="NRO_COMPROBANTE" header="N° Comprobante" sortable sortField="NRO_COMPROBANTE" filterField="NRO_COMPROBANTE"
                 style="min-width: 5rem; padding: 0 0.5rem 0 0.5rem" class="text-sm">
 
                 <template #body="{ data }">
@@ -107,7 +115,7 @@
                         placeholder="Search by country" />
                 </template>
             </Column>
-            <Column header="Estado" sortable sortField="ESTADO" filterField="ESTADO"
+            <Column field="ESTADO" header="Estado" sortable sortField="ESTADO" filterField="ESTADO"
                 style="min-width: 5rem; padding: 0 0.5rem 0 0.5rem" class="text-xs">
 
                 <template #body="{ data }">
@@ -195,7 +203,7 @@
                         mask="99/99/9999" />
                 </template>
             </Column>
-            <Column header="Método" sortable sortField="METODO" filterField="METODO"
+            <Column field="METODO" header="Método" sortable sortField="METODO" filterField="METODO"
                 style="min-width: 5rem; padding: 0 0.5rem 0 0.5rem" class="text-sm">
                 <template #body="{ data }">
                     {{ capitalizeFirstLetter(data.METODO) }}
@@ -205,13 +213,13 @@
                         placeholder="Buscar por Método" />
                 </template>
             </Column>
-            <Column header="Importe N. De Crédito" style="min-width: 2rem" class="text-sm">
+            <Column field="MONTO_TOTAL" header="Importe N. De Crédito" style="min-width: 2rem" class="text-sm">
 
                 <template #body="{ data }">
                     {{ formatCurrency(data.MONTO_TOTAL) }}
                 </template>
             </Column>
-            <Column header="N° N. De Crédito" sortable sortField="NRO_NOTA_CREDITO" filterField="NRO_NOTA_CREDITO"
+            <Column field="NRO_NOTA_CREDITO" header="N° N. De Crédito" sortable sortField="NRO_NOTA_CREDITO" filterField="NRO_NOTA_CREDITO"
                 style="min-width: 5rem; padding: 0 0.5rem 0 0.5rem" class="text-xs">
                 <template #body="{ data }">
                     <span v-show="data.ESTADO_NOTA_CREDITO === 'PENDIENTE'" :class="{
@@ -243,7 +251,7 @@
                         placeholder="Buscar por Nota de Crédito" />
                 </template>
             </Column>
-            <Column header="Acepta" sortable sortField="ACEPTA" filterField="ACEPTA"
+            <Column field="ACEPTA" header="Acepta" sortable sortField="ACEPTA" filterField="ACEPTA"
                 style="min-width: 5rem; padding: 0 0.5rem 0 0.5rem" class="text-xs">
 
                 <template #body="{ data }">
@@ -282,6 +290,7 @@ import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { capitalizeFirstLetter, formatCurrency, getDateGMT } from '../utils';
 import { downloadNotaTxt } from '../service/downloadFile'
 
+import * as XLSX from 'xlsx';
 import Swal from "sweetalert2";
 import axios from "axios";
 import ModalReview from "../components/ModalReview";
@@ -326,6 +335,21 @@ onMounted(() => {
     loading.value = false;
 });
 
+const dt = ref();
+
+const exportCSV = () => {
+    dt.value.exportCSV();
+};
+
+const exportToExcel = () => {
+  // Convertir datos en formato JSON a hoja de Excel
+  const worksheet = XLSX.utils.json_to_sheet(solicitudes.value);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Solicitudes');
+
+  // Descargar el archivo Excel
+  XLSX.writeFile(workbook, 'solicitudes.xlsx');
+};
 
 const editarItem = (idSol, nroComprobante) => {
     emit("editar-item", idSol, nroComprobante);
