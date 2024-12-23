@@ -843,10 +843,11 @@ class Dynamics_Bot:
             print('Click en buscar rma')
             self._hacer_clic_xpath(self.xpath_button_buscar_rma)
             self._esperar_n_segundos(2)
+            time.sleep(2)
             input_buscar_rma = self.wait.until(EC.element_to_be_clickable((By.XPATH, self.xpath_input_buscar_rma)))
             input_buscar_rma.click()
             input_buscar_rma.send_keys(Keys.TAB)
-            self._esperar_n_segundos(1)
+            self._esperar_n_segundos(2)
             pedido_devolucion_rma = self.driver.switch_to.active_element
             pedido_devolucion_rma.send_keys(Keys.ENTER)
             # end
