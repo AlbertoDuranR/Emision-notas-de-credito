@@ -64,6 +64,18 @@ SERIES_PARA_NOTA_CREDITO = {
     'FK01' : 'T_FC70',
     'FK02' : 'T_FC71',
     'B050' : 'T_BC05',
-    'F050' : 'T_FC05'
+    'F050' : 'T_FC05',
+    'BL01' : 'T_BC80',
+    'BL02' : 'T_BC81',
+    'BL03' : 'T_BC82',
+    'BL04' : 'T_BC83',
+    'BL05' : 'T_BC84',
+    'BL06' : 'T_BC85',
+    'FL01' : 'T_FC80',
+    'FL02' : 'T_FC81',
+    'FL03' : 'T_FC82',
+    'FL04' : 'T_FC83',
+    'FL05' : 'T_FC84',
+    'FL06' : 'T_FC85',
 }
 

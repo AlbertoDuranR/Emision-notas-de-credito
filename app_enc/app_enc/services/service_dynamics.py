@@ -187,7 +187,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
                     }]
         """
         # Definir url
-        path = f"{self.url}/data/SalesInvoiceHeaders"
+        path = f"{self.url}/data/SalesInvoiceHeadersV2"
         query = f"?$count=true&$select=SalesOrderNumber,InvoiceDate,TotalTaxAmount,SalesOrderNumber,TotalInvoiceAmount,PaymentTermsName&$filter=InvoiceNumber eq '{invoice_number}'"
         full_path_url=f"{path}{query}"
 
@@ -216,7 +216,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
                     [{ 'InvoiceNumber': 'BG02-00052743' }]
         """
         # Definir url
-        path = f"{self.url}/data/SalesInvoiceHeaders"
+        path = f"{self.url}/data/SalesInvoiceHeadersV2"
         query = f"?$count=true&$select=SalesOrderNumber&$filter=InvoiceNumber eq '{invoice_number}'"
         full_path_url=f"{path}{query}"
 
@@ -248,7 +248,7 @@ class ServiceDynamics(metaclass=SingletonMeta):
                     }]
         """
         # Definir url
-        path = f"{self.url}/data/SalesInvoiceHeaders"
+        path = f"{self.url}/data/SalesInvoiceHeadersV2"
         query = f"?$count=true&$filter=SalesOrderNumber eq '{sales_order_number}'"
         full_path_url=f"{path}{query}"
 
