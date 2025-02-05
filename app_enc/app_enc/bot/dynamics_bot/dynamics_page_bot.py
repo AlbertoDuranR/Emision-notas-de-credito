@@ -697,7 +697,7 @@ class Dynamics_Bot:
                 importe_total_resumen_value = abs(round(float(importe_total_resumen.get_attribute("value")), 2))
                 intentos += 1
                 if intentos > 3:
-                    raise Exception("Importe de pedido de devolución es diferente a Importe de resumen. Es probable que un producto se esté repitiendo dentro del pedido de venta.")
+                    raise Exception("Importe de pedido de devolución es diferente a Importe de resumen. Es probable que algún producto se esté repitiendo dentro del pedido de venta.")
             print('Importe total Nota: ', importe_total_nota_credito, 'Importe total Resumen:', importe_total_resumen_value)
             time.sleep(2)
         except Exception as e:
